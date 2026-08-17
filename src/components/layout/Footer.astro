@@ -1,0 +1,121 @@
+---
+import { siteConfig } from '@/config/site';
+import { companyConfig, formatAddress } from '@/config/company';
+import { footerNavigation, footerServiceLinks } from '@/config/navigation';
+import Button from '@/components/ui/Button.astro';
+
+const socialEntries = Object.entries(companyConfig.social).filter(([, url]) => url);
+const socialLabels: Record<string, string> = {
+  linkedin: 'LinkedIn',
+  facebook: 'Facebook',
+  instagram: 'Instagram',
+  twitter: 'X',
+  youtube: 'YouTube',
+  tiktok: 'TikTok',
+};
+---
+
+<footer class="border-t border-white/10 bg-secondary text-fg-soft">
+  <div class="container py-section-sm">
+    <div class="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
+      <div class="lg:col-span-2">
+        <a href="/" class="inline-flex items-center gap-2">
+          <img src="/logo-white.svg" alt="" width="160" height="48" class="h-10 w-auto" aria-hidden="true" />
+        </a>
+        <p class="mt-4 max-w-md text-small text-fg-muted">{companyConfig.footerBrandStatement}</p>
+        {
+          companyConfig.messaging.link && (
+            <div class="mt-6">
+              <Button href={companyConfig.messaging.link} variant="accent" size="sm" external>
+                {companyConfig.messaging.label}
+              </Button>
+            </div>
+          )
+        }
+      </div>
+
+      <div>
+        <h2 class="text-small font-semibold uppercase tracking-wide text-white">Contact</h2>
+        <ul class="mt-4 space-y-2 text-small">
+          <li>
+            <a href={`mailto:${companyConfig.email}`} class="hover:text-accent">
+              {companyConfig.email}
+            </a>
+          </li>
+          <li>
+            <a href={`tel:${companyConfig.phone.replace(/\s/g, '')}`} class="hover:text-accent">
+              {companyConfig.phone}
+            </a>
+          </li>
+          {
+            companyConfig.messaging.link && (
+              <li>
+                <a href={companyConfig.messaging.link} class="hover:text-accent" target="_blank" rel="noopener noreferrer">
+                  {companyConfig.messaging.label}
+                </a>
+              </li>
+            )
+          }
+          <li>{formatAddress()}</li>
+          {companyConfig.officeHours && <li>{companyConfig.officeHours}</li>}
+        </ul>
+      </div>
+
+      <div>
+        <h2 class="text-small font-semibold uppercase tracking-wide text-white">Explore</h2>
+        <ul class="mt-4 space-y-2 text-small">
+          {
+            footerNavigation.map((item) => (
+              <li>
+                <a href={item.href} class="hover:text-accent">
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        {
+          footerServiceLinks.length > 0 && (
+            <>
+              <h2 class="mt-8 text-small font-semibold uppercase tracking-wide text-white">Services</h2>
+              <ul class="mt-4 space-y-2 text-small">
+                {
+                  footerServiceLinks.map((item) => (
+                    <li>
+                      <a href={item.href} class="hover:text-accent">
+                        {item.label}
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </>
+          )
+        }
+      </div>
+    </div>
+
+    {
+      socialEntries.length > 0 && (
+        <div class="mt-10 flex flex-wrap gap-4 border-t border-white/10 pt-8">
+          {
+            socialEntries.map(([key, url]) => (
+              <a
+                href={url}
+                class="text-small hover:text-accent"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {socialLabels[key] ?? key}
+              </a>
+            ))
+          }
+        </div>
+      )
+    }
+
+    <p class="mt-8 text-xs text-fg-subtle">
+      &copy; {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+    </p>
+  </div>
+</footer>

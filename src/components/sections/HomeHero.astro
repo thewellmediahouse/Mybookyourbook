@@ -1,0 +1,124 @@
+---
+import HeroDecorBackground from '@/components/decor/HeroDecorBackground.astro';
+import Button from '@/components/ui/Button.astro';
+import Badge from '@/components/ui/Badge.astro';
+import HeroHeading from '@/components/ui/HeroHeading.astro';
+import VideoPlaceholder from '@/components/media/VideoPlaceholder.astro';
+import type { HeroContent } from '@/config/content';
+
+interface Props extends HeroContent {
+  eyebrow?: string;
+}
+
+const {
+  eyebrow,
+  heading,
+  headingHighlight,
+  subheading,
+  paragraph,
+  trustPoints,
+  primaryCta,
+  secondaryCta,
+  decor,
+  media,
+} = Astro.props;
+
+const decorEnabled = decor?.enabled !== false;
+
+const heroBackground =
+  decorEnabled && decor?.video?.src
+    ? {
+        type: 'video' as const,
+        src: decor.video.src,
+        poster: decor.video.poster,
+        opacity: decor.opacity ?? 1,
+      }
+    : decorEnabled && decor?.image?.src
+      ? {
+          type: 'image' as const,
+          src: decor.image.src,
+          alt: decor.image.alt ?? '',
+          opacity: decor.opacity ?? 1,
+        }
+      : undefined;
+---
+
+<section class="section-hero relative overflow-hidden py-section">
+  {heroBackground && (
+    <HeroDecorBackground
+      type={heroBackground.type}
+      src={heroBackground.src}
+      alt={'alt' in heroBackground ? heroBackground.alt : undefined}
+      poster={'poster' in heroBackground ? heroBackground.poster : undefined}
+      opacity={heroBackground.opacity}
+    />
+  )}
+  <div class="container">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div class="relative">
+        {eyebrow && <Badge class="mb-4">{eyebrow}</Badge>}
+        {
+          subheading && (
+            <p class="mb-3 text-small font-semibold uppercase tracking-wide text-accent">
+              {subheading}
+            </p>
+          )
+        }
+        <HeroHeading heading={heading} headingHighlight={headingHighlight} />
+        {paragraph && <p class="mt-6 max-w-xl text-lg text-fg-soft">{paragraph}</p>}
+        {
+          trustPoints && trustPoints.length > 0 && (
+            <ul class="mt-6 space-y-2 text-fg-soft">
+              {trustPoints.map((point) => (
+                <li class="flex gap-2">
+                  <span class="text-accent" aria-hidden="true">✓</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        <div class="mt-8 flex flex-wrap gap-4">
+          <Button href={primaryCta.href} variant="accent" size="lg">
+            {primaryCta.label}
+          </Button>
+          {
+            secondaryCta && (
+              <Button href={secondaryCta.href} variant="outline-contrast" size="lg">
+                {secondaryCta.label}
+              </Button>
+            )
+          }
+        </div>
+      </div>
+      {
+        media?.type !== 'none' && (
+          <div class="relative">
+            {
+              media?.type === 'video' ? (
+                <VideoPlaceholder
+                  src={media.src}
+                  alt={media.alt}
+                  caption={media.caption}
+                  videoUrl={media.videoUrl}
+                />
+              ) : (
+                <div class="media-video-frame aspect-[4/3]">
+                  <img
+                    src={media?.src ?? '/images/video-placeholder.svg'}
+                    alt={media?.alt ?? ''}
+                    width="800"
+                    height="600"
+                    class="absolute inset-0 h-full w-full object-cover"
+                    loading="eager"
+                    fetchpriority="high"
+                  />
+                </div>
+              )
+            }
+          </div>
+        )
+      }
+    </div>
+  </div>
+</section>

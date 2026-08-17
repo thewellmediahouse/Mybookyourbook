@@ -1,0 +1,141 @@
+---
+import PlayButton from '@/components/media/PlayButton.astro';
+import {
+  parseVideoUrl,
+  resolvePosterSrc,
+  resolveVideoUrl,
+  type ParsedVideoUrl,
+} from '@/utils/videoEmbed';
+
+interface Props {
+  src?: string;
+  alt?: string;
+  caption?: string;
+  videoUrl?: string;
+  aspect?: '16/9' | '16/10' | '4/3';
+  class?: string;
+}
+
+const {
+  src,
+  alt = 'Video',
+  caption,
+  videoUrl,
+  aspect = '16/10',
+  class: className = '',
+} = Astro.props;
+
+const effectiveVideoUrl = resolveVideoUrl(videoUrl, src);
+const parsed: ParsedVideoUrl | null = effectiveVideoUrl ? parseVideoUrl(effectiveVideoUrl) : null;
+const posterSrc = resolvePosterSrc(src, effectiveVideoUrl, parsed);
+const isPlayable = parsed !== null;
+
+const aspectClasses = {
+  '16/9': 'aspect-[16/9]',
+  '16/10': 'aspect-[16/10]',
+  '4/3': 'aspect-[4/3]',
+} as const;
+
+const frameClass = `media-video-frame ${aspectClasses[aspect]}`;
+---
+
+<figure class={className}>
+  {
+    isPlayable ? (
+      <div
+        class:list={['video-player', frameClass]}
+        data-embed-kind={parsed.kind}
+        data-embed-url={parsed.embedUrl}
+        data-video-src={parsed.kind === 'file' ? parsed.embedUrl : undefined}
+        data-video-title={alt}
+      >
+        <button
+          type="button"
+          class="video-player__trigger group absolute inset-0 z-10 flex w-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
+          aria-label={`Play video: ${alt}`}
+        >
+          <img
+            src={posterSrc}
+            alt={alt}
+            width="800"
+            height="500"
+            class="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
+          <span class="absolute inset-0 bg-black/30 transition group-hover:bg-black/40" aria-hidden="true" />
+          <PlayButton size="lg" class="relative z-10 shrink-0" />
+        </button>
+        <div class="video-player__frame absolute inset-0" hidden aria-hidden="true" />
+      </div>
+    ) : (
+      <div class={frameClass}>
+        <img
+          src={posterSrc}
+          alt={alt}
+          width="800"
+          height="500"
+          class="absolute inset-0 h-full w-full object-cover"
+          loading="lazy"
+        />
+        <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+          <PlayButton size="lg" />
+        </div>
+      </div>
+    )
+  }
+  {caption && <figcaption class="mt-3 text-center text-small text-fg-muted">{caption}</figcaption>}
+</figure>
+
+{
+  isPlayable && (
+    <script>
+      function initVideoPlayers() {
+        document.querySelectorAll<HTMLElement>('.video-player').forEach((player) => {
+          if (player.dataset.initialized === 'true') return;
+
+          const trigger = player.querySelector<HTMLButtonElement>('.video-player__trigger');
+          const frame = player.querySelector<HTMLElement>('.video-player__frame');
+          if (!trigger || !frame) return;
+
+          player.dataset.initialized = 'true';
+
+          trigger.addEventListener('click', () => {
+            const kind = player.dataset.embedKind;
+            const title = player.dataset.videoTitle ?? 'Video';
+
+            trigger.hidden = true;
+            frame.hidden = false;
+            frame.removeAttribute('hidden');
+            frame.classList.remove('hidden');
+            frame.setAttribute('aria-hidden', 'false');
+
+            if (kind === 'youtube' || kind === 'vimeo') {
+              const iframe = document.createElement('iframe');
+              iframe.src = player.dataset.embedUrl ?? '';
+              iframe.title = title;
+              iframe.allow =
+                'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+              iframe.allowFullscreen = true;
+              iframe.className = 'absolute inset-0 h-full w-full border-0';
+              frame.appendChild(iframe);
+              return;
+            }
+
+            if (kind === 'file') {
+              const video = document.createElement('video');
+              video.src = player.dataset.videoSrc ?? '';
+              video.controls = true;
+              video.playsInline = true;
+              video.className = 'absolute inset-0 h-full w-full bg-black object-contain';
+              frame.appendChild(video);
+              void video.play();
+            }
+          });
+        });
+      }
+
+      initVideoPlayers();
+      document.addEventListener('astro:page-load', initVideoPlayers);
+    </script>
+  )
+}

@@ -1,0 +1,19 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import FAQSection from '@/components/marketing/FAQSection.astro';
+import { siteConfig } from '@/config/site';
+import { faqConfig } from '@/config/faq';
+
+const title = 'FAQ';
+const description = `Frequently asked questions about ${siteConfig.name}.`;
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  heading="Frequently asked questions"
+  subheading="Answers to common questions about working with us."
+  pathname="/faq"
+>
+  <FAQSection items={faqConfig} heading="" />
+</PageLayout>

@@ -1,0 +1,17 @@
+---
+import Container from '@/components/ui/Container.astro';
+
+interface Props {
+  heading: string;
+  paragraph: string;
+}
+
+const { heading, paragraph } = Astro.props;
+---
+
+<section class="py-section-sm">
+  <Container size="narrow">
+    <h2 class="text-h2 font-bold text-fg">{heading}</h2>
+    <p class="mt-4 text-lg text-fg-soft">{paragraph}</p>
+  </Container>
+</section>

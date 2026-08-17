@@ -1,0 +1,44 @@
+---
+import Card from '@/components/ui/Card.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import type { BundlePackage } from '@/config/packages';
+
+interface Props {
+  heading?: string;
+  subheading?: string;
+  bundles: BundlePackage[];
+}
+
+const {
+  heading = 'One-Off / Bundle Packages',
+  subheading,
+  bundles,
+} = Astro.props;
+---
+
+<section class="py-section-sm">
+  <div class="container space-y-8">
+    <SectionHeading heading={heading} subheading={subheading} />
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        bundles.map((bundle) => (
+          <Card id={bundle.id} class="flex flex-col">
+            <h3 class="text-h4 font-semibold uppercase text-fg">{bundle.name}</h3>
+            <p class="mt-2 text-h3 font-bold text-accent">{bundle.price}</p>
+            {bundle.savingsMessage && (
+              <p class="mt-2 text-small font-medium text-accent">{bundle.savingsMessage}</p>
+            )}
+            <ul class="mt-4 space-y-2 text-small text-fg-soft">
+              {bundle.features.map((feature) => (
+                <li class="flex gap-2">
+                  <span class="text-accent" aria-hidden="true">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </Card>
+        ))
+      }
+    </div>
+  </div>
+</section>

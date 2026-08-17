@@ -1,0 +1,52 @@
+---
+description: Astro business template — platform constraints, config patterns, and build workflow
+alwaysApply: true
+---
+
+# Template platform (quick rules)
+
+Canonical reference: `docs/AI_TEMPLATE_RULES.md`. Client content: website input spec → `src/config/`.
+
+## Document map
+
+| Document | Use when |
+| -------- | -------- |
+| `docs/AI_QUICK_RULES.md` | Every session — same content as this rule |
+| `docs/AI_TEMPLATE_RULES.md` | Architecture, components, design system, full checklists |
+| `docs/NEW_WEBSITE_INPUT_SPEC.md` | New client content template |
+| `docs/*WebsiteInputSpec.md` | Specific site business values |
+
+## Repository strategy
+
+- `main` = template platform; `wellmedia` = only co-located client site (The Well Media House).
+- New sites: clone to a **dedicated repo** each — no further client branches here.
+- ~30 sites: plan monorepo (shared platform + subfolder per site). Keep sites self-contained for easy migration.
+
+## Hard constraints
+
+- Astro + TypeScript + Tailwind v4 + MDX; **static output only**; deploy to Cloudflare Pages.
+- No React, Vue, Angular, Svelte, SSR, databases, or backends unless explicitly requested.
+- Client names, copy, URLs, pricing → **config and input specs**, never shared components.
+- Reuse existing components and semantic theme classes before creating new ones.
+
+## Config (`src/config/`)
+
+Core: `site.ts`, `company.ts`, `navigation.ts`, `services.ts`, `seo.ts`, `form.ts`
+
+Optional: `design.ts`, `packages.ts`, `portfolio.ts` (listing + `/portfolio/[slug]` detail), `content.ts`, `faq.ts`, `testimonials.ts`, `pages.ts`
+
+## Styling
+
+Use semantic classes (`text-fg`, `text-fg-muted`, `surface-card`, `btn-accent`). **Avoid** `text-neutral-*` and `bg-white`.
+
+## Forms
+
+Config-driven in `form.ts`. Default provider: **FormSubmit** (email endpoint or `PUBLIC_FORMSUBMIT_EMAIL`). Also: Formspree, Web3Forms, custom URL.
+
+## Workflow
+
+1. Read input spec → update config → compose pages from section components.
+2. New components only when nothing existing fits; prefer extension over replacement.
+3. Minimal diffs; match existing conventions.
+
+Read `docs/AI_TEMPLATE_RULES.md` for component inventory, design tokens, SEO/accessibility detail, and full site builds.

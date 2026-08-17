@@ -1,0 +1,48 @@
+---
+import Button from '@/components/ui/Button.astro';
+import BookingCalendarMockup from '@/components/forms/BookingCalendarMockup.astro';
+import type { CtaBlock } from '@/config/content';
+
+interface Props extends CtaBlock {}
+
+const { heading, paragraph, bullets, primaryCta, includeBookingMockup, image } = Astro.props;
+---
+
+<section class="py-section">
+  <div class="container">
+    <div class="grid items-center gap-10 surface-panel p-8 lg:grid-cols-2 lg:p-12">
+      <div>
+        <h2 class="text-h2 font-bold">{heading}</h2>
+        {paragraph && <p class="mt-4 text-lg text-fg-soft">{paragraph}</p>}
+        {
+          bullets && bullets.length > 0 && (
+            <ul class="mt-6 space-y-2 text-fg-soft">
+              {bullets.map((bullet) => (
+                <li class="flex gap-2">
+                  <span class="text-accent" aria-hidden="true">✓</span>
+                  {bullet}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        <div class="mt-8">
+          <Button href={primaryCta.href} variant="accent" size="lg">{primaryCta.label}</Button>
+        </div>
+      </div>
+      <div>
+        {
+          includeBookingMockup ? (
+            <BookingCalendarMockup />
+          ) : (
+            image && (
+              <div class="aspect-[4/3] overflow-hidden rounded-3xl bg-black/20 shadow-elevated ring-1 ring-white/10">
+                <img src={image.src} alt={image.alt} width="800" height="600" class="h-full w-full object-cover" loading="lazy" />
+              </div>
+            )
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>

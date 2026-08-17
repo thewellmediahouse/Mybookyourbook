@@ -1,0 +1,108 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import ContactHero from '@/components/sections/ContactHero.astro';
+import ContactForm from '@/components/forms/ContactForm.astro';
+import BookingCalendarMockup from '@/components/forms/BookingCalendarMockup.astro';
+import FAQSection from '@/components/marketing/FAQSection.astro';
+import CTASection from '@/components/marketing/CTASection.astro';
+import Card from '@/components/ui/Card.astro';
+import Container from '@/components/ui/Container.astro';
+import { companyConfig, formatAddress } from '@/config/company';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { formConfig } from '@/config/form';
+import { faqConfig } from '@/config/faq';
+import { seoConfig } from '@/config/seo';
+
+const sections = pagesConfig.sections.contact;
+const seo = seoConfig.pages.contact;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/contact">
+  {sections.hero && <ContactHero {...contentConfig.contact.hero} />}
+
+  <Container>
+    <div class="grid gap-10 lg:grid-cols-5">
+      {
+        sections.form && (
+          <div class="lg:col-span-3" id="contact-form">
+            <Card>
+              <h2 class="text-h3 font-semibold">{formConfig.title}</h2>
+              <div class="mt-6">
+                <ContactForm />
+              </div>
+            </Card>
+          </div>
+        )
+      }
+
+      <aside class="lg:col-span-2 space-y-6">
+        {
+          sections.bookingMockup && (
+            <BookingCalendarMockup
+              title={contentConfig.contact.bookingMockup.title}
+              times={contentConfig.contact.bookingMockup.times}
+              confirmLabel={contentConfig.contact.bookingMockup.confirmLabel}
+            />
+          )
+        }
+
+        {
+          sections.contactInfo && (
+            <Card>
+              <h2 class="text-h4 font-semibold">Contact details</h2>
+              <ul class="mt-4 space-y-4 text-fg-soft">
+                <li>
+                  <span class="block text-small text-fg-label">Call Us</span>
+                  <a href={`tel:${companyConfig.phone.replace(/\s/g, '')}`} class="text-accent hover:underline">
+                    {companyConfig.phone}
+                  </a>
+                </li>
+                <li>
+                  <span class="block text-small text-fg-label">Email Us</span>
+                  <a href={`mailto:${companyConfig.email}`} class="text-accent hover:underline">
+                    {companyConfig.email}
+                  </a>
+                </li>
+                {
+                  companyConfig.messaging.link && (
+                    <li>
+                      <span class="block text-small text-fg-label">WhatsApp</span>
+                      <a href={companyConfig.messaging.link} class="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
+                        Chat with us on WhatsApp
+                      </a>
+                    </li>
+                  )
+                }
+                <li>
+                  <span class="block text-small text-fg-label">Office Hours</span>
+                  {companyConfig.officeHours}
+                </li>
+                <li>
+                  <span class="block text-small text-fg-label">Location</span>
+                  {formatAddress()}
+                </li>
+              </ul>
+            </Card>
+          )
+        }
+      </aside>
+    </div>
+  </Container>
+
+  {
+    sections.faq && (
+      <FAQSection items={faqConfig.slice(0, 3)} />
+    )
+  }
+
+  {
+    sections.cta && (
+      <CTASection
+        heading={contentConfig.contact.cta.heading}
+        primaryCta={contentConfig.contact.cta.primaryCta}
+        background="primary"
+      />
+    )
+  }
+</BaseLayout>

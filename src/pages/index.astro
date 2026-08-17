@@ -1,0 +1,72 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HomeHero from '@/components/sections/HomeHero.astro';
+import ImpactStrip from '@/components/sections/ImpactStrip.astro';
+import ServicesPreview from '@/components/sections/ServicesPreview.astro';
+import PricingSelector from '@/components/sections/PricingSelector.astro';
+import ConsultationCTA from '@/components/sections/ConsultationCTA.astro';
+import FeaturedWork from '@/components/sections/FeaturedWork.astro';
+import { siteConfig } from '@/config/site';
+import { servicesConfig } from '@/config/services';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { packagesConfig } from '@/config/packages';
+import { getFeaturedItems } from '@/config/portfolio';
+import { seoConfig } from '@/config/seo';
+
+const sections = pagesConfig.sections.home;
+const previewLimit =
+  contentConfig.home.servicesPreview.limit === 'all'
+    ? servicesConfig.length
+    : contentConfig.home.servicesPreview.limit;
+const previewServices = servicesConfig.slice(0, previewLimit);
+const seo = seoConfig.pages.home;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/">
+  {
+    sections.hero && (
+      <HomeHero
+        eyebrow={siteConfig.positioning}
+        {...contentConfig.home.hero}
+      />
+    )
+  }
+
+  {sections.impactStrip && <ImpactStrip items={contentConfig.outcomes} />}
+
+  {
+    sections.servicesPreview && (
+      <ServicesPreview
+        heading={contentConfig.home.servicesPreview.heading}
+        subheading={contentConfig.home.servicesPreview.subheading}
+        services={previewServices}
+      />
+    )
+  }
+
+  {
+    sections.pricingSelector && packagesConfig.tierSummaries.length > 0 && (
+      <PricingSelector
+        heading={contentConfig.home.pricingSelector.heading}
+        tiers={packagesConfig.tierSummaries}
+        note={packagesConfig.pricingSelectorNote}
+      />
+    )
+  }
+
+  {
+    sections.consultationCta && (
+      <ConsultationCTA {...contentConfig.home.consultationCta} />
+    )
+  }
+
+  {
+    sections.featuredWork && (
+      <FeaturedWork
+        heading={contentConfig.home.featuredWork.heading}
+        items={getFeaturedItems()}
+      />
+    )
+  }
+</BaseLayout>

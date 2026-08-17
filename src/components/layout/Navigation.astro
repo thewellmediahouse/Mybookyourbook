@@ -1,0 +1,39 @@
+---
+import type { NavItem } from '@/config/navigation';
+
+interface Props {
+  items: NavItem[];
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { items, class: className = '', ariaLabel = 'Main navigation' } = Astro.props;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+---
+
+<nav aria-label={ariaLabel} class={className}>
+  <ul class="flex flex-wrap items-center gap-1">
+    {
+      items.map((item) => {
+        const href = item.href.replace(/\/$/, '') || '/';
+        const isActive = currentPath === href;
+        return (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'rounded-button px-3 py-2 text-small font-medium transition-colors',
+                isActive
+                  ? 'nav-active-gold text-accent'
+                  : 'text-fg-muted hover:text-fg',
+              ]}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
