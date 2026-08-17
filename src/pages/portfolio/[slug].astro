@@ -1,0 +1,37 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PortfolioDetail from '@/components/sections/PortfolioDetail.astro';
+import CTASection from '@/components/marketing/CTASection.astro';
+import { contentConfig } from '@/config/content';
+import { portfolioConfig, getPortfolioItemBySlug } from '@/config/portfolio';
+import { seoConfig } from '@/config/seo';
+import { resolveMediaSrc } from '@/utils/media';
+
+export function getStaticPaths() {
+  return portfolioConfig.items.map((item) => ({
+    params: { slug: item.slug },
+  }));
+}
+
+const slug = Astro.params.slug!;
+const item = getPortfolioItemBySlug(slug);
+
+if (!item) {
+  return Astro.redirect('/404');
+}
+
+const summary = item.detail?.summary ?? item.description;
+const pathname = `/portfolio/${item.slug}`;
+const pageTitle = `${item.title} | ${seoConfig.titleSuffix}`;
+const ogImage = resolveMediaSrc(item.image);
+---
+
+<BaseLayout title={pageTitle} description={summary} pathname={pathname} ogImage={ogImage}>
+  <PortfolioDetail item={item} />
+  <CTASection
+    heading={contentConfig.portfolio.cta.heading}
+    primaryCta={contentConfig.portfolio.cta.primaryCta}
+    secondaryCta={{ label: 'View all work', href: '/portfolio' }}
+    background="primary"
+  />
+</BaseLayout>

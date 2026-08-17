@@ -1,0 +1,213 @@
+---
+import { raster } from '@/assets/raster';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import type { BundlePackage } from '@/config/packages';
+
+interface LaunchFeature {
+  label: string;
+  icon: string;
+}
+
+interface Props {
+  label: string;
+  heading: string;
+  copy: string;
+  cta: { label: string; href: string };
+  bundle: BundlePackage;
+  features: LaunchFeature[];
+  class?: string;
+}
+
+const { label, heading, copy, cta, bundle, features, class: className = '' } = Astro.props;
+
+const featureIcons: Record<string, string> = {
+  logo: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="8"/><path d="M8 15c1.5-3 6.5-3 8 0"/></svg>`,
+  website: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>`,
+  shop: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>`,
+  video: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 7a2 2 0 0 1 2-2h8l4 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="m10 10 4 2.5L10 15Z"/></svg>`,
+  cinema: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14"/></svg>`,
+  photo: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L5 19"/></svg>`,
+  portfolio: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+};
+---
+
+<section id="launch-pack" class:list={['packages-section', 'packages-launch', className]} aria-labelledby="launch-pack-heading">
+  <div class="container">
+    <div class="packages-launch__panel packages-panel packages-launch__panel--pulse scroll-reveal">
+      <div class="packages-launch__media">
+        <OptimizedImage
+          src={raster.packages.launchPack}
+          alt="Launch Pack branded foundation box"
+          width={1200}
+          height={900}
+          widths={[400, 640, 960, 1200]}
+          sizes="(max-width: 768px) 100vw, 50vw"
+          loading="lazy"
+        />
+      </div>
+
+      <div class="packages-launch__content">
+        <p class="packages-eyebrow">{label}</p>
+        <h2 id="launch-pack-heading" class="packages-launch__heading">{heading}</h2>
+
+        <div class="packages-launch__price-row">
+          <span class="packages-launch__price">{bundle.price}</span>
+          {
+            bundle.savingsMessage && (
+              <span class="packages-launch__badge">{bundle.savingsMessage}</span>
+            )
+          }
+        </div>
+
+        <p class="packages-launch__copy">{copy}</p>
+
+        <ul class="packages-launch__features">
+          {
+            features.map((feature) => (
+              <li>
+                <span class="packages-launch__feature-icon" set:html={featureIcons[feature.icon] ?? featureIcons.logo} />
+                <span>{feature.label}</span>
+              </li>
+            ))
+          }
+        </ul>
+
+        <a href={cta.href} class="packages-btn packages-btn--gold packages-launch__cta">
+          {cta.label}
+          <span class="packages-btn__arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .packages-launch__panel {
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 2.75rem);
+    align-items: center;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .packages-launch__panel--pulse {
+    animation: packages-launch-panel-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes packages-launch-panel-pulse {
+    0%,
+    100% {
+      box-shadow:
+        0 24px 48px rgb(0 0 0 / 0.45),
+        0 0 0 1px rgb(214 169 74 / 0.28);
+    }
+
+    50% {
+      box-shadow:
+        0 28px 56px rgb(0 0 0 / 0.5),
+        0 0 36px rgb(214 169 74 / 0.14),
+        0 0 0 1px rgb(240 201 111 / 0.42);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .packages-launch__panel--pulse {
+      animation: none;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .packages-launch__panel {
+      grid-template-columns: 1fr 1.05fr;
+    }
+  }
+
+  .packages-launch__media :global(img) {
+    width: 100%;
+    display: block;
+    border-radius: 1.125rem;
+    border: 1px solid rgb(214 169 74 / 0.28);
+  }
+
+  .packages-launch__heading {
+    margin: 0.5rem 0 1rem;
+    font-size: clamp(2rem, 4vw, 2.75rem);
+  }
+
+  .packages-launch__price-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .packages-launch__price {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    font-weight: 700;
+  }
+
+  .packages-launch__badge {
+    display: inline-flex;
+    padding: 0.4rem 0.875rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #111;
+    background: linear-gradient(135deg, #d6a94a, #f0c96f);
+  }
+
+  .packages-launch__copy {
+    margin: 0 0 1.25rem;
+    max-width: 42rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: #c8cfdd;
+  }
+
+  .packages-launch__features {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 540px) {
+    .packages-launch__features {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.875rem 1.25rem;
+    }
+  }
+
+  .packages-launch__features li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.875rem;
+    color: #f6f2eb;
+  }
+
+  .packages-launch__feature-icon {
+    flex-shrink: 0;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(214 169 74 / 0.3);
+    background: rgb(214 169 74 / 0.08);
+    color: #f0c96f;
+  }
+
+  .packages-launch__feature-icon :global(svg) {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .packages-launch__cta {
+    margin-top: 1.75rem;
+  }
+</style>

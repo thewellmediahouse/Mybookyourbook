@@ -1,0 +1,460 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import Button from '@/components/ui/Button.astro';
+import { companyConfig } from '@/config/company';
+import { designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsiteContact;
+const {
+  branding,
+  createRoute,
+  resultsRoutePrefix,
+  preferredTimingOptions,
+} = designStudioConfig;
+const quoteEmail = companyConfig.email;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/design-your-website/contact">
+  <section class="py-section-sm">
+    <Container>
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {branding.eyebrow}
+        </p>
+        <h1 class="mt-3 font-display text-h2 text-fg">Confirm your project</h1>
+        <p class="mt-3 text-fg-soft" data-contact-subtitle>
+          Checking your selected direction…
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Button
+            href={resultsRoutePrefix}
+            variant="outline"
+            size="sm"
+            data-back-results
+            data-results-prefix={resultsRoutePrefix}
+          >
+            Back to directions
+          </Button>
+          <Button href={createRoute} variant="ghost" size="sm">Edit brief</Button>
+        </div>
+      </div>
+
+      <p
+        class="mx-auto mt-8 hidden max-w-2xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-center text-small text-fg"
+        data-contact-error
+        role="alert"
+      >
+      </p>
+
+      <p
+        class="mx-auto mt-8 hidden max-w-2xl rounded-xl border border-accent/40 bg-accent/10 px-4 py-3 text-center text-small text-fg"
+        data-contact-success
+        role="status"
+      >
+      </p>
+
+      <div class="mx-auto mt-10 hidden max-w-3xl space-y-8" data-contact-ready>
+        <div class="surface-card p-6 sm:p-8">
+          <p class="text-xs tracking-[0.16em] text-accent uppercase">Selected direction</p>
+          <h2 class="mt-2 font-display text-h3 text-fg" data-contact-concept-name></h2>
+          <p class="mt-2 text-body text-fg-soft" data-contact-concept-blurb></p>
+        </div>
+
+        <div class="surface-card p-6 sm:p-8" data-checkout-summary>
+          <h2 class="font-display text-h3 text-fg">Checkout summary</h2>
+          <p class="mt-2 text-small text-fg-muted">
+            Price is calculated on the server from your website type and features — not from the browser.
+          </p>
+          <dl class="mt-6 grid gap-4 text-small sm:grid-cols-2" data-checkout-details></dl>
+          <div class="mt-6 border-t border-[var(--brand-border-subtle)] pt-6" data-checkout-totals>
+          </div>
+          <p class="mt-4 text-small text-fg-muted" data-checkout-after></p>
+        </div>
+
+        <form class="surface-card space-y-5 p-6 sm:p-8" data-contact-form novalidate>
+          <div>
+            <h2 class="font-display text-h3 text-fg">Your contact details</h2>
+            <p class="mt-2 text-small text-fg-muted">
+              No account required. We use these details to confirm your project and follow up.
+            </p>
+          </div>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Full name</span>
+            <input
+              name="fullName"
+              type="text"
+              required
+              autocomplete="name"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+            />
+          </label>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Email</span>
+            <input
+              name="email"
+              type="email"
+              required
+              autocomplete="email"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+            />
+          </label>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Phone / WhatsApp</span>
+            <input
+              name="phone"
+              type="tel"
+              required
+              autocomplete="tel"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+            />
+          </label>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Business name</span>
+            <input
+              name="businessName"
+              type="text"
+              required
+              autocomplete="organization"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+            />
+          </label>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Preferred timing <span class="text-fg-muted">(optional)</span></span>
+            <select
+              name="preferredTiming"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+            >
+              <option value="">Select timing</option>
+              {preferredTimingOptions.map((option) => <option value={option}>{option}</option>)}
+            </select>
+          </label>
+
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Note to designer <span class="text-fg-muted">(optional)</span></span>
+            <textarea
+              name="note"
+              rows="4"
+              maxlength="2000"
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+              placeholder="Anything else our team should know?"
+            ></textarea>
+          </label>
+
+          <div class="flex flex-wrap gap-3 pt-2">
+            <button
+              type="submit"
+              class="btn-accent inline-flex items-center justify-center rounded-button px-5 py-2.5 text-body font-medium transition-colors hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+              data-contact-submit
+            >
+              Save contact details
+            </button>
+          </div>
+        </form>
+
+        <div class="hidden surface-card p-6 sm:p-8" data-next-actions>
+          <h2 class="font-display text-h3 text-fg" data-next-heading>Next step</h2>
+          <p class="mt-2 text-small text-fg-soft" data-next-blurb></p>
+          <div class="mt-6 flex flex-wrap gap-3">
+            <a
+              href="#"
+              class="btn-accent hidden inline-flex items-center justify-center rounded-button px-5 py-2.5 text-body font-medium"
+              data-quote-cta
+              data-quote-email={quoteEmail}
+            >
+              Request Final Quote
+            </a>
+            <button
+              type="button"
+              class="btn-accent hidden inline-flex items-center justify-center rounded-button px-5 py-2.5 text-body font-medium disabled:cursor-not-allowed disabled:opacity-50"
+              data-pay-cta
+            >
+              Proceed to payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<script>
+  import {
+    createDesignStudioPayment,
+    fetchCheckoutSummary,
+    loadProjectSession,
+    saveDesignStudioContact,
+    submitPayfastForm,
+    type CheckoutSummary,
+  } from '@/scripts/design-studio/api';
+
+  function escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+  }
+
+  function renderCheckout(checkout: CheckoutSummary) {
+    const details = document.querySelector('[data-checkout-details]');
+    const totals = document.querySelector('[data-checkout-totals]');
+    const after = document.querySelector('[data-checkout-after]');
+
+    const featureList =
+      checkout.features.length > 0 ? checkout.features.join(', ') : 'Standard brochure features';
+
+    if (details) {
+      details.innerHTML = [
+        ['Project', checkout.publicReference],
+        ['Direction', checkout.selectedConceptName],
+        ['Website type', checkout.websiteType],
+        ['Functions', featureList],
+        ['Package', checkout.price.label],
+      ]
+        .map(
+          ([label, value]) => `
+        <div>
+          <dt class="text-fg-muted">${escapeHtml(label)}</dt>
+          <dd class="mt-1 text-fg-soft">${escapeHtml(value)}</dd>
+        </div>`,
+        )
+        .join('');
+    }
+
+    if (totals) {
+      if (checkout.price.requiresQuote) {
+        totals.innerHTML = `
+          <p class="font-display text-h3 text-fg">Quote required</p>
+          <p class="mt-1 text-small text-fg-muted">
+            Custom portals and web apps are priced after a short scope review — we never invent a fixed price here.
+          </p>`;
+      } else {
+        const depositNote =
+          checkout.price.depositPercent < 100
+            ? `Deposit (${checkout.price.depositPercent}%)`
+            : 'Amount due';
+        totals.innerHTML = `
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p class="text-small text-fg-muted">Package total</p>
+              <p class="font-display text-h3 text-fg">${escapeHtml(checkout.formatted.amount)}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-small text-fg-muted">${escapeHtml(depositNote)}</p>
+              <p class="font-display text-h3 text-accent">${escapeHtml(checkout.formatted.payable)}</p>
+            </div>
+          </div>`;
+      }
+    }
+
+    if (after) after.textContent = checkout.afterPaymentNote;
+  }
+
+  function fillForm(checkout: CheckoutSummary, briefBusinessName?: string) {
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    if (!form) return;
+    const set = (name: string, value: string | null | undefined) => {
+      const el = form.querySelector(`[name="${name}"]`);
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement
+      ) {
+        el.value = value || '';
+      }
+    };
+    set('fullName', checkout.contact.fullName);
+    set('email', checkout.contact.email);
+    set('phone', checkout.contact.phone);
+    set(
+      'businessName',
+      checkout.contact.businessName || briefBusinessName || '',
+    );
+    set('preferredTiming', checkout.contact.preferredTiming);
+    set('note', checkout.contact.note);
+  }
+
+  function showNextActions(checkout: CheckoutSummary) {
+    const wrap = document.querySelector('[data-next-actions]');
+    const heading = document.querySelector('[data-next-heading]');
+    const blurb = document.querySelector('[data-next-blurb]');
+    const quoteCta = document.querySelector<HTMLAnchorElement>('[data-quote-cta]');
+    const payCta = document.querySelector<HTMLButtonElement>('[data-pay-cta]');
+
+    wrap?.classList.remove('hidden');
+
+    if (checkout.checkoutMode === 'quote') {
+      if (heading) heading.textContent = 'Request a final quote';
+      if (blurb) {
+        blurb.textContent =
+          'Your contact details and brief are saved. Send a quote request and our team will confirm scope and pricing.';
+      }
+      quoteCta?.classList.remove('hidden');
+      payCta?.classList.add('hidden');
+      if (quoteCta) {
+        const email = quoteCta.dataset.quoteEmail || '';
+        const subject = encodeURIComponent(
+          `Design Studio quote request — ${checkout.publicReference}`,
+        );
+        const body = encodeURIComponent(
+          [
+            `Project: ${checkout.publicReference}`,
+            `Direction: ${checkout.selectedConceptName}`,
+            `Website type: ${checkout.websiteType}`,
+            `Name: ${checkout.contact.fullName || ''}`,
+            `Email: ${checkout.contact.email || ''}`,
+            `Phone: ${checkout.contact.phone || ''}`,
+            '',
+            'Please send a final quote for this custom scope.',
+          ].join('\n'),
+        );
+        quoteCta.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      }
+    } else {
+      if (heading) heading.textContent = 'Ready for payment';
+      if (blurb) {
+        blurb.textContent = checkout.hasContact
+          ? `Server total: ${checkout.formatted.payable}. You will be redirected to PayFast sandbox to pay securely. This page never marks payment as paid — only a verified PayFast notification does.`
+          : 'Save your contact details above, then continue to payment.';
+      }
+      quoteCta?.classList.add('hidden');
+      payCta?.classList.remove('hidden');
+      if (payCta) {
+        payCta.disabled = !checkout.hasContact;
+        payCta.title = checkout.hasContact
+          ? 'Continue to PayFast sandbox checkout'
+          : 'Save contact details first';
+      }
+    }
+  }
+
+  async function main() {
+    const subtitle = document.querySelector('[data-contact-subtitle]');
+    const errorEl = document.querySelector('[data-contact-error]');
+    const successEl = document.querySelector('[data-contact-success]');
+    const ready = document.querySelector('[data-contact-ready]');
+    const nameEl = document.querySelector('[data-contact-concept-name]');
+    const blurbEl = document.querySelector('[data-contact-concept-blurb]');
+    const backBtn = document.querySelector<HTMLAnchorElement>('[data-back-results]');
+    const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+    const submitBtn = document.querySelector<HTMLButtonElement>('[data-contact-submit]');
+    const payCta = document.querySelector<HTMLButtonElement>('[data-pay-cta]');
+    const session = loadProjectSession();
+
+    if (!session?.projectId || !session.accessToken) {
+      if (subtitle) subtitle.textContent = 'No Design Studio project found in this browser session.';
+      if (errorEl) {
+        errorEl.textContent = 'Return to the wizard to create a project, then select a direction.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (backBtn) {
+      const prefix = backBtn.dataset.resultsPrefix || '/design-your-website/results';
+      backBtn.href = `${prefix}/${encodeURIComponent(session.projectId)}`;
+    }
+
+    let checkout: CheckoutSummary;
+
+    try {
+      checkout = await fetchCheckoutSummary(session.projectId, session.accessToken);
+    } catch (error) {
+      if (subtitle) subtitle.textContent = 'Could not load checkout.';
+      if (errorEl) {
+        errorEl.textContent =
+          error instanceof Error
+            ? error.message
+            : 'Choose a website direction before confirming your project.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    if (subtitle) {
+      subtitle.textContent = `Project ${checkout.publicReference}`;
+    }
+    if (nameEl) nameEl.textContent = checkout.selectedConceptName;
+    if (blurbEl) blurbEl.textContent = checkout.selectedConceptBlurb;
+    renderCheckout(checkout);
+    fillForm(checkout);
+    ready?.classList.remove('hidden');
+    if (checkout.hasContact) showNextActions(checkout);
+
+    payCta?.addEventListener('click', async () => {
+      if (!payCta || payCta.disabled) return;
+      errorEl?.classList.add('hidden');
+      payCta.disabled = true;
+      const previous = payCta.textContent;
+      payCta.textContent = 'Redirecting to PayFast…';
+      try {
+        const payment = await createDesignStudioPayment(
+          session.projectId,
+          session.accessToken,
+        );
+        submitPayfastForm(payment.processUrl, payment.fields);
+      } catch (error) {
+        payCta.disabled = false;
+        payCta.textContent = previous || 'Proceed to payment';
+        if (errorEl) {
+          errorEl.textContent =
+            error instanceof Error ? error.message : 'Unable to start PayFast checkout.';
+          errorEl.classList.remove('hidden');
+        }
+      }
+    });
+
+    form?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (!form || !submitBtn) return;
+      successEl?.classList.add('hidden');
+      errorEl?.classList.add('hidden');
+
+      const fd = new FormData(form);
+      submitBtn.disabled = true;
+      const previous = submitBtn.textContent;
+      submitBtn.textContent = 'Saving…';
+
+      try {
+        const result = await saveDesignStudioContact(session.projectId, session.accessToken, {
+          fullName: String(fd.get('fullName') || ''),
+          email: String(fd.get('email') || ''),
+          phone: String(fd.get('phone') || ''),
+          businessName: String(fd.get('businessName') || ''),
+          preferredTiming: String(fd.get('preferredTiming') || ''),
+          note: String(fd.get('note') || ''),
+        });
+        checkout = result.checkout;
+        renderCheckout(checkout);
+        fillForm(checkout);
+        showNextActions(checkout);
+        if (successEl) {
+          successEl.textContent = result.message;
+          successEl.classList.remove('hidden');
+        }
+      } catch (error) {
+        if (errorEl) {
+          errorEl.textContent =
+            error instanceof Error ? error.message : 'Unable to save contact details.';
+          errorEl.classList.remove('hidden');
+        }
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = previous || 'Save contact details';
+      }
+    });
+  }
+
+  void main();
+</script>

@@ -1,0 +1,23 @@
+---
+interface Props {
+  id?: string;
+  class?: string;
+  padding?: 'default' | 'sm' | 'none';
+  hover?: boolean;
+}
+
+const { id, class: className = '', padding = 'default', hover = true } = Astro.props;
+
+const paddingClasses = {
+  default: 'p-6',
+  sm: 'p-4',
+  none: '',
+};
+---
+
+<div
+  id={id}
+  class={`surface-card ${paddingClasses[padding]} ${hover ? 'transition-shadow hover:shadow-elevated' : ''} ${className}`}
+>
+  <slot />
+</div>

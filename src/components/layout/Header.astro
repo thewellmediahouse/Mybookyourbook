@@ -1,0 +1,69 @@
+---
+import { siteConfig } from '@/config/site';
+import { mainNavigation, headerCta } from '@/config/navigation';
+import { pagesConfig } from '@/config/pages';
+import { raster } from '@/assets/raster';
+import BrandLogo from '@/components/ui/BrandLogo.astro';
+import Navigation from '@/components/layout/Navigation.astro';
+import MobileNavigation from '@/components/layout/MobileNavigation.astro';
+import Button from '@/components/ui/Button.astro';
+
+const stickyClass = pagesConfig.header.sticky ? 'sticky top-0' : '';
+const logoKey =
+  'logoKey' in pagesConfig.header && pagesConfig.header.logoKey
+    ? pagesConfig.header.logoKey
+    : 'logoWhiteHeader';
+const logoSrc =
+  logoKey === 'wmhLogoWhite' ? raster.brand.wmhLogoWhite : raster.brand.logoWhiteHeader;
+---
+
+<header class={`header-glass ${stickyClass} z-40 border-b`}>
+  <div class="container grid h-16 grid-cols-[auto_1fr_auto] items-center gap-4 lg:h-18">
+    <a href="/" class="flex shrink-0 items-center" aria-label={`${siteConfig.name} home`}>
+      <BrandLogo
+        src={logoSrc}
+        alt={siteConfig.name}
+        width={224}
+        widths={[112, 160, 224]}
+        sizes="(max-width: 640px) 85px, (max-width: 1024px) 160px, 224px"
+        class="header-logo h-9 w-auto max-w-[11rem] object-contain object-left sm:max-w-[12.5rem] lg:h-11 lg:max-w-[14rem]"
+        loading="eager"
+        fetchpriority="high"
+      />
+    </a>
+
+    <Navigation items={mainNavigation} class="hidden justify-center lg:flex" />
+
+    <div class="flex items-center justify-end gap-2">
+      {
+        pagesConfig.header.ctaEnabled && (
+          <Button href={headerCta.href} variant="accent" size="sm" class="hidden sm:inline-flex">
+            {headerCta.label}
+          </Button>
+        )
+      }
+      <MobileNavigation items={mainNavigation} />
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector('header');
+  if (header) {
+    const toggle = header.querySelector<HTMLButtonElement>('[data-mobile-nav-toggle]');
+    const panel = header.querySelector<HTMLElement>('[data-mobile-nav-panel]');
+
+    toggle?.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel?.classList.toggle('hidden', expanded);
+    });
+
+    panel?.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle?.setAttribute('aria-expanded', 'false');
+        panel?.classList.add('hidden');
+      });
+    });
+  }
+</script>

@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+.astro/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime / cache
+.cache/
+.turbo/
+*.tsbuildinfo
+
+# Testing & coverage
+coverage/
+.nyc_output/
+.lighthouse/
+
+# Scratch & local experiments
+_scratch/
+*.local
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+Desktop.ini
+
+# Editors
+.idea/
+*.swp
+*.swo
+*~
+
+# Optional: uncomment if you do not commit editor settings
+# .vscode/
+
+# Cloudflare (if using Wrangler locally)
+.wrangler/
+.dev.vars
+
+# Large local asset drops (keep curated files in public/)
+# Uncomment if you import from Downloads during dev only
+# /public/_incoming/

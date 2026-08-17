@@ -1,0 +1,48 @@
+---
+import { designStudioConfig } from '@/config/designStudio';
+
+interface Props {
+  currentStep: number;
+}
+
+const { currentStep } = Astro.props;
+const steps = designStudioConfig.wizardSteps;
+const total = steps.length;
+---
+
+<nav class="design-studio-progress" aria-label="Wizard progress">
+  <div class="mb-3 flex items-center justify-between gap-3">
+    <p class="text-small text-fg-muted">
+      Step <span data-progress-current>{currentStep}</span> of {total}
+    </p>
+    <p class="text-small font-medium text-accent" data-progress-label>
+      {steps[currentStep - 1]?.label ?? ''}
+    </p>
+  </div>
+  <ol class="flex gap-1.5" role="list">
+    {
+      steps.map((step, index) => {
+        const stepNumber = index + 1;
+        const isCurrent = stepNumber === currentStep;
+        const isComplete = stepNumber < currentStep;
+        return (
+          <li class="min-w-0 flex-1">
+            <span
+              class:list={[
+                'block h-1.5 rounded-full transition-colors',
+                isCurrent || isComplete ? 'bg-accent' : 'bg-[var(--brand-border-subtle)]',
+              ]}
+              data-progress-bar={stepNumber}
+              aria-current={isCurrent ? 'step' : undefined}
+              title={step.label}
+            />
+            <span class="sr-only">
+              {step.label}
+              {isCurrent ? ' (current)' : isComplete ? ' (completed)' : ''}
+            </span>
+          </li>
+        );
+      })
+    }
+  </ol>
+</nav>

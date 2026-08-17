@@ -1,0 +1,39 @@
+---
+import type { ClientBrand } from '@/config/content';
+
+interface Props {
+  heading: string;
+  brands: ClientBrand[];
+}
+
+const { heading, brands } = Astro.props;
+---
+
+<section class="client-logos border-y border-section py-section-sm" aria-label="Trusted brands">
+  <div class="container">
+    <p class="scroll-reveal mb-8 text-center text-small font-medium uppercase tracking-[0.14em] text-fg-muted">
+      {heading}
+    </p>
+    <ul class="client-logos__list scroll-reveal flex flex-wrap items-center justify-center gap-x-8 gap-y-4">
+      {
+        brands.map((brand) => (
+          <li class="client-logos__item text-sm font-bold uppercase tracking-[0.12em] text-fg-muted">
+            {brand.name}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .client-logos__item {
+    opacity: 0.55;
+    filter: grayscale(1);
+    transition: opacity 0.25s ease;
+  }
+
+  .client-logos__item:hover {
+    opacity: 0.85;
+  }
+</style>

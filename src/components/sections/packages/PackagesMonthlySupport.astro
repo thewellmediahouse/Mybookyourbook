@@ -1,0 +1,357 @@
+---
+import type { ServicePackages, TierSummary } from '@/config/packages';
+import { raster } from '@/assets/raster';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import {
+  buildPackageAccentStyleAttribute,
+  getFeaturedTierLabel,
+  getTierIcon,
+  isRecommendedTier,
+} from '@/utils/packageAccent';
+
+interface Props {
+  label: string;
+  heading: string;
+  subheading: string;
+  servicePackages: ServicePackages[];
+  tierSummaries?: TierSummary[];
+  class?: string;
+}
+
+const {
+  label,
+  heading,
+  subheading,
+  servicePackages,
+  tierSummaries = [],
+  class: className = '',
+} = Astro.props;
+
+const featuredLabel = getFeaturedTierLabel();
+const tierOrder = ['Essential', 'Basic', 'Advance'] as const;
+
+const tierGroups = tierOrder.map((tierName) => {
+  const summary = tierSummaries.find((entry) => entry.name === tierName);
+  const cards = servicePackages.flatMap((group) => {
+    const tier = group.tiers.find((entry) => entry.name === tierName);
+    if (!tier) return [];
+    return [{ group, tier }];
+  });
+  return { tierName, summary, cards };
+});
+
+function thumbnailSrc(key?: ServicePackages['thumbnailKey']) {
+  if (!key) return undefined;
+  return raster.packages[key];
+}
+---
+
+<section id="monthly-support" class:list={['packages-section', 'packages-monthly', className]} aria-labelledby="monthly-support-heading">
+  <div class="container">
+    <header class="packages-monthly__header scroll-reveal">
+      <p class="packages-eyebrow">{label}</p>
+      <h2 id="monthly-support-heading" class="packages-monthly__heading">{heading}</h2>
+      <p class="packages-monthly__subheading">{subheading}</p>
+    </header>
+
+    <div class="pricing-tiers">
+      {
+        tierGroups.map(({ tierName, summary, cards }) => (
+          <section
+            class:list={[
+              'pricing-tier scroll-reveal',
+              tierName === 'Basic' && 'pricing-tier--featured',
+            ]}
+            aria-labelledby={`tier-${tierName.toLowerCase()}-heading`}
+          >
+            <header class="pricing-tier__header">
+              {tierName === 'Basic' && (
+                <span class="pricing-tier__badge">{featuredLabel}</span>
+              )}
+              <h3 id={`tier-${tierName.toLowerCase()}-heading`} class="pricing-tier__name">
+                {tierName}
+              </h3>
+              {summary?.label && <p class="pricing-tier__label">{summary.label}</p>}
+              {summary?.tagline && <p class="pricing-tier__tagline">{summary.tagline}</p>}
+            </header>
+
+            <div class="pricing-tier__grid">
+              {cards.map(({ group, tier }) => {
+                const recommended = isRecommendedTier(group.recommendedTierId, tier.id);
+                const tierIcon = getTierIcon(tier.icon);
+                const thumb = thumbnailSrc(group.thumbnailKey);
+                // Keep service deep-links (#content-creation, etc.) on the Essential row.
+                const serviceAnchor = tierName === 'Essential' ? group.serviceId : undefined;
+
+                return (
+                  <article
+                    id={serviceAnchor}
+                    class:list={[
+                      'pricing-tier__card package-tier-group package-tier-card',
+                      recommended && 'pricing-tier__card--featured package-tier-card--featured',
+                    ]}
+                    style={buildPackageAccentStyleAttribute(group.accent)}
+                  >
+                    <header class="pricing-tier__card-head">
+                      <div class="pricing-tier__service">
+                        {group.categoryLetter && (
+                          <span class="pricing-tier__letter">{group.categoryLetter}</span>
+                        )}
+                        <div>
+                          <h4 class="pricing-tier__service-name">{group.serviceName}</h4>
+                          {group.summary && (
+                            <p class="pricing-tier__service-summary">{group.summary}</p>
+                          )}
+                        </div>
+                      </div>
+                      {thumb && (
+                        <OptimizedImage
+                          class="pricing-tier__thumb"
+                          src={thumb}
+                          alt=""
+                          width={120}
+                          height={90}
+                          widths={[120, 240]}
+                          sizes="120px"
+                          loading="lazy"
+                        />
+                      )}
+                    </header>
+
+                    <p class="pricing-tier__price">
+                      {tier.price}
+                      {tier.period && <span>/ {tier.period}</span>}
+                    </p>
+
+                    <ul class="pricing-tier__features">
+                      {tier.features.map((feature) => (
+                        <li>{feature}</li>
+                      ))}
+                    </ul>
+
+                    {tierIcon && (
+                      <span class="pricing-tier__icon" aria-hidden="true">{tierIcon}</span>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .packages-monthly__header {
+    max-width: 44rem;
+    margin-bottom: clamp(2rem, 4vw, 3rem);
+  }
+
+  .packages-monthly__heading {
+    margin: 0.5rem 0 0.75rem;
+    font-size: clamp(2rem, 4vw, 3rem);
+  }
+
+  .packages-monthly__subheading {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: #c8cfdd;
+  }
+
+  .pricing-tiers {
+    display: grid;
+    gap: clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .pricing-tier__header {
+    position: relative;
+    max-width: 40rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .pricing-tier--featured .pricing-tier__header {
+    padding-top: 0.25rem;
+  }
+
+  .pricing-tier__badge {
+    display: inline-block;
+    margin-bottom: 0.5rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #111;
+    background: linear-gradient(135deg, #d6a94a, #f0c96f);
+  }
+
+  .pricing-tier__name {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 3vw, 2.25rem);
+    font-weight: 700;
+    color: #f0c96f;
+  }
+
+  .pricing-tier__label {
+    margin: 0.35rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #f6f2eb;
+  }
+
+  .pricing-tier__tagline {
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: #c8cfdd;
+  }
+
+  .pricing-tier__grid {
+    display: grid;
+    gap: 1rem;
+  }
+
+  @media (min-width: 900px) {
+    .pricing-tier__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.125rem;
+      align-items: stretch;
+    }
+  }
+
+  .pricing-tier__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    padding: 1.35rem 1.25rem 2.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid rgb(214 169 74 / 0.28);
+    background: rgb(6 14 28 / 0.92);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .pricing-tier__card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgb(0 0 0 / 0.32);
+  }
+
+  .pricing-tier__card--featured {
+    border-color: var(--pkg-accent-border);
+    box-shadow:
+      var(--shadow-card),
+      0 0 36px color-mix(in oklab, var(--pkg-accent) 24%, transparent);
+  }
+
+  .pricing-tier__card-head {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid rgb(214 169 74 / 0.15);
+  }
+
+  .pricing-tier__service {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    min-width: 0;
+  }
+
+  .pricing-tier__letter {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgb(214 169 74 / 0.4);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #f0c96f;
+  }
+
+  .pricing-tier__service-name {
+    margin: 0 0 0.3rem;
+    font-size: 1.0625rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  .pricing-tier__service-summary {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #c8cfdd;
+  }
+
+  .pricing-tier__thumb,
+  .pricing-tier__card :global(.pricing-tier__thumb) {
+    flex-shrink: 0;
+    width: 4.5rem;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(214 169 74 / 0.25);
+  }
+
+  .pricing-tier__price {
+    margin: 0 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 2.5vw, 2rem);
+    font-weight: 700;
+    color: #f6f2eb;
+  }
+
+  .pricing-tier__price span {
+    font-family: var(--font-sans);
+    font-size: 0.9375rem;
+    font-weight: 400;
+    color: #c8cfdd;
+  }
+
+  .pricing-tier__features {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.625rem;
+    flex: 1;
+  }
+
+  .pricing-tier__features li {
+    position: relative;
+    padding-left: 1rem;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #c8cfdd;
+  }
+
+  .pricing-tier__features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.45rem;
+    width: 0.35rem;
+    height: 0.35rem;
+    border-radius: 999px;
+    background: var(--pkg-accent);
+  }
+
+  .pricing-tier__icon {
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 1.25rem;
+    color: rgb(214 169 74 / 0.35);
+  }
+</style>

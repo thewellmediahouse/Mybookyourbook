@@ -1,0 +1,51 @@
+---
+import Button from '@/components/ui/Button.astro';
+import { designStudioConfig } from '@/config/designStudio';
+
+interface Props {
+  compact?: boolean;
+}
+
+const { compact = false } = Astro.props;
+const { branding, landing, createRoute } = designStudioConfig;
+---
+
+<section class:list={['relative overflow-hidden', compact ? 'py-section-sm' : 'py-section']}>
+  <div
+    class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(30,167,255,0.14),transparent_55%),radial-gradient(ellipse_50%_40%_at_90%_10%,rgba(217,164,65,0.08),transparent_50%)]"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="container relative">
+    <div class="mx-auto max-w-3xl text-center">
+      <p class="text-small font-medium tracking-[0.2em] text-accent uppercase">
+        {branding.eyebrow}
+      </p>
+      <h1 class="mt-4 font-display text-h1 text-fg sm:text-display">
+        {landing.heading}
+      </h1>
+      <p class="mt-5 text-body text-fg-soft sm:text-lg">
+        {landing.paragraph}
+      </p>
+      <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Button href={createRoute} variant="accent" size="lg">
+          {landing.primaryCta}
+        </Button>
+        <p class="w-full text-small text-fg-muted sm:w-auto sm:pl-2">
+          {branding.tagline}
+        </p>
+      </div>
+
+      <ul class="mt-10 flex flex-wrap items-center justify-center gap-2" role="list">
+        {
+          landing.benefits.map((benefit) => (
+            <li class="rounded-full border border-[var(--brand-border-subtle)] bg-[var(--brand-surface)] px-4 py-2 text-small text-fg-soft">
+              {benefit}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>

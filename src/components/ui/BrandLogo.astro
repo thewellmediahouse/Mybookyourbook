@@ -1,0 +1,36 @@
+---
+import { Picture } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  class?: string;
+  /** Target display width in CSS pixels (2× variant generated for retina by default). */
+  width: number;
+  widths?: number[];
+  sizes?: string;
+  loading?: 'lazy' | 'eager';
+  fetchpriority?: 'high' | 'low' | 'auto';
+}
+
+const { src, alt, class: className, width, loading = 'lazy', fetchpriority } = Astro.props;
+const height = Math.round(width * (src.height / src.width));
+const widths = Astro.props.widths ?? [width, Math.round(width * 1.5), width * 2];
+const sizes = Astro.props.sizes ?? `${width}px`;
+---
+
+<Picture
+  src={src}
+  alt={alt}
+  formats={['webp']}
+  fallbackFormat="webp"
+  widths={widths}
+  sizes={sizes}
+  width={width}
+  height={height}
+  fit="contain"
+  class:list={['object-contain', className]}
+  loading={loading}
+  fetchpriority={fetchpriority}
+/>

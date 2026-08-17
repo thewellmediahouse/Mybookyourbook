@@ -1,0 +1,63 @@
+---
+interface Props {
+  title?: string;
+  times?: readonly string[];
+  confirmLabel?: string;
+  class?: string;
+}
+
+const {
+  title = 'Pick a time that works',
+  times = ['9:00 AM', '11:00 AM', '2:00 PM', '4:00 PM'],
+  confirmLabel = 'Confirm selection',
+  class: className = '',
+} = Astro.props;
+
+const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+const dates = [12, 13, 14, 15, 16];
+---
+
+<div class={`surface-panel p-6 ${className}`} aria-label="Booking calendar preview">
+  <h3 class="text-h4 font-semibold text-fg">{title}</h3>
+  <p class="mt-2 text-small text-fg-muted">Preview only — live booking integration can be added later.</p>
+
+  <div class="mt-6 grid grid-cols-5 gap-2">
+    {
+      days.map((day, index) => (
+        <button
+          type="button"
+          class="surface-card px-2 py-3 text-center text-small hover:border-accent"
+          disabled
+        >
+          <span class="block text-xs text-fg-muted">{day}</span>
+          <span class="mt-1 block font-semibold text-fg">{dates[index]}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="mt-6 flex flex-wrap gap-2">
+    {
+      times.map((time, index) => (
+        <button
+          type="button"
+          class:list={[
+            'rounded-full px-4 py-2 text-small font-medium',
+            index === 1 ? 'btn-accent' : 'surface-card text-fg-soft',
+          ]}
+          disabled
+        >
+          {time}
+        </button>
+      ))
+    }
+  </div>
+
+  <button
+    type="button"
+    class="btn-accent mt-6 w-full px-4 py-3 font-semibold opacity-90"
+    disabled
+  >
+    {confirmLabel}
+  </button>
+</div>

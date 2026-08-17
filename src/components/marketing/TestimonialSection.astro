@@ -1,0 +1,72 @@
+---
+import type { Testimonial } from '@/config/testimonials';
+import Card from '@/components/ui/Card.astro';
+import SectionWrapper from '@/components/utility/SectionWrapper.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import { isImageMetadata } from '@/utils/media';
+
+interface Props {
+  heading?: string;
+  subheading?: string;
+  testimonials: Testimonial[];
+}
+
+const {
+  heading = 'What clients say',
+  subheading,
+  testimonials,
+} = Astro.props;
+---
+
+<SectionWrapper background="white">
+  <div class="max-w-3xl">
+    <h2 class="text-h2 font-bold text-fg">{heading}</h2>
+    {subheading && <p class="mt-4 text-fg-soft">{subheading}</p>}
+  </div>
+
+  <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {
+      testimonials.map((item) => (
+        <Card>
+          <blockquote>
+            {
+              item.avatar &&
+                (isImageMetadata(item.avatar) ? (
+                  <OptimizedImage
+                    src={item.avatar}
+                    alt={item.avatarAlt ?? item.author}
+                    width={80}
+                    height={80}
+                    widths={[80, 160]}
+                    sizes="80px"
+                    class="mb-4 h-20 w-20 rounded-full object-cover ring-2 ring-accent/30"
+                    loading="lazy"
+                  />
+                ) : (
+                  <img
+                    src={item.avatar}
+                    alt={item.avatarAlt ?? item.author}
+                    width="128"
+                    height="128"
+                    class="mb-4 h-20 w-20 rounded-full object-cover ring-2 ring-accent/30"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ))
+            }
+            <p class="text-fg-soft">&ldquo;{item.quote}&rdquo;</p>
+            <footer class="mt-4 border-t border-white/10 pt-4">
+              <cite class="not-italic">
+                <span class="font-semibold text-fg">{item.author}</span>
+                <span class="block text-small text-fg-muted">
+                  {item.role}
+                  {item.company ? `, ${item.company}` : ''}
+                </span>
+              </cite>
+            </footer>
+          </blockquote>
+        </Card>
+      ))
+    }
+  </div>
+</SectionWrapper>

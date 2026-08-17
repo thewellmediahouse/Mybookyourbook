@@ -1,0 +1,93 @@
+---
+import type { Testimonial } from '@/config/testimonials';
+import type { ImageMetadata } from 'astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  testimonials: Testimonial[];
+}
+
+const { eyebrow, heading, testimonials } = Astro.props;
+
+function isImageMetadata(value: unknown): value is ImageMetadata {
+  return typeof value === 'object' && value !== null && 'src' in value && 'width' in value && 'height' in value;
+}
+---
+
+<section class="home-testimonials py-section" aria-label="Client testimonials">
+  <div class="container">
+    <div class="scroll-reveal mx-auto mb-12 max-w-3xl text-center">
+      {
+        eyebrow && (
+          <p class="mb-3 text-small font-semibold uppercase tracking-[0.14em] text-accent">
+            {eyebrow}
+          </p>
+        )
+      }
+      <h2 class="text-h2 font-bold text-fg">{heading}</h2>
+    </div>
+    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        testimonials.map((item, index) => (
+          <li
+            class="premium-card home-testimonial-card scroll-reveal p-6"
+            style={`--reveal-delay: ${index * 80}ms`}
+          >
+            <blockquote>
+              {
+                item.avatar &&
+                  (isImageMetadata(item.avatar) ? (
+                    <OptimizedImage
+                      src={item.avatar}
+                      alt={item.avatarAlt ?? item.author}
+                      width={80}
+                      height={80}
+                      widths={[80, 160]}
+                      sizes="80px"
+                      class="mb-4 h-20 w-20 rounded-full object-cover ring-2 ring-accent/30"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <img
+                      src={item.avatar}
+                      alt={item.avatarAlt ?? item.author}
+                      width="128"
+                      height="128"
+                      class="mb-4 h-20 w-20 rounded-full object-cover ring-2 ring-accent/30"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ))
+              }
+              <p class="text-fg-soft leading-relaxed">&ldquo;{item.quote}&rdquo;</p>
+              <footer class="mt-5 border-t border-white/10 pt-4">
+                <cite class="not-italic">
+                  <span class="font-semibold text-fg">{item.author}</span>
+                  <span class="mt-1 block text-small text-fg-muted">
+                    {item.role}
+                    {item.company ? `, ${item.company}` : ''}
+                  </span>
+                </cite>
+              </footer>
+            </blockquote>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .home-testimonial-card {
+    transition:
+      transform 0.35s ease,
+      border-color 0.35s ease;
+  }
+
+  .home-testimonial-card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(224 169 56 / 0.4);
+  }
+</style>

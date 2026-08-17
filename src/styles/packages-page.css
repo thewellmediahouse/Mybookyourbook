@@ -1,0 +1,192 @@
+/* Pricing page — deep navy luxury theme */
+
+.packages-page {
+  --wmh-bg: #020817;
+  --wmh-bg-2: #071428;
+  --wmh-navy: #0a1628;
+  --wmh-card: rgb(8 18 36 / 0.92);
+  --wmh-card-2: rgb(6 14 28 / 0.95);
+  --wmh-border: rgb(214 169 74 / 0.32);
+  --wmh-gold: #d6a94a;
+  --wmh-gold-2: #f0c96f;
+  --wmh-text: #f6f2eb;
+  --wmh-muted: #b8c0d0;
+
+  display: flex;
+  flex-direction: column;
+
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgb(15 35 70 / 0.45), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(8 20 45 / 0.5), transparent 50%),
+    linear-gradient(180deg, #020817 0%, #030d1c 40%, #020817 100%);
+  color: var(--wmh-text);
+}
+
+@media (min-width: 1024px) {
+  .packages-page__section--hero {
+    order: 1;
+  }
+
+  .packages-page__section--pricing-logic {
+    order: 2;
+  }
+
+  .packages-page__section--ala-carte {
+    order: 3;
+  }
+
+  .packages-page__section--launch-pack {
+    order: 4;
+  }
+
+  .packages-page__section--monthly-support {
+    order: 5;
+  }
+
+  .packages-page__section--cta {
+    order: 6;
+  }
+}
+
+.packages-page .packages-section {
+  padding-block: clamp(2.75rem, 6vw, 5rem);
+  position: relative;
+}
+
+.packages-page .packages-section + .packages-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 72rem);
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(214 169 74 / 0.28) 20%,
+    rgb(214 169 74 / 0.45) 50%,
+    rgb(214 169 74 / 0.28) 80%,
+    transparent
+  );
+  box-shadow: 0 0 16px rgb(214 169 74 / 0.1);
+}
+
+.packages-eyebrow {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--wmh-gold);
+}
+
+.packages-page h1,
+.packages-page h2,
+.packages-page h3,
+.packages-page h4 {
+  color: var(--wmh-text);
+}
+
+.packages-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.2;
+  padding: 0.875rem 1.5rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+  text-decoration: none;
+}
+
+.packages-btn:hover {
+  transform: translateY(-2px);
+}
+
+.packages-btn--gold {
+  border: none;
+  color: #111;
+  background: linear-gradient(135deg, var(--wmh-gold), var(--wmh-gold-2));
+  box-shadow: 0 8px 24px rgb(214 169 74 / 0.25);
+}
+
+.packages-btn--outline {
+  border: 1px solid rgb(214 169 74 / 0.55);
+  color: var(--wmh-gold-2);
+  background: rgb(214 169 74 / 0.06);
+}
+
+.packages-btn--outline:hover {
+  background: rgb(214 169 74 / 0.12);
+  box-shadow: 0 0 24px rgb(214 169 74 / 0.12);
+}
+
+.packages-btn__arrow {
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+.packages-panel {
+  border-radius: 1.5rem;
+  border: 1px solid var(--wmh-border);
+  background:
+    linear-gradient(180deg, rgb(8 20 40 / 0.75), rgb(4 12 26 / 0.95)),
+    var(--wmh-card);
+  box-shadow: 0 24px 48px rgb(0 0 0 / 0.45);
+}
+
+.packages-page img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Form overrides inside packages CTA */
+.packages-cta__form-wrap label {
+  color: var(--wmh-muted) !important;
+  font-size: 0.875rem;
+}
+
+.packages-cta__form-wrap input:not([type='hidden']),
+.packages-cta__form-wrap select,
+.packages-cta__form-wrap textarea {
+  width: 100%;
+  border-radius: 0.75rem !important;
+  border: 1px solid rgb(214 169 74 / 0.35) !important;
+  background: rgb(4 12 26 / 0.85) !important;
+  color: var(--wmh-text) !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.packages-cta__form-wrap input:focus,
+.packages-cta__form-wrap select:focus,
+.packages-cta__form-wrap textarea:focus {
+  border-color: rgb(214 169 74 / 0.65) !important;
+  box-shadow: 0 0 0 2px rgb(214 169 74 / 0.15) !important;
+  outline: none;
+}
+
+.packages-cta__form-wrap button[type='submit'] {
+  width: 100%;
+  margin-top: 0.5rem;
+  border: none;
+  border-radius: 999px;
+  padding: 1rem 1.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #111;
+  background: linear-gradient(135deg, var(--wmh-gold), var(--wmh-gold-2));
+  box-shadow: 0 8px 24px rgb(214 169 74 / 0.28);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.packages-cta__form-wrap button[type='submit']:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgb(214 169 74 / 0.35);
+}

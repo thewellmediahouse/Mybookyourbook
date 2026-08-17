@@ -1,0 +1,45 @@
+---
+import Card from '@/components/ui/Card.astro';
+import SectionWrapper from '@/components/utility/SectionWrapper.astro';
+
+interface Feature {
+  title: string;
+  description: string;
+  icon?: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  subheading?: string;
+  features: Feature[];
+}
+
+const { eyebrow, heading, subheading, features } = Astro.props;
+---
+
+<SectionWrapper background="neutral">
+  <div class="max-w-3xl">
+    {eyebrow && (
+      <p class="text-small font-semibold uppercase tracking-wide text-accent">{eyebrow}</p>
+    )}
+    <h2 class="mt-2 text-h2 font-bold text-fg">{heading}</h2>
+    {subheading && <p class="mt-4 text-fg-soft">{subheading}</p>}
+  </div>
+
+  <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    {
+      features.map((feature) => (
+        <Card>
+          {feature.icon && (
+            <div class="mb-4 flex h-10 w-10 items-center justify-center rounded-button bg-accent/10 text-accent" aria-hidden="true">
+              <span class="text-lg">{feature.icon}</span>
+            </div>
+          )}
+          <h3 class="text-h4 font-semibold text-fg">{feature.title}</h3>
+          <p class="mt-2 text-fg-soft">{feature.description}</p>
+        </Card>
+      ))
+    }
+  </div>
+</SectionWrapper>

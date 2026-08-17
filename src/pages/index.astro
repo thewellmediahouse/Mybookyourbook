@@ -1,0 +1,133 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import HomeHero from '@/components/sections/HomeHero.astro';
+import MediaImpactBanner from '@/components/sections/MediaImpactBanner.astro';
+import ClientShowcase from '@/components/sections/ClientShowcase.astro';
+import ClientLogoMarquee from '@/components/sections/ClientLogoMarquee.astro';
+import ConsultationProcessSection from '@/components/sections/ConsultationProcessSection.astro';
+import InteractiveExperiences from '@/components/sections/InteractiveExperiences.astro';
+import ServicesPreview from '@/components/sections/ServicesPreview.astro';
+import ClientLogos from '@/components/sections/ClientLogos.astro';
+import FeaturedWork from '@/components/sections/FeaturedWork.astro';
+import Differentiators from '@/components/sections/Differentiators.astro';
+import HomeTestimonials from '@/components/sections/HomeTestimonials.astro';
+import CinematicCTA from '@/components/sections/CinematicCTA.astro';
+import { siteConfig } from '@/config/site';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { getFeaturedItems } from '@/config/portfolio';
+import { testimonialsConfig } from '@/config/testimonials';
+import { raster } from '@/assets/raster';
+import { seoConfig } from '@/config/seo';
+
+const sections = pagesConfig.sections.home;
+const seo = seoConfig.pages.home;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/">
+  {
+    sections.hero && (
+      <HomeHero
+        eyebrow={siteConfig.positioning}
+        stats={sections.statsStrip ? contentConfig.stats : undefined}
+        {...contentConfig.home.hero}
+      />
+    )
+  }
+
+  {
+    sections.mediaImpactBanner && <MediaImpactBanner />
+  }
+
+  {
+    sections.interactiveExperiences && (
+      <InteractiveExperiences {...contentConfig.home.interactiveExperiences} />
+    )
+  }
+
+  {
+    sections.clientShowcase && (
+      <ClientShowcase
+        eyebrow={contentConfig.home.clientShowcase.eyebrow}
+        heading={contentConfig.home.clientShowcase.heading}
+        headingHighlight={contentConfig.home.clientShowcase.headingHighlight}
+        subheading={contentConfig.home.clientShowcase.subheading}
+        items={contentConfig.home.clientShowcase.items}
+      />
+    )
+  }
+
+  {
+    sections.clientLogoMarquee && (
+      <ClientLogoMarquee logos={contentConfig.home.clientLogoMarquee} />
+    )
+  }
+
+  {
+    sections.consultationProcess && (
+      <ConsultationProcessSection {...contentConfig.home.consultationProcess} />
+    )
+  }
+
+  {
+    sections.servicesPreview && (
+      <ServicesPreview
+        eyebrow={contentConfig.home.servicesPreview.eyebrow}
+        heading={contentConfig.home.servicesPreview.heading}
+        subheading={contentConfig.home.servicesPreview.subheading}
+        services={contentConfig.home.servicesPreview.items}
+      />
+    )
+  }
+
+  {
+    sections.clientLogos && (
+      <ClientLogos
+        heading={contentConfig.home.clientLogos.heading}
+        brands={contentConfig.home.clientLogos.brands}
+      />
+    )
+  }
+
+  {
+    sections.featuredWork && (
+      <FeaturedWork
+        eyebrow={contentConfig.home.featuredWork.eyebrow}
+        heading={contentConfig.home.featuredWork.heading}
+        subheading={contentConfig.home.featuredWork.subheading}
+        items={getFeaturedItems()}
+        cta={contentConfig.home.featuredWork.cta}
+      />
+    )
+  }
+
+  {
+    sections.differentiators && (
+      <Differentiators
+        eyebrow={contentConfig.home.differentiators.eyebrow}
+        heading={contentConfig.home.differentiators.heading}
+        paragraph={contentConfig.home.differentiators.paragraph}
+        cards={contentConfig.home.differentiators.cards}
+      />
+    )
+  }
+
+  {
+    sections.testimonials && (
+      <HomeTestimonials
+        eyebrow={contentConfig.home.testimonials.eyebrow}
+        heading={contentConfig.home.testimonials.heading}
+        testimonials={testimonialsConfig}
+      />
+    )
+  }
+
+  {
+    sections.consultationCta && (
+      <CinematicCTA
+        {...contentConfig.home.consultationCta}
+        backgroundImage={raster.backgrounds.ctaGrowth}
+      />
+    )
+  }
+</BaseLayout>

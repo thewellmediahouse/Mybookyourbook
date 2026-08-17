@@ -1,0 +1,23 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PageHeader from '@/components/utility/PageHeader.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  heading: string;
+  headingHighlight?: string;
+  subheading?: string;
+  pathname?: string;
+  ogImage?: string;
+}
+
+const { title, description, heading, headingHighlight, subheading, pathname, ogImage } = Astro.props;
+---
+
+<BaseLayout title={title} description={description} pathname={pathname} ogImage={ogImage}>
+  <PageHeader heading={heading} headingHighlight={headingHighlight} subheading={subheading} />
+  <div class="py-section-sm">
+    <slot />
+  </div>
+</BaseLayout>

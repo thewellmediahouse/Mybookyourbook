@@ -1,0 +1,242 @@
+<div class="portfolio-lightbox" data-portfolio-lightbox hidden>
+  <button type="button" class="portfolio-lightbox__backdrop" data-lightbox-close aria-label="Close image viewer"></button>
+  <div class="portfolio-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button type="button" class="portfolio-lightbox__close" data-lightbox-close aria-label="Close">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path d="M18 6 6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+    <button type="button" class="portfolio-lightbox__nav portfolio-lightbox__nav--prev" data-lightbox-prev aria-label="Previous image">
+      ‹
+    </button>
+    <figure class="portfolio-lightbox__figure">
+      <img class="portfolio-lightbox__image" data-lightbox-image src="" alt="" />
+      <figcaption class="portfolio-lightbox__caption" data-lightbox-caption></figcaption>
+    </figure>
+    <button type="button" class="portfolio-lightbox__nav portfolio-lightbox__nav--next" data-lightbox-next aria-label="Next image">
+      ›
+    </button>
+  </div>
+</div>
+
+<style>
+  .portfolio-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+  }
+
+  .portfolio-lightbox[hidden] {
+    display: none;
+  }
+
+  .portfolio-lightbox__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgb(2 8 23 / 0.92);
+    backdrop-filter: blur(8px);
+    cursor: pointer;
+  }
+
+  .portfolio-lightbox__dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 72rem);
+    max-height: min(92vh, 56rem);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .portfolio-lightbox__figure {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .portfolio-lightbox__image {
+    display: block;
+    width: 100%;
+    max-height: min(78vh, 48rem);
+    object-fit: contain;
+    border-radius: 0.875rem;
+    border: 1px solid rgb(214 169 74 / 0.35);
+    box-shadow: 0 24px 64px rgb(0 0 0 / 0.55);
+  }
+
+  .portfolio-lightbox__caption {
+    margin-top: 0.75rem;
+    text-align: center;
+    font-size: 0.9375rem;
+    color: rgb(255 255 255 / 0.78);
+  }
+
+  .portfolio-lightbox__close {
+    position: absolute;
+    top: -0.25rem;
+    right: 0;
+    transform: translateY(-100%);
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgb(214 169 74 / 0.35);
+    border-radius: 999px;
+    background: rgb(6 14 28 / 0.9);
+    color: #f6f2eb;
+    cursor: pointer;
+  }
+
+  .portfolio-lightbox__nav {
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid rgb(214 169 74 / 0.35);
+    border-radius: 999px;
+    background: rgb(6 14 28 / 0.88);
+    color: #f0c96f;
+    font-size: 1.75rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .portfolio-lightbox__nav:hover,
+  .portfolio-lightbox__nav:focus-visible {
+    border-color: rgb(240 201 111 / 0.65);
+    background: rgb(214 169 74 / 0.12);
+    outline: none;
+  }
+
+  @media (max-width: 640px) {
+    .portfolio-lightbox__dialog {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+
+    .portfolio-lightbox__nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 2;
+    }
+
+    .portfolio-lightbox__nav--prev {
+      left: 0.25rem;
+    }
+
+    .portfolio-lightbox__nav--next {
+      right: 0.25rem;
+    }
+  }
+</style>
+
+<script>
+  function initCompareSliders() {
+    document.querySelectorAll('[data-compare-slider]').forEach((slider) => {
+      if (slider.dataset.compareInitialized === 'true') return;
+      slider.dataset.compareInitialized = 'true';
+
+      const input = slider.querySelector('[data-compare-input]');
+      if (!(input instanceof HTMLInputElement)) return;
+
+      const setPosition = (value: number) => {
+        slider.style.setProperty('--compare-pos', `${value}%`);
+      };
+
+      setPosition(Number(input.value));
+
+      input.addEventListener('input', () => {
+        setPosition(Number(input.value));
+      });
+    });
+  }
+
+  function initPortfolioLightbox() {
+    const root = document.querySelector('[data-portfolio-lightbox]');
+    if (!root || root.dataset.lightboxInitialized === 'true') return;
+    root.dataset.lightboxInitialized = 'true';
+
+    const imageEl = root.querySelector('[data-lightbox-image]');
+    const captionEl = root.querySelector('[data-lightbox-caption]');
+    const closeBtns = root.querySelectorAll('[data-lightbox-close]');
+    const prevBtn = root.querySelector('[data-lightbox-prev]');
+    const nextBtn = root.querySelector('[data-lightbox-next]');
+
+    let items: { src: string; alt: string }[] = [];
+    let index = 0;
+    let lastFocus: Element | null = null;
+
+    const collectItems = () => {
+      items = Array.from(document.querySelectorAll('[data-lightbox-trigger]')).map((trigger) => ({
+        src: trigger.getAttribute('data-lightbox-src') ?? '',
+        alt: trigger.getAttribute('data-lightbox-alt') ?? '',
+      }));
+    };
+
+    const render = () => {
+      const item = items[index];
+      if (!item || !(imageEl instanceof HTMLImageElement)) return;
+      imageEl.src = item.src;
+      imageEl.alt = item.alt;
+      if (captionEl) captionEl.textContent = item.alt;
+    };
+
+    const openAt = (nextIndex: number) => {
+      collectItems();
+      if (!items.length) return;
+      index = (nextIndex + items.length) % items.length;
+      lastFocus = document.activeElement;
+      render();
+      root.hidden = false;
+      root.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+      prevBtn?.toggleAttribute('hidden', items.length <= 1);
+      nextBtn?.toggleAttribute('hidden', items.length <= 1);
+      closeBtns[0]?.focus();
+    };
+
+    const close = () => {
+      root.hidden = true;
+      root.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+      if (lastFocus instanceof HTMLElement) lastFocus.focus();
+    };
+
+    document.addEventListener('click', (event) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const trigger = target.closest('[data-lightbox-trigger]');
+      if (!trigger) return;
+      collectItems();
+      const triggerIndex = items.findIndex(
+        (item) =>
+          item.src === trigger.getAttribute('data-lightbox-src') &&
+          item.alt === trigger.getAttribute('data-lightbox-alt'),
+      );
+      openAt(triggerIndex >= 0 ? triggerIndex : 0);
+    });
+
+    prevBtn?.addEventListener('click', () => openAt(index - 1));
+    nextBtn?.addEventListener('click', () => openAt(index + 1));
+    closeBtns.forEach((btn) => btn.addEventListener('click', close));
+
+    document.addEventListener('keydown', (event) => {
+      if (root.hidden) return;
+      if (event.key === 'Escape') close();
+      if (event.key === 'ArrowLeft') openAt(index - 1);
+      if (event.key === 'ArrowRight') openAt(index + 1);
+    });
+  }
+
+  initCompareSliders();
+  initPortfolioLightbox();
+  document.addEventListener('astro:page-load', () => {
+    initCompareSliders();
+    initPortfolioLightbox();
+  });
+</script>

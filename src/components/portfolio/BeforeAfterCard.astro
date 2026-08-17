@@ -1,0 +1,363 @@
+---
+import type { ImageMetadata } from 'astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+
+interface Props {
+  title: string;
+  subtitle: string;
+  before: ImageMetadata;
+  after: ImageMetadata;
+}
+
+const { title, subtitle, before, after } = Astro.props;
+---
+
+<article class="before-after-card scroll-reveal">
+  <div class="before-after-card__copy">
+    <h3 class="before-after-card__title">{title}</h3>
+    <p class="before-after-card__subtitle">{subtitle}</p>
+  </div>
+
+  <div class="compare-slider" data-compare-slider>
+    <div class="compare-slider__stage">
+      <OptimizedImage
+        class="compare-slider__after"
+        src={after}
+        alt={`After — ${subtitle}`}
+        width={800}
+        height={600}
+        widths={[400, 640, 720, 960]}
+        sizes="(max-width: 900px) calc(100vw - 2rem), 50vw"
+        quality={85}
+        loading="lazy"
+      />
+      <div class="compare-slider__before-layer" data-compare-before-layer>
+        <OptimizedImage
+          class="compare-slider__before"
+          src={before}
+          alt={`Before — ${subtitle}`}
+          width={800}
+          height={600}
+          widths={[400, 640, 720, 960]}
+          sizes="(max-width: 900px) calc(100vw - 2rem), 50vw"
+          quality={85}
+          loading="lazy"
+        />
+      </div>
+    </div>
+    <span class="compare-slider__badge compare-slider__badge--before">Before</span>
+    <span class="compare-slider__badge compare-slider__badge--after">After</span>
+    <div class="compare-slider__handle" data-compare-handle aria-hidden="true">
+      <span class="compare-slider__handle-line"></span>
+      <span class="compare-slider__handle-grip"></span>
+    </div>
+    <input
+      type="range"
+      class="compare-slider__input"
+      data-compare-input
+      min="0"
+      max="100"
+      value="50"
+      aria-label={`Compare before and after for ${title}`}
+    />
+  </div>
+</article>
+
+<style>
+  .before-after-card {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    gap: 1.125rem;
+    min-width: 0;
+    width: 100%;
+    padding-block: clamp(1rem, 2vw, 1.375rem);
+    padding-inline: 0;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#000000, #000000) padding-box,
+      linear-gradient(
+          145deg,
+          rgb(255 236 190 / 0.55),
+          rgb(214 169 74 / 0.32) 38%,
+          rgb(120 90 40 / 0.22) 72%,
+          rgb(214 169 74 / 0.18)
+        )
+        border-box;
+    box-shadow:
+      var(--shadow-elevated, 0 24px 48px -12px rgb(0 0 0 / 0.5)),
+      var(--shadow-gold-glow, 0 0 32px rgb(217 164 65 / 0.12)),
+      0 0 56px rgb(217 164 65 / 0.1),
+      0 0 0 1px rgb(214 169 74 / 0.1) inset,
+      0 1px 0 rgb(255 236 190 / 0.1) inset,
+      0 -2px 10px rgb(0 0 0 / 0.38) inset;
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.3s ease,
+      transform 0.3s ease;
+  }
+
+  .before-after-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(ellipse 85% 75% at 50% 55%, rgb(217 164 65 / 0.2), transparent 72%);
+    pointer-events: none;
+  }
+
+  @media (min-width: 768px) {
+    .before-after-card::before {
+      inset: -0.75rem;
+    }
+  }
+
+  .before-after-card:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      var(--shadow-elevated, 0 24px 48px -12px rgb(0 0 0 / 0.5)),
+      var(--shadow-gold-glow, 0 0 32px rgb(217 164 65 / 0.12)),
+      0 0 72px rgb(217 164 65 / 0.16),
+      0 0 0 1px rgb(240 201 111 / 0.16) inset,
+      0 1px 0 rgb(255 236 190 / 0.14) inset,
+      0 -2px 10px rgb(0 0 0 / 0.38) inset;
+  }
+
+  .before-after-card__copy {
+    padding-inline: clamp(1rem, 2vw, 1.375rem);
+  }
+
+  @media (min-width: 768px) {
+    .before-after-card {
+      padding-inline: clamp(1rem, 2vw, 1.375rem);
+    }
+
+    .before-after-card__copy {
+      padding-inline: 0;
+    }
+
+    .compare-slider {
+      border-radius: 1.125rem;
+    }
+  }
+
+  .before-after-card__title {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-text, #f6f2eb);
+  }
+
+  .before-after-card__subtitle {
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
+    color: var(--color-text-soft, #b8c0d0);
+  }
+
+  .compare-slider {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border-radius: 0;
+    border: 1px solid transparent;
+    background:
+      linear-gradient(#000000, #000000) padding-box,
+      linear-gradient(
+          160deg,
+          rgb(255 236 190 / 0.5),
+          rgb(214 169 74 / 0.28) 45%,
+          rgb(90 68 32 / 0.35)
+        )
+        border-box;
+    box-shadow:
+      0 14px 36px rgb(0 0 0 / 0.42),
+      var(--shadow-gold-glow, 0 0 32px rgb(217 164 65 / 0.12)),
+      0 0 40px rgb(217 164 65 / 0.08);
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .compare-slider__stage {
+    position: relative;
+    width: 100%;
+    line-height: 0;
+    container-type: inline-size;
+  }
+
+  .compare-slider__stage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 1px rgb(255 236 190 / 0.06);
+  }
+
+  /* :global — class is on Astro <Image> inside OptimizedImage */
+  .compare-slider__stage :global(.compare-slider__after) {
+    position: relative;
+    z-index: 0;
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: top;
+  }
+
+  .compare-slider__before-layer {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--compare-pos, 50%);
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .compare-slider__before-layer :global(.compare-slider__before) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
+    height: 100%;
+    width: 100cqw;
+    max-width: none;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .compare-slider__badge {
+    position: absolute;
+    top: 0.625rem;
+    z-index: 3;
+    padding: 0.3rem 0.625rem;
+    border-radius: 999px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #fff8e8;
+    background: #000000;
+    border: 1px solid rgb(240 201 111 / 0.4);
+    box-shadow:
+      0 6px 16px rgb(0 0 0 / 0.35),
+      inset 0 1px 0 rgb(255 236 190 / 0.12);
+    pointer-events: none;
+  }
+
+  .compare-slider__badge--before {
+    left: 0.5rem;
+  }
+
+  .compare-slider__badge--after {
+    right: 0.5rem;
+  }
+
+  @media (min-width: 768px) {
+    .compare-slider__badge {
+      top: 0.875rem;
+      padding: 0.35rem 0.75rem;
+      font-size: 0.6875rem;
+    }
+
+    .compare-slider__badge--before {
+      left: 0.75rem;
+    }
+
+    .compare-slider__badge--after {
+      right: 0.75rem;
+    }
+  }
+
+  .compare-slider__handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: var(--compare-pos, 50%);
+    z-index: 3;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .compare-slider__handle-line {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 3px;
+    transform: translateX(50%);
+    background: linear-gradient(
+      180deg,
+      rgb(255 236 190 / 0.35),
+      rgb(240 201 111 / 0.98) 18%,
+      rgb(214 169 74 / 1) 50%,
+      rgb(240 201 111 / 0.98) 82%,
+      rgb(255 236 190 / 0.35)
+    );
+    box-shadow:
+      0 0 16px rgb(240 201 111 / 0.55),
+      0 0 4px rgb(255 236 190 / 0.8);
+  }
+
+  .compare-slider__handle-grip {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 2.375rem;
+    height: 2.375rem;
+    transform: translate(50%, -50%);
+    border-radius: 999px;
+    border: 2px solid rgb(255 236 190 / 0.75);
+    background: linear-gradient(145deg, #0a0a0a, #000000);
+    box-shadow:
+      0 0 0 4px rgb(214 169 74 / 0.14),
+      0 10px 28px rgb(0 0 0 / 0.55),
+      inset 0 1px 0 rgb(255 236 190 / 0.28),
+      inset 0 -2px 6px rgb(0 0 0 / 0.45);
+  }
+
+  .compare-slider__handle-grip::before,
+  .compare-slider__handle-grip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    transform: translateY(-50%);
+  }
+
+  .compare-slider__handle-grip::before {
+    left: 0.45rem;
+    border-right: 6px solid #f0c96f;
+  }
+
+  .compare-slider__handle-grip::after {
+    right: 0.45rem;
+    border-left: 6px solid #f0c96f;
+  }
+
+  @media (min-width: 768px) {
+    .compare-slider__handle-grip {
+      width: 2.875rem;
+      height: 2.875rem;
+    }
+  }
+
+  .compare-slider__input {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    touch-action: pan-x;
+  }
+</style>

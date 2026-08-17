@@ -1,0 +1,49 @@
+---
+import VideoPlaceholder from '@/components/media/VideoPlaceholder.astro';
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import type { PortfolioMediaVideo } from '@/config/portfolio';
+import { resolveVideoUrl } from '@/utils/videoEmbed';
+
+interface Props {
+  heading?: string;
+  subheading?: string;
+  videos: PortfolioMediaVideo[];
+}
+
+const {
+  heading = 'Videos',
+  subheading = 'Production cuts and campaign films.',
+  videos,
+} = Astro.props;
+---
+
+{
+  videos.length > 0 && (
+    <section id="portfolio-videos" class="portfolio-videos py-section">
+      <div class="container">
+        <SectionHeading heading={heading} subheading={subheading} class="mb-10 scroll-reveal" />
+        <div class="grid gap-8 lg:grid-cols-2">
+          {
+            videos.map((video) => (
+              <div class="scroll-reveal">
+                <VideoPlaceholder
+                  src={video.thumbnail}
+                  alt={video.thumbnailAlt}
+                  caption={video.title ?? video.caption}
+                  videoUrl={resolveVideoUrl(video.url, video.thumbnail)}
+                  aspect="16/9"
+                />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .portfolio-videos {
+    padding-bottom: clamp(1rem, 2.5vw, 1.75rem);
+  }
+</style>

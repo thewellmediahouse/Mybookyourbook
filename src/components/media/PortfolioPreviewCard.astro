@@ -1,0 +1,83 @@
+---
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import { getCategoryLabel, type PortfolioItem } from '@/config/portfolio';
+import { isImageMetadata } from '@/utils/media';
+
+interface Props {
+  item: PortfolioItem;
+  class?: string;
+  style?: string;
+}
+
+const { item, class: className = '', style } = Astro.props;
+const categoryLabel = getCategoryLabel(item.category);
+const href = `/portfolio/${item.slug}`;
+---
+
+<a
+  href={href}
+  class={`group premium-card portfolio-preview-card block overflow-hidden scroll-reveal ${className}`}
+  style={style}
+>
+  <div class="relative aspect-[4/3] overflow-hidden bg-black/30">
+    {
+      isImageMetadata(item.image) ? (
+        <OptimizedImage
+          src={item.image}
+          alt={item.imageAlt}
+          width={600}
+          height={450}
+          widths={[300, 450, 600, 900]}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          class="portfolio-preview-card__image h-full w-full object-cover"
+          loading="lazy"
+        />
+      ) : (
+        <img
+          src={item.image}
+          alt={item.imageAlt}
+          width="600"
+          height="450"
+          class="portfolio-preview-card__image h-full w-full object-cover"
+          loading="lazy"
+        />
+      )
+    }
+    <div class="portfolio-preview-card__overlay absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+      <span class="btn-accent rounded-button px-5 py-2.5 text-small font-semibold">
+        View Project
+      </span>
+    </div>
+  </div>
+  <div class="p-5">
+    <h3 class="text-h4 font-semibold text-fg">{item.title}</h3>
+    <p class="mt-1 text-xs font-semibold uppercase tracking-wide text-accent">{item.description}</p>
+    <p class="mt-2 text-small text-fg-muted">{categoryLabel}</p>
+  </div>
+</a>
+
+<style>
+  .portfolio-preview-card {
+    transition:
+      transform 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .portfolio-preview-card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(224 169 56 / 0.35);
+  }
+
+  :global(.portfolio-preview-card__image) {
+    transition: transform 0.45s ease;
+  }
+
+  .portfolio-preview-card:hover :global(.portfolio-preview-card__image) {
+    transform: scale(1.03);
+  }
+
+  .portfolio-preview-card__overlay {
+    background: rgb(3 15 30 / 0.45);
+  }
+</style>

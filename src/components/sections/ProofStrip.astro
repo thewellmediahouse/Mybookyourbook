@@ -1,0 +1,121 @@
+---
+import type { ProofItem } from '@/config/content';
+
+interface Props {
+  items: ProofItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="proof-strip relative z-10 -mt-8 pb-4 md:-mt-12" aria-label="Core capabilities">
+  <div class="container">
+    <div class="premium-card proof-strip__inner scroll-reveal">
+      <ul class="proof-strip__list">
+        {
+          items.map((item, index) => (
+            <>
+              <li class="proof-strip__item">
+                <span class="proof-strip__icon" aria-hidden="true">+</span>
+                <span class="proof-strip__label">{item.label}</span>
+              </li>
+              {index < items.length - 1 && (
+                <li class="proof-strip__divider hidden lg:block" aria-hidden="true" />
+              )}
+            </>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .proof-strip__inner {
+    padding: 1.25rem 1.5rem;
+  }
+
+  .proof-strip__list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 640px) {
+    .proof-strip__list {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem 0;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .proof-strip__list {
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+  }
+
+  .proof-strip__item {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .proof-strip__item {
+      justify-content: flex-start;
+      padding: 0 0.75rem;
+    }
+  }
+
+  .proof-strip__icon {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: rgb(224 169 56 / 0.14);
+    color: var(--brand-accent, #e0a938);
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .proof-strip__label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--color-text-soft, #f4f6fa);
+    text-wrap: balance;
+  }
+
+  @media (min-width: 640px) {
+    .proof-strip__label {
+      font-size: 0.875rem;
+    }
+  }
+
+  .proof-strip__divider {
+    width: 1px;
+    height: 2rem;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgb(224 169 56 / 0.35) 50%,
+      transparent
+    );
+    flex-shrink: 0;
+    list-style: none;
+  }
+</style>

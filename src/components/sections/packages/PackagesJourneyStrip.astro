@@ -1,0 +1,110 @@
+---
+interface Step {
+  title: string;
+  description: string;
+}
+
+interface Props {
+  steps: Step[];
+}
+
+const { steps } = Astro.props;
+---
+
+<section class="packages-section packages-journey" aria-label="How our packages work">
+  <div class="container">
+    <ol class="packages-journey__track">
+      {
+        steps.map((step, index) => (
+          <li class="packages-journey__step scroll-reveal" style={`--step-i: ${index}`}>
+            <div class="packages-journey__marker">
+              <span class="packages-journey__number">{index + 1}</span>
+            </div>
+            <div class="packages-journey__body">
+              <h2 class="packages-journey__title">{step.title}</h2>
+              <p class="packages-journey__text">{step.description}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .packages-journey {
+    padding-block: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  .packages-journey__track {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 900px) {
+    .packages-journey__track {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
+  .packages-journey__step {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem 1.35rem;
+    border-radius: 1rem;
+    border: 1px solid rgb(214 169 74 / 0.22);
+    background: rgb(6 14 28 / 0.88);
+  }
+
+  @media (min-width: 900px) {
+    .packages-journey__step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      right: -1.15rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #f0c96f;
+      font-size: 1.125rem;
+      font-weight: 700;
+      z-index: 1;
+    }
+  }
+
+  .packages-journey__marker {
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgb(214 169 74 / 0.5);
+    background: linear-gradient(135deg, rgb(214 169 74 / 0.2), rgb(240 201 111 / 0.08));
+  }
+
+  .packages-journey__number {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0c96f;
+  }
+
+  .packages-journey__title {
+    margin: 0 0 0.35rem;
+    font-size: 1.0625rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+  }
+
+  .packages-journey__text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: #c8cfdd;
+  }
+</style>

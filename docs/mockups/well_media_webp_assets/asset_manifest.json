@@ -1,0 +1,317 @@
+[
+  {
+    "file": "00_full_mockup.webp",
+    "description": "Full generated homepage mockup",
+    "source_crop": [
+      0,
+      0,
+      1536,
+      1024
+    ],
+    "dimensions": [
+      1536,
+      1024
+    ],
+    "size_kb": 133.2,
+    "quality": 82
+  },
+  {
+    "file": "01_homepage_left_full.webp",
+    "description": "Left homepage concept",
+    "source_crop": [
+      0,
+      0,
+      915,
+      1024
+    ],
+    "dimensions": [
+      915,
+      1024
+    ],
+    "size_kb": 77.0,
+    "quality": 82
+  },
+  {
+    "file": "02_hero_section_full.webp",
+    "description": "Full hero section concept",
+    "source_crop": [
+      0,
+      50,
+      925,
+      560
+    ],
+    "dimensions": [
+      925,
+      510
+    ],
+    "size_kb": 46.2,
+    "quality": 82
+  },
+  {
+    "file": "03_hero_camera_growth_visual.webp",
+    "description": "Hero cinema camera/gold growth visual",
+    "source_crop": [
+      384,
+      54,
+      914,
+      470
+    ],
+    "dimensions": [
+      530,
+      416
+    ],
+    "size_kb": 23.4,
+    "quality": 82
+  },
+  {
+    "file": "04_stats_bar.webp",
+    "description": "Stats/trust metric bar",
+    "source_crop": [
+      42,
+      473,
+      883,
+      548
+    ],
+    "dimensions": [
+      841,
+      75
+    ],
+    "size_kb": 5.1,
+    "quality": 82
+  },
+  {
+    "file": "05_services_section.webp",
+    "description": "Premium media services section",
+    "source_crop": [
+      35,
+      588,
+      880,
+      898
+    ],
+    "dimensions": [
+      845,
+      310
+    ],
+    "size_kb": 23.8,
+    "quality": 82
+  },
+  {
+    "file": "06_service_cinematic_video_thumb.webp",
+    "description": "Cinematic video service thumbnail",
+    "source_crop": [
+      43,
+      680,
+      229,
+      765
+    ],
+    "dimensions": [
+      186,
+      85
+    ],
+    "size_kb": 2.2,
+    "quality": 82
+  },
+  {
+    "file": "07_service_photography_thumb.webp",
+    "description": "Photography service thumbnail",
+    "source_crop": [
+      256,
+      680,
+      443,
+      765
+    ],
+    "dimensions": [
+      187,
+      85
+    ],
+    "size_kb": 1.6,
+    "quality": 82
+  },
+  {
+    "file": "08_service_web_design_thumb.webp",
+    "description": "Web design service thumbnail",
+    "source_crop": [
+      469,
+      680,
+      657,
+      765
+    ],
+    "dimensions": [
+      188,
+      85
+    ],
+    "size_kb": 1.6,
+    "quality": 82
+  },
+  {
+    "file": "09_service_marketing_strategy_thumb.webp",
+    "description": "Marketing strategy service thumbnail",
+    "source_crop": [
+      684,
+      680,
+      873,
+      765
+    ],
+    "dimensions": [
+      189,
+      85
+    ],
+    "size_kb": 1.7,
+    "quality": 82
+  },
+  {
+    "file": "10_portfolio_section.webp",
+    "description": "Real projects portfolio section",
+    "source_crop": [
+      929,
+      0,
+      1536,
+      330
+    ],
+    "dimensions": [
+      607,
+      330
+    ],
+    "size_kb": 18.8,
+    "quality": 82
+  },
+  {
+    "file": "11_portfolio_company_promo.webp",
+    "description": "Company promo portfolio image",
+    "source_crop": [
+      949,
+      107,
+      1076,
+      198
+    ],
+    "dimensions": [
+      127,
+      91
+    ],
+    "size_kb": 3.1,
+    "quality": 82
+  },
+  {
+    "file": "12_portfolio_product_demo.webp",
+    "description": "Product demo portfolio image",
+    "source_crop": [
+      1084,
+      107,
+      1211,
+      198
+    ],
+    "dimensions": [
+      127,
+      91
+    ],
+    "size_kb": 2.1,
+    "quality": 82
+  },
+  {
+    "file": "13_portfolio_website_design.webp",
+    "description": "Website design portfolio image",
+    "source_crop": [
+      1219,
+      107,
+      1347,
+      198
+    ],
+    "dimensions": [
+      128,
+      91
+    ],
+    "size_kb": 2.2,
+    "quality": 82
+  },
+  {
+    "file": "14_portfolio_product_photography.webp",
+    "description": "Product photography portfolio image",
+    "source_crop": [
+      1355,
+      107,
+      1483,
+      198
+    ],
+    "dimensions": [
+      128,
+      91
+    ],
+    "size_kb": 2.7,
+    "quality": 82
+  },
+  {
+    "file": "15_growth_partner_section.webp",
+    "description": "Growth partner section",
+    "source_crop": [
+      929,
+      331,
+      1536,
+      529
+    ],
+    "dimensions": [
+      607,
+      198
+    ],
+    "size_kb": 10.9,
+    "quality": 82
+  },
+  {
+    "file": "16_results_testimonials_section.webp",
+    "description": "Results testimonials section",
+    "source_crop": [
+      929,
+      529,
+      1536,
+      746
+    ],
+    "dimensions": [
+      607,
+      217
+    ],
+    "size_kb": 9.6,
+    "quality": 82
+  },
+  {
+    "file": "17_final_cta_growth_background.webp",
+    "description": "Final growth CTA background",
+    "source_crop": [
+      929,
+      746,
+      1536,
+      944
+    ],
+    "dimensions": [
+      607,
+      198
+    ],
+    "size_kb": 11.9,
+    "quality": 82
+  },
+  {
+    "file": "18_footer_section.webp",
+    "description": "Footer section",
+    "source_crop": [
+      929,
+      944,
+      1536,
+      1024
+    ],
+    "dimensions": [
+      607,
+      80
+    ],
+    "size_kb": 4.2,
+    "quality": 82
+  },
+  {
+    "file": "99_original_current_site_screenshot.webp",
+    "description": "Original current site screenshot reference",
+    "source_crop": "full original screenshot",
+    "dimensions": [
+      1826,
+      1624
+    ],
+    "size_kb": 125.1,
+    "quality": 82
+  }
+]

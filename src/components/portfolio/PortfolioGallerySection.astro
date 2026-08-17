@@ -1,0 +1,225 @@
+---
+import { getImage } from 'astro:assets';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import type { PortfolioGalleryImage } from '@/config/portfolioGallery';
+
+interface Props {
+  id: string;
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  images: PortfolioGalleryImage[];
+  lightboxGroup: string;
+  compactTop?: boolean;
+}
+
+const { id, eyebrow, heading, subheading, images, lightboxGroup, compactTop = false } = Astro.props;
+
+/** Display ~288–512px wide; lightbox gets a larger single webp. */
+const galleryItems = await Promise.all(
+  images.map(async (image) => {
+    const lightbox = await getImage({
+      src: image.src,
+      width: 1600,
+      format: 'webp',
+      quality: 88,
+    });
+    return { ...image, lightboxSrc: lightbox.src };
+  }),
+);
+---
+
+<section
+  id={id}
+  class:list={['portfolio-gallery-section', compactTop && 'portfolio-gallery-section--compact-top']}
+>
+  <div class="container portfolio-gallery-section__header-wrap">
+    <header class="portfolio-gallery-section__header scroll-reveal">
+      <p class="portfolio-gallery-section__eyebrow">{eyebrow}</p>
+      <h2 class="portfolio-gallery-section__heading">{heading}</h2>
+      <p class="portfolio-gallery-section__subheading">{subheading}</p>
+    </header>
+  </div>
+
+  <div class="portfolio-gallery-section__scroll scroll-reveal">
+    <ul class="portfolio-gallery-section__track">
+      <li class="portfolio-gallery-section__lead-gutter" aria-hidden="true"></li>
+      {
+        galleryItems.map((image) => (
+          <li class="portfolio-gallery-section__item">
+            <button
+              type="button"
+              class="portfolio-gallery-section__trigger"
+              data-lightbox-trigger
+              data-lightbox-group={lightboxGroup}
+              data-lightbox-src={image.lightboxSrc}
+              data-lightbox-alt={image.alt}
+              aria-label={`View larger: ${image.alt}`}
+            >
+              <OptimizedImage
+                src={image.src}
+                alt={image.alt}
+                width={640}
+                height={360}
+                widths={[320, 480, 560, 720, 960]}
+                sizes="(max-width: 768px) 18rem, (max-width: 1200px) 34vw, 28vw"
+                quality={85}
+                class="portfolio-gallery-section__img"
+                loading="lazy"
+              />
+            </button>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .portfolio-gallery-section {
+    padding-top: clamp(1rem, 2vw, 1.5rem);
+    padding-bottom: clamp(0.625rem, 1.25vw, 1rem);
+  }
+
+  .portfolio-gallery-section--compact-top {
+    padding-top: clamp(0.5rem, 1vw, 0.75rem);
+  }
+
+  .portfolio-gallery-section__header-wrap {
+    margin-bottom: clamp(0.875rem, 2vw, 1.25rem);
+  }
+
+  .portfolio-gallery-section__header {
+    max-width: 44rem;
+  }
+
+  .portfolio-gallery-section__eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-accent, #d6a94a);
+  }
+
+  .portfolio-gallery-section__heading {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.1;
+    color: var(--color-text, #f6f2eb);
+  }
+
+  .portfolio-gallery-section__subheading {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--color-text-soft, #b8c0d0);
+  }
+
+  .portfolio-gallery-section__scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline-start: var(--container-content-start);
+    padding-bottom: 0.35rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgb(214 169 74 / 0.45) rgb(6 14 28 / 0.5);
+  }
+
+  .portfolio-gallery-section__scroll::-webkit-scrollbar {
+    height: 0.45rem;
+  }
+
+  .portfolio-gallery-section__scroll::-webkit-scrollbar-track {
+    background: rgb(6 14 28 / 0.5);
+    border-radius: 999px;
+  }
+
+  .portfolio-gallery-section__scroll::-webkit-scrollbar-thumb {
+    background: rgb(214 169 74 / 0.45);
+    border-radius: 999px;
+  }
+
+  .portfolio-gallery-section__track {
+    display: flex;
+    align-items: stretch;
+    gap: 0.75rem;
+    width: max-content;
+    margin: 0;
+    padding: 0.25rem var(--container-content-start) 0.75rem 0;
+    list-style: none;
+  }
+
+  .portfolio-gallery-section__lead-gutter {
+    flex: 0 0 var(--container-content-start);
+    width: var(--container-content-start);
+    list-style: none;
+  }
+
+  .portfolio-gallery-section__item {
+    flex: 0 0 auto;
+    width: clamp(18rem, 48vw, 24rem);
+    scroll-snap-align: start;
+  }
+
+  @media (min-width: 768px) {
+    .portfolio-gallery-section__item {
+      width: clamp(20rem, 34vw, 28rem);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .portfolio-gallery-section__item {
+      width: clamp(22rem, 28vw, 32rem);
+    }
+  }
+
+  .portfolio-gallery-section__trigger {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    padding: 0;
+    border: 0;
+    border-radius: 0.625rem;
+    overflow: hidden;
+    cursor: zoom-in;
+    background: rgb(0 0 0 / 0.85);
+    border: 1px solid rgb(214 169 74 / 0.28);
+    box-shadow:
+      0 8px 20px rgb(0 0 0 / 0.28),
+      var(--shadow-gold-glow, 0 0 24px rgb(217 164 65 / 0.08));
+    transition:
+      transform 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .portfolio-gallery-section__trigger:hover,
+  .portfolio-gallery-section__trigger:focus-visible {
+    transform: translateY(-2px);
+    border-color: rgb(214 169 74 / 0.48);
+    box-shadow:
+      0 12px 28px rgb(0 0 0 / 0.34),
+      0 0 28px rgb(217 164 65 / 0.12);
+    outline: none;
+  }
+
+  .portfolio-gallery-section__trigger :global(img),
+  .portfolio-gallery-section__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+    backface-visibility: hidden;
+    transform: translateZ(0);
+  }
+
+  .portfolio-gallery-section__trigger:hover :global(img),
+  .portfolio-gallery-section__trigger:focus-visible :global(img) {
+    transform: translateZ(0) scale(1.015);
+  }
+</style>

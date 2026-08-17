@@ -1,0 +1,109 @@
+---
+import ContactForm from '@/components/forms/ContactForm.astro';
+import { raster } from '@/assets/raster';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import { pricingFormConfig } from '@/config/form';
+
+interface Props {
+  heading: string;
+  headingHighlight: string;
+  support: string;
+  submitLabel: string;
+  secondaryCta?: { label: string; href: string };
+  class?: string;
+}
+
+const { heading, headingHighlight, support, submitLabel, secondaryCta, class: className = '' } = Astro.props;
+const headingLead = headingHighlight ? heading.replace(headingHighlight, '').trim() : heading;
+---
+
+<section id="packages-contact" class:list={['packages-section', 'packages-cta', className]} aria-labelledby="packages-cta-heading">
+  <div class="container">
+    <div class="packages-cta__panel packages-panel scroll-reveal">
+      <div class="packages-cta__visual">
+        <OptimizedImage
+          src={raster.packages.ctaDirectorChair}
+          alt="Director chair on a premium film set"
+          width={1200}
+          height={900}
+          widths={[400, 640, 960, 1200]}
+          sizes="(max-width: 768px) 100vw, 40vw"
+          loading="lazy"
+        />
+        <div class="packages-cta__copy">
+          <h2 id="packages-cta-heading" class="packages-cta__heading">
+            {headingLead}
+            {headingHighlight && <span>{headingHighlight}</span>}
+          </h2>
+          <p class="packages-cta__support">{support}</p>
+          {
+            secondaryCta && (
+              <a href={secondaryCta.href} class="packages-btn packages-btn--outline packages-cta__portfolio">
+                {secondaryCta.label}
+              </a>
+            )
+          }
+        </div>
+      </div>
+
+      <div class="packages-cta__form-wrap">
+        <ContactForm config={pricingFormConfig} submitLabel={`${submitLabel} →`} />
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .packages-cta__panel {
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 2.5rem);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  @media (min-width: 1024px) {
+    .packages-cta__panel {
+      grid-template-columns: 1fr 1.05fr;
+      align-items: start;
+    }
+  }
+
+  .packages-cta__visual :global(img) {
+    width: 100%;
+    display: block;
+    border-radius: 1.125rem;
+    border: 1px solid rgb(214 169 74 / 0.28);
+  }
+
+  .packages-cta__copy {
+    margin-top: 1.25rem;
+  }
+
+  .packages-cta__heading {
+    margin: 0 0 0.75rem;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+    line-height: 1.12;
+  }
+
+  .packages-cta__heading span {
+    color: #f0c96f;
+  }
+
+  .packages-cta__support {
+    margin: 0;
+    max-width: 36rem;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: #c8cfdd;
+  }
+
+  .packages-cta__portfolio {
+    margin-top: 1.25rem;
+  }
+
+  .packages-cta__form-wrap {
+    padding: clamp(1rem, 2vw, 1.5rem);
+    border-radius: 1.125rem;
+    border: 1px solid rgb(214 169 74 / 0.2);
+    background: rgb(6 17 31 / 0.55);
+  }
+</style>

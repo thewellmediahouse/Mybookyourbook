@@ -1,0 +1,67 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import type { PortfolioMediaImage } from '@/config/portfolio';
+import { isImageMetadata } from '@/utils/media';
+
+interface Props {
+  heading?: string;
+  subheading?: string;
+  photos: PortfolioMediaImage[];
+}
+
+const {
+  heading = 'Photos',
+  subheading = 'Photography from the Simola project.',
+  photos,
+} = Astro.props;
+---
+
+{
+  photos.length > 0 && (
+    <section id="portfolio-photos" class="section-surface py-section">
+      <div class="container">
+        <SectionHeading heading={heading} subheading={subheading} class="mb-10 scroll-reveal" />
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
+          {
+            photos.map((photo) => (
+              <figure class="surface-card scroll-reveal overflow-hidden">
+                {
+                  isImageMetadata(photo.src) ? (
+                    <OptimizedImage
+                      src={photo.src}
+                      alt={photo.alt}
+                      width={1200}
+                      height={900}
+                      widths={[400, 640, 960, 1200]}
+                      sizes="(max-width: 640px) 100vw, 50vw"
+                      class="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <img
+                      src={photo.src}
+                      alt={photo.alt}
+                      width="1200"
+                      height="900"
+                      class="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-[1.02]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )
+                }
+                {
+                  photo.caption && (
+                    <figcaption class="border-t border-white/10 bg-white/[0.02] px-4 py-3 text-small text-fg-soft">
+                      {photo.caption}
+                    </figcaption>
+                  )
+                }
+              </figure>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  )
+}

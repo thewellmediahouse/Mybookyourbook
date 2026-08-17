@@ -1,0 +1,856 @@
+---
+import type { InteractiveExperiencesContent } from '@/config/content';
+import { raster } from '@/assets/raster';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+
+interface Props extends InteractiveExperiencesContent {}
+
+const { heading, headingHighlight, subheading, growthScore } = Astro.props;
+
+const questionCount = growthScore.questions.length;
+---
+
+<section
+  class="interactive-experiences"
+  id="interactive-growth-tools"
+  aria-labelledby="interactive-experiences-heading"
+>
+  <OptimizedImage
+    src={raster.interactive.sectionBg}
+    alt=""
+    width={1920}
+    height={900}
+    widths={[640, 960, 1440, 1920]}
+    sizes="100vw"
+    class="interactive-experiences__bg"
+    loading="lazy"
+  />
+  <div class="interactive-experiences__overlay" aria-hidden="true" />
+
+  <div class="container interactive-experiences__inner">
+    <header class="interactive-experiences__header scroll-reveal">
+      <h2 id="interactive-experiences-heading" class="interactive-experiences__heading">
+        {heading}{' '}
+        <span class="interactive-experiences__heading-accent">{headingHighlight}</span>
+      </h2>
+      <p class="interactive-experiences__subheading">{subheading}</p>
+    </header>
+  </div>
+
+  <article class="growth-score-panel scroll-reveal">
+    <OptimizedImage
+      src={raster.interactive.growthScorePanelBg}
+      alt=""
+      width={1350}
+      height={613}
+      widths={[640, 960, 1350, 1920]}
+      sizes="100vw"
+      class="growth-score-panel__bg"
+      loading="lazy"
+    />
+    <div class="growth-score-panel__overlay" aria-hidden="true" />
+    <div class="growth-score-panel__glow" aria-hidden="true" />
+
+    <div class="container growth-score-panel__inner">
+      <div class="growth-score-panel__intro">
+        <div class="growth-score-panel__label-row">
+          <span class="growth-score-panel__number">{growthScore.number}</span>
+          <div>
+            <p class="growth-score-panel__eyebrow">{growthScore.eyebrow}</p>
+            <p class="growth-score-panel__description">{growthScore.description}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="growth-score-panel__body">
+        <div class="growth-score-panel__visual">
+          <div class="growth-score-panel__gauge-ring" aria-hidden="true" />
+          <div class="growth-score-panel__gauge-wrap" data-gauge-wrap>
+            <OptimizedImage
+              src={raster.interactive.growthScoreGauge}
+              alt={growthScore.gaugeAlt}
+              width={448}
+              height={448}
+              widths={[256, 448, 700]}
+              sizes="(max-width: 768px) 256px, 448px"
+              class="growth-score-panel__gauge"
+              loading="lazy"
+            />
+            <div class="growth-score-panel__gauge-live" data-gauge-live hidden>
+              <div class="growth-score-panel__gauge-score">
+                <span class="growth-score-panel__gauge-score-row">
+                  <span data-score-value>0</span>
+                  <span class="growth-score-panel__gauge-score-label">/ 100</span>
+                </span>
+                <span class="growth-score-panel__gauge-score-title">Growth Score</span>
+              </div>
+            </div>
+          </div>
+          <p class="growth-score-panel__visual-caption">Instant growth snapshot</p>
+        </div>
+
+        <div class="growth-score-panel__divider" aria-hidden="true" />
+
+        <div class="growth-score-panel__content">
+          <h3 class="growth-score-panel__questions-heading">{growthScore.questionsHeading}</h3>
+          <ul class="growth-score-panel__questions">
+            {
+              growthScore.questions.map((question, index) => (
+                <li class="growth-score-panel__question">
+                  <span class="growth-score-panel__question-index">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span>{question}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+
+      <div class="growth-score-panel__footer">
+        <button type="button" class="btn-accent growth-score-panel__cta" data-quiz-open>
+          {growthScore.quizCta}
+        </button>
+        <span class="growth-score-panel__time">{growthScore.timeNote}</span>
+      </div>
+    </div>
+  </article>
+
+  <div
+    class="growth-quiz-modal"
+    data-quiz-modal
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="growth-quiz-modal-title"
+  >
+    <button type="button" class="growth-quiz-modal__backdrop" data-quiz-close aria-label="Close quiz" />
+    <div class="growth-quiz-modal__dialog">
+      <div class="growth-quiz-modal__header">
+        <h3 id="growth-quiz-modal-title" class="growth-quiz-modal__title">
+          {growthScore.eyebrow}
+        </h3>
+        <button type="button" class="growth-quiz-modal__close" data-quiz-close aria-label="Close quiz">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="growth-quiz-modal__body" data-quiz-body>
+        <p class="growth-quiz-modal__progress" data-quiz-progress aria-live="polite">
+          Question <span data-quiz-current>1</span> of {questionCount}
+        </p>
+        <p class="growth-quiz-modal__question" data-quiz-question />
+        <div class="growth-quiz-modal__answers">
+          <button type="button" class="growth-quiz-modal__answer" data-quiz-answer="yes">
+            Yes
+          </button>
+          <button type="button" class="growth-quiz-modal__answer" data-quiz-answer="no">
+            No
+          </button>
+        </div>
+      </div>
+
+      <div class="growth-quiz-modal__result" data-quiz-result hidden>
+        <p class="growth-quiz-modal__result-label">Your Growth Score</p>
+        <p class="growth-quiz-modal__result-score">
+          <span data-quiz-result-value>0</span>
+          <span class="growth-quiz-modal__result-max">/ 100</span>
+        </p>
+        <p class="growth-quiz-modal__result-copy" data-quiz-result-copy />
+        <a href={growthScore.resultCta.href} class="btn-accent growth-quiz-modal__cta">
+          {growthScore.resultCta.label}
+        </a>
+        <button type="button" class="growth-quiz-modal__retry" data-quiz-retry>
+          Retake quiz
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .interactive-experiences {
+    position: relative;
+    overflow: hidden;
+    padding-block: var(--section-padding-y, 5rem);
+  }
+
+  /* :global — class is on Astro <Image> inside OptimizedImage */
+  :global(.interactive-experiences__bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+  }
+
+  .interactive-experiences__overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgb(3 15 30 / 0.94) 0%, rgb(5 16 30 / 0.9) 50%, rgb(3 15 30 / 0.96) 100%),
+      radial-gradient(ellipse 80% 55% at 50% 0%, rgb(214 166 62 / 0.1) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .interactive-experiences__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .interactive-experiences__header {
+    max-width: 46rem;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: clamp(2rem, 4vw, 3.25rem);
+  }
+
+  .interactive-experiences__heading {
+    font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--color-text, #fff);
+  }
+
+  .interactive-experiences__heading-accent {
+    color: var(--brand-accent-light, #f3c45e);
+  }
+
+  .interactive-experiences__subheading {
+    margin-top: 1rem;
+    font-size: clamp(1rem, 1.6vw, 1.125rem);
+    color: var(--color-text-soft, rgb(255 255 255 / 0.72));
+  }
+
+  .growth-score-panel {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    margin-top: clamp(0.5rem, 2vw, 1rem);
+    border-block: 1px solid rgb(214 166 62 / 0.28);
+    box-shadow: 0 0 60px rgb(214 166 62 / 0.08);
+    transition: box-shadow 0.35s ease;
+  }
+
+  /* :global — class is on Astro <Image> inside OptimizedImage */
+  :global(.growth-score-panel__bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    pointer-events: none;
+  }
+
+  .growth-score-panel__overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        rgb(3 15 30 / 0.9) 0%,
+        rgb(5 16 30 / 0.78) 42%,
+        rgb(3 15 30 / 0.88) 100%
+      ),
+      linear-gradient(
+        90deg,
+        rgb(3 15 30 / 0.92) 0%,
+        rgb(3 15 30 / 0.62) 45%,
+        rgb(3 15 30 / 0.55) 100%
+      );
+    pointer-events: none;
+  }
+
+  .growth-score-panel__inner {
+    position: relative;
+    z-index: 1;
+    padding: clamp(1.75rem, 2vw + 1rem, 3rem);
+  }
+
+  .growth-score-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    z-index: 2;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgb(247 198 87 / 0.65) 50%,
+      transparent
+    );
+    pointer-events: none;
+  }
+
+  .growth-score-panel:hover {
+    box-shadow: 0 0 70px rgb(214 166 62 / 0.14);
+  }
+
+  .growth-score-panel__glow {
+    position: absolute;
+    top: -20%;
+    left: 8%;
+    width: min(42rem, 55%);
+    height: 70%;
+    z-index: 1;
+    background: radial-gradient(ellipse at center, rgb(214 166 62 / 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .growth-score-panel__intro {
+    position: relative;
+    z-index: 1;
+    margin-bottom: clamp(1.5rem, 3vw, 2.25rem);
+  }
+
+  .growth-score-panel__label-row {
+    display: flex;
+    gap: clamp(1rem, 2vw, 1.5rem);
+    align-items: flex-start;
+  }
+
+  .growth-score-panel__number {
+    flex-shrink: 0;
+    font-family: var(--font-display, inherit);
+    font-size: clamp(2.5rem, 4vw, 3.75rem);
+    font-weight: 700;
+    line-height: 1;
+    background: linear-gradient(135deg, #ffe08a 0%, #f7c657 38%, #c8922e 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 18px rgb(214 166 62 / 0.35));
+  }
+
+  .growth-score-panel__eyebrow {
+    font-size: clamp(0.75rem, 1.2vw, 0.875rem);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--brand-accent-light, #f3c45e);
+  }
+
+  .growth-score-panel__description {
+    margin-top: 0.5rem;
+    max-width: 38rem;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  .growth-score-panel__body {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: clamp(1.5rem, 3vw, 2.5rem);
+    align-items: center;
+  }
+
+  @media (min-width: 900px) {
+    .growth-score-panel__body {
+      grid-template-columns: minmax(16rem, 22rem) 1px minmax(0, 1fr);
+      gap: clamp(2rem, 4vw, 3.5rem);
+    }
+  }
+
+  .growth-score-panel__visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .growth-score-panel__gauge-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(18rem, 100%);
+    aspect-ratio: 1;
+    transform: translate(-50%, -58%);
+    border-radius: 999px;
+    border: 1px solid rgb(214 166 62 / 0.2);
+    box-shadow:
+      0 0 0 12px rgb(214 166 62 / 0.04),
+      0 0 40px rgb(214 166 62 / 0.12);
+    pointer-events: none;
+  }
+
+  .growth-score-panel__gauge-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: min(100%, 16rem);
+    margin-inline: auto;
+  }
+
+  :global(.growth-score-panel__gauge) {
+    width: 100%;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 16px 40px rgb(0 0 0 / 0.45));
+  }
+
+  .growth-score-panel__gauge-live {
+    position: absolute;
+    left: 50%;
+    top: 58%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .growth-score-panel__gauge-live[hidden] {
+    display: none;
+  }
+
+  .growth-score-panel__gauge-score {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0.35rem 1.1rem 0.45rem;
+    font-size: clamp(2rem, 3vw, 2.5rem);
+    font-weight: 700;
+    color: var(--color-text, #fff);
+    text-shadow: none;
+    background: #000;
+    border-radius: 6px;
+  }
+
+  .growth-score-panel__gauge-score-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.15rem;
+    line-height: 1;
+  }
+
+  .growth-score-panel__gauge-score-title {
+    font-size: 0.72rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    color: rgb(255 255 255 / 0.88);
+  }
+
+  .growth-score-panel__gauge-score-label {
+    font-size: 0.95rem;
+    color: rgb(255 255 255 / 0.72);
+    font-weight: 700;
+    line-height: 1.35;
+  }
+
+  .growth-score-panel__visual-caption {
+    margin-top: 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.42);
+  }
+
+  .growth-score-panel__divider {
+    display: none;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgb(214 166 62 / 0.35) 20%,
+      rgb(247 198 87 / 0.5) 50%,
+      rgb(214 166 62 / 0.35) 80%,
+      transparent
+    );
+  }
+
+  @media (min-width: 900px) {
+    .growth-score-panel__divider {
+      display: block;
+    }
+  }
+
+  .growth-score-panel__questions-heading {
+    margin: 0 0 1.25rem;
+    font-size: clamp(1.15rem, 2vw, 1.45rem);
+    font-weight: 700;
+    color: var(--color-text, #fff);
+  }
+
+  .growth-score-panel__questions {
+    display: grid;
+    gap: 0.85rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  @media (min-width: 768px) {
+    .growth-score-panel__questions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem 1.25rem;
+    }
+
+    .growth-score-panel__question:last-child {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .growth-score-panel__question {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+    border: 1px solid rgb(214 166 62 / 0.22);
+    background: rgb(5 16 30 / 0.72);
+    backdrop-filter: blur(8px);
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: rgb(255 255 255 / 0.85);
+    transition:
+      border-color 0.25s ease,
+      background 0.25s ease,
+      transform 0.25s ease;
+  }
+
+  .growth-score-panel__question:hover {
+    border-color: rgb(247 198 87 / 0.45);
+    background: rgb(5 16 30 / 0.82);
+    transform: translateY(-1px);
+  }
+
+  .growth-score-panel__question-index {
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--brand-accent-light, #f3c45e);
+    padding-top: 0.15rem;
+  }
+
+  .growth-score-panel__footer {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: clamp(1.75rem, 3vw, 2.5rem);
+    padding-top: clamp(1.25rem, 2vw, 1.75rem);
+    border-top: 1px solid rgb(214 166 62 / 0.16);
+  }
+
+  .growth-score-panel__cta {
+    border-radius: var(--radius-button, 9999px);
+    padding: 1.15rem 2.75rem;
+    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    min-width: min(100%, 18rem);
+    box-shadow:
+      var(--shadow-gold-button, 0 4px 14px rgb(0 0 0 / 0.12)),
+      0 0 32px rgb(214 166 62 / 0.28);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease,
+      filter 0.25s ease;
+  }
+
+  .growth-score-panel__cta:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow:
+      var(--shadow-gold-button, 0 6px 20px rgb(0 0 0 / 0.16)),
+      0 0 48px rgb(214 166 62 / 0.42);
+    filter: brightness(1.08);
+  }
+
+  .growth-score-panel__cta:focus-visible {
+    outline: 2px solid rgb(247 198 87 / 0.85);
+    outline-offset: 3px;
+  }
+
+  .growth-score-panel__time {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.45);
+  }
+
+  .growth-quiz-modal[hidden] {
+    display: none !important;
+  }
+
+  .growth-quiz-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+  }
+
+  .growth-quiz-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgb(3 15 30 / 0.82);
+    backdrop-filter: blur(6px);
+    cursor: pointer;
+  }
+
+  .growth-quiz-modal__dialog {
+    position: relative;
+    width: min(100%, 28rem);
+    padding: 1.5rem;
+    border-radius: 20px;
+    background: rgb(5 16 30 / 0.96);
+    border: 1px solid rgb(214 166 62 / 0.35);
+    box-shadow: 0 0 45px rgb(214 166 62 / 0.15);
+  }
+
+  .growth-quiz-modal__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .growth-quiz-modal__title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brand-accent-light, #f3c45e);
+  }
+
+  .growth-quiz-modal__close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    border: 1px solid rgb(214 166 62 / 0.35);
+    background: transparent;
+    color: rgb(255 255 255 / 0.85);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+
+  .growth-quiz-modal__close:hover {
+    border-color: rgb(247 198 87 / 0.75);
+    background: rgb(214 166 62 / 0.12);
+  }
+
+  .growth-quiz-modal__progress {
+    font-size: 0.8rem;
+    color: rgb(255 255 255 / 0.55);
+    margin-bottom: 0.75rem;
+  }
+
+  .growth-quiz-modal__question {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: var(--color-text, #fff);
+    margin-bottom: 1.25rem;
+  }
+
+  .growth-quiz-modal__answers {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .growth-quiz-modal__answer {
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    border: 1px solid rgb(214 166 62 / 0.35);
+    background: rgb(214 166 62 / 0.08);
+    color: rgb(255 255 255 / 0.9);
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      background 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .growth-quiz-modal__answer:hover,
+  .growth-quiz-modal__answer:focus-visible {
+    border-color: rgb(247 198 87 / 0.75);
+    background: rgb(214 166 62 / 0.16);
+    box-shadow: 0 0 18px rgb(214 166 62 / 0.18);
+    outline: none;
+  }
+
+  .growth-quiz-modal__result {
+    text-align: center;
+  }
+
+  .growth-quiz-modal__result-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.55);
+  }
+
+  .growth-quiz-modal__result-score {
+    margin-top: 0.35rem;
+    font-size: 2.75rem;
+    font-weight: 700;
+    color: var(--brand-accent-light, #f3c45e);
+  }
+
+  .growth-quiz-modal__result-max {
+    font-size: 1.25rem;
+    color: rgb(255 255 255 / 0.55);
+  }
+
+  .growth-quiz-modal__result-copy {
+    margin-top: 0.75rem;
+    margin-bottom: 1.25rem;
+    color: rgb(255 255 255 / 0.78);
+    line-height: 1.55;
+  }
+
+  .growth-quiz-modal__cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-button, 9999px);
+    padding: 0.75rem 1.35rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .growth-quiz-modal__retry {
+    display: block;
+    width: 100%;
+    margin-top: 0.85rem;
+    padding: 0.5rem;
+    border: 0;
+    background: transparent;
+    color: rgb(255 255 255 / 0.55);
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+  }
+
+  .growth-quiz-modal__retry:hover {
+    color: rgb(255 255 255 / 0.8);
+  }
+</style>
+
+<script define:vars={{ questions: growthScore.questions, questionCount }}>
+  function initInteractiveExperiences() {
+    const modal = document.querySelector('[data-quiz-modal]');
+    const openBtn = document.querySelector('[data-quiz-open]');
+    const closeBtns = modal?.querySelectorAll('[data-quiz-close]');
+    const quizBody = modal?.querySelector('[data-quiz-body]');
+    const quizResult = modal?.querySelector('[data-quiz-result]');
+    const quizQuestion = modal?.querySelector('[data-quiz-question]');
+    const quizCurrent = modal?.querySelector('[data-quiz-current]');
+    const quizResultValue = modal?.querySelector('[data-quiz-result-value]');
+    const quizResultCopy = modal?.querySelector('[data-quiz-result-copy]');
+    const quizRetry = modal?.querySelector('[data-quiz-retry]');
+    const answerBtns = modal?.querySelectorAll('[data-quiz-answer]');
+    const gaugeLive = document.querySelector('[data-gauge-live]');
+    const gaugeScoreValue = document.querySelector('[data-score-value]');
+
+    let currentIndex = 0;
+    let yesCount = 0;
+    let lastFocus = null;
+
+    const scoreMessages = [
+      'There is strong room to improve visibility, trust, and conversion.',
+      'You have some foundations, but key growth gaps are holding you back.',
+      'You are on the right track — a focused strategy could unlock more enquiries.',
+      'Solid progress — refining media and messaging can accelerate growth.',
+      'Strong foundation — let us help you scale what is already working.',
+    ];
+
+    const resetQuiz = () => {
+      currentIndex = 0;
+      yesCount = 0;
+      if (quizBody) quizBody.hidden = false;
+      if (quizResult) quizResult.hidden = true;
+      if (quizCurrent) quizCurrent.textContent = '1';
+      if (quizQuestion) quizQuestion.textContent = questions[0] ?? '';
+      if (gaugeLive) gaugeLive.hidden = true;
+    };
+
+    const showResult = (score) => {
+      if (quizBody) quizBody.hidden = true;
+      if (quizResult) quizResult.hidden = false;
+      if (quizResultValue) quizResultValue.textContent = String(score);
+      if (quizResultCopy) {
+        const tier = Math.min(scoreMessages.length - 1, Math.floor(score / 20));
+        quizResultCopy.textContent = scoreMessages[tier];
+      }
+      if (gaugeLive && gaugeScoreValue) {
+        gaugeLive.hidden = false;
+        gaugeScoreValue.textContent = String(score);
+      }
+    };
+
+    const openModal = () => {
+      if (!modal) return;
+      lastFocus = document.activeElement;
+      resetQuiz();
+      modal.hidden = false;
+      modal.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+      modal.querySelector('.growth-quiz-modal__answer')?.focus();
+    };
+
+    const closeModal = () => {
+      if (!modal) return;
+      modal.hidden = true;
+      modal.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+      if (lastFocus instanceof HTMLElement) lastFocus.focus();
+    };
+
+    openBtn?.addEventListener('click', openModal);
+    closeBtns?.forEach((btn) => btn.addEventListener('click', closeModal));
+
+    answerBtns?.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (btn.getAttribute('data-quiz-answer') === 'yes') yesCount += 1;
+        currentIndex += 1;
+
+        if (currentIndex >= questionCount) {
+          const score = Math.round((yesCount / questionCount) * 100);
+          showResult(score);
+          return;
+        }
+
+        if (quizCurrent) quizCurrent.textContent = String(currentIndex + 1);
+        if (quizQuestion) quizQuestion.textContent = questions[currentIndex] ?? '';
+      });
+    });
+
+    quizRetry?.addEventListener('click', resetQuiz);
+
+    if (modal && modal.dataset.quizInitialized !== 'true') {
+      modal.dataset.quizInitialized = 'true';
+
+      document.addEventListener('keydown', (event) => {
+        if (modal.hidden) return;
+        if (event.key === 'Escape') closeModal();
+      });
+    }
+  }
+
+  initInteractiveExperiences();
+  document.addEventListener('astro:page-load', initInteractiveExperiences);
+</script>
