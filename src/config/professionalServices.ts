@@ -1,0 +1,245 @@
+/**
+ * Professional Services packages — consultants, practices, and professional providers.
+ * Separate from business packagesConfig so existing /pricing content stays untouched.
+ */
+import type {
+  BundlePackage,
+  ServicePackages,
+  TierSummary,
+} from '@/config/packages';
+
+export const professionalServicesPackagesConfig = {
+  tierNames: {
+    tier1: 'Silver',
+    tier2: 'Gold',
+    tier3: 'Platinum',
+  },
+  tierSummaries: [
+    {
+      tierId: 'tier1',
+      name: 'Silver',
+      label: 'Silver Professional Presence',
+      tagline:
+        'For individual professionals and smaller practices that need a consistent and professional online presence.',
+    },
+    {
+      tierId: 'tier2',
+      name: 'Gold',
+      label: 'Gold Professional Authority',
+      tagline:
+        'For practices that want to build authority through consistent educational videos and podcast-style discussions.',
+    },
+    {
+      tierId: 'tier3',
+      name: 'Platinum',
+      label: 'Platinum Professional Media',
+      tagline:
+        'For established practices that want a stronger media presence and a recognisable professional content series.',
+    },
+  ] satisfies TierSummary[],
+  servicePackages: [
+    {
+      serviceId: 'content-creation',
+      serviceName: 'Content Creation',
+      categoryLetter: 'A',
+      thumbnailKey: 'videoProduction',
+      summary: 'Educational videos, podcast-style discussions, and professional photography for authority and trust.',
+      recommendedTierId: 'ps-content-gold',
+      accent: 'highlight',
+      tiers: [
+        {
+          id: 'ps-content-silver',
+          name: 'Silver',
+          icon: 'silver',
+          price: 'R5 000',
+          period: 'pm',
+          features: [
+            '2 professionally edited short videos',
+            '4 professionally designed social media posts',
+            'Professional captions and copywriting',
+            '1 monthly content-planning session',
+            '1 filming session every second month',
+            'Not included: podcast production, additional filming sessions',
+          ],
+        },
+        {
+          id: 'ps-content-gold',
+          name: 'Gold',
+          icon: 'gold',
+          price: 'R10 000',
+          period: 'pm',
+          features: [
+            '1 podcast-style discussion every second month (up to 30 min)',
+            '4 short videos per month (extractable from podcast when filmed)',
+            '4 professionally designed social media posts',
+            'Professional captions and copywriting',
+            '1 monthly filming or content session',
+            'Not included: monthly full podcast production, studio rental',
+          ],
+        },
+        {
+          id: 'ps-content-platinum',
+          name: 'Platinum',
+          icon: 'platinum',
+          price: 'R15 000',
+          period: 'pm',
+          features: [
+            '1 podcast-style discussion per month (up to 30 min)',
+            '6 short videos from podcast or filming session',
+            '6 professionally designed social media posts',
+            '1 additional team or specialty-area video',
+            'Professional captions and copywriting',
+            '1 monthly filming session',
+            'Quarterly photography refresh (up to 5 photos)',
+            'Not included: weekly podcast production, additional filming days',
+          ],
+        },
+      ],
+    },
+    {
+      serviceId: 'content-management',
+      serviceName: 'Content Management',
+      categoryLetter: 'B',
+      thumbnailKey: 'socialContent',
+      summary: 'Scheduling, publishing, and platform management for a consistent professional presence.',
+      recommendedTierId: 'ps-management-gold',
+      accent: 'cyan',
+      tiers: [
+        {
+          id: 'ps-management-silver',
+          name: 'Silver',
+          icon: 'silver',
+          price: 'R2 500',
+          period: 'pm',
+          features: [
+            'Content scheduling and publishing',
+            'Management of one selected social media platform',
+            'Basic content calendar',
+            'Basic monthly performance overview',
+            'Not included: daily message management, article writing',
+          ],
+        },
+        {
+          id: 'ps-management-gold',
+          name: 'Gold',
+          icon: 'gold',
+          price: 'R4 000',
+          period: 'pm',
+          features: [
+            'Content scheduling and publishing',
+            'Management of up to two selected social media platforms',
+            'Monthly content calendar',
+            'Basic Google Business Profile content update',
+            'Monthly performance report',
+            'Not included: full-time community management, long-form articles',
+          ],
+        },
+        {
+          id: 'ps-management-platinum',
+          name: 'Platinum',
+          icon: 'platinum',
+          price: 'R5 000',
+          period: 'pm',
+          features: [
+            'Content scheduling and publishing',
+            'Management of up to three selected social media platforms',
+            'Monthly content calendar',
+            'Google Business Profile content updates',
+            'Monthly performance report',
+            'Not included: daily message management, YouTube channel management',
+          ],
+        },
+      ],
+    },
+    {
+      serviceId: 'business-growth',
+      serviceName: 'Business Growth',
+      categoryLetter: 'C',
+      thumbnailKey: 'strategyGrowth',
+      summary: 'Authority positioning, consultation CTAs, and professional visibility strategy.',
+      recommendedTierId: 'ps-growth-gold',
+      accent: 'accent',
+      tiers: [
+        {
+          id: 'ps-growth-silver',
+          name: 'Silver',
+          icon: 'silver',
+          price: 'R3 000',
+          period: 'pm',
+          features: [
+            '1 monthly strategy consultation',
+            'Professional topic planning',
+            'Consultation call-to-action recommendations',
+            'Basic professional visibility recommendations',
+            'Not included: website maintenance, paid advertising costs',
+          ],
+        },
+        {
+          id: 'ps-growth-gold',
+          name: 'Gold',
+          icon: 'gold',
+          price: 'R5 000',
+          period: 'pm',
+          features: [
+            '1 monthly strategy consultation',
+            'Specialty-area content planning',
+            'Professional authority positioning',
+            'Consultation-booking recommendations',
+            'Podcast topic development',
+            'Basic referral and visibility ideas',
+            'Not included: website maintenance, paid advertising costs, extensive guest coordination',
+          ],
+        },
+        {
+          id: 'ps-growth-platinum',
+          name: 'Platinum',
+          icon: 'platinum',
+          price: 'R7 000',
+          period: 'pm',
+          features: [
+            '1 monthly strategy consultation',
+            'Podcast-series development',
+            'Thought-leadership planning',
+            'Specialty-area positioning',
+            'Professional visibility strategy',
+            'Consultation call-to-action development',
+            'Basic campaign recommendations',
+            'Not included: website development or maintenance, advanced SEO, webinar production',
+          ],
+        },
+      ],
+    },
+  ] as ServicePackages[],
+  bundles: [
+    {
+      id: 'professional-practice-launch-pack',
+      name: 'Professional Practice Launch Pack',
+      price: 'R25 000',
+      savingsMessage: 'Professional Foundation',
+      features: [
+        'Logo design or professional logo refinement',
+        'Branded professional email signature',
+        'Custom professional practice website (up to 5 pages)',
+        'Online consultation booking form',
+        'Cinematic practice introduction video (60–90 sec)',
+        'Two short professional authority videos',
+        '5 professional/team photos and 5 office photos',
+        'Initial professional content direction',
+      ],
+    },
+  ] as BundlePackage[],
+  launchPackExclusions: [
+    'Website hosting and domain costs',
+    'Paid advertising expenditure',
+    'Advanced appointment-management software',
+    'Client portals',
+    'Secure document-upload platforms',
+    'Extensive copywriting',
+    'Additional website pages',
+    'Ongoing website maintenance',
+    'Additional filming sessions',
+    'Travel outside the agreed service area',
+  ],
+} as const;
+
+export type ProfessionalServicesPackagesConfig = typeof professionalServicesPackagesConfig;

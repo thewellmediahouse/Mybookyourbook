@@ -1,0 +1,194 @@
+---
+import PlayButton from '@/components/media/PlayButton.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import {
+  parseVideoUrl,
+  resolvePosterSrc,
+  resolveVideoUrl,
+  type ParsedVideoUrl,
+} from '@/utils/videoEmbed';
+import { isImageMetadata, resolveMediaSrc, type MediaSrc } from '@/utils/media';
+
+interface Props {
+  src?: MediaSrc;
+  alt?: string;
+  caption?: string;
+  videoUrl?: string;
+  aspect?: '16/9' | '16/10' | '4/3';
+  class?: string;
+  /** Render caption as an overlay inside the frame (showreel style) */
+  captionOverlay?: boolean;
+}
+
+const {
+  src,
+  alt = 'Video',
+  caption,
+  videoUrl,
+  aspect = '16/10',
+  class: className = '',
+  captionOverlay = false,
+} = Astro.props;
+
+const posterInput = resolveMediaSrc(src);
+const effectiveVideoUrl = resolveVideoUrl(videoUrl, src);
+const parsed: ParsedVideoUrl | null = effectiveVideoUrl ? parseVideoUrl(effectiveVideoUrl) : null;
+const posterSrc = resolvePosterSrc(posterInput, effectiveVideoUrl, parsed);
+const isPlayable = parsed !== null;
+const optimizedPoster = isImageMetadata(src) ? src : null;
+
+const aspectClasses = {
+  '16/9': 'aspect-[16/9]',
+  '16/10': 'aspect-[16/10]',
+  '4/3': 'aspect-[4/3]',
+} as const;
+
+const frameClass = `media-video-frame ${aspectClasses[aspect]}`;
+const posterClass = 'absolute inset-0 h-full w-full object-cover';
+---
+
+<figure class={className}>
+  {
+    isPlayable ? (
+      <div
+        class:list={['video-player', frameClass]}
+        data-embed-kind={parsed.kind}
+        data-embed-url={parsed.embedUrl}
+        data-video-src={parsed.kind === 'file' ? parsed.embedUrl : undefined}
+        data-video-title={alt}
+      >
+        <button
+          type="button"
+          class="video-player__trigger group absolute inset-0 z-10 flex w-full cursor-pointer items-center justify-center border-0 bg-transparent p-0"
+          aria-label={`Play video: ${alt}`}
+        >
+          {
+            optimizedPoster ? (
+              <OptimizedImage
+                src={optimizedPoster}
+                alt={alt}
+                width={720}
+                height={405}
+                widths={[640, 720]}
+                sizes="50vw"
+                mobileWidths={[400]}
+                mobileSizes="100vw"
+                quality={80}
+                class={posterClass}
+                loading="lazy"
+              />
+            ) : (
+              <img
+                src={posterSrc}
+                alt={alt}
+                width="720"
+                height="405"
+                class={posterClass}
+                loading="lazy"
+              />
+            )
+          }
+          <span class="absolute inset-0 bg-black/30 transition group-hover:bg-black/40" aria-hidden="true" />
+          <PlayButton size="lg" class="relative z-10 shrink-0" />
+          {
+            captionOverlay && caption && (
+              <span class="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#030F1E]/88 to-transparent px-5 py-4 text-left text-[0.9375rem] font-semibold text-[#F4F6FA]">
+                {caption}
+              </span>
+            )
+          }
+        </button>
+        <div class="video-player__frame absolute inset-0" hidden aria-hidden="true" />
+      </div>
+    ) : (
+      <div class={frameClass}>
+        {
+          optimizedPoster ? (
+            <OptimizedImage
+              src={optimizedPoster}
+              alt={alt}
+              width={720}
+              height={405}
+              widths={[640, 720]}
+              sizes="50vw"
+              mobileWidths={[400]}
+              mobileSizes="100vw"
+              quality={80}
+              class={posterClass}
+              loading="lazy"
+            />
+          ) : (
+            <img
+              src={posterSrc}
+              alt={alt}
+              width="720"
+              height="405"
+              class={posterClass}
+              loading="lazy"
+            />
+          )
+        }
+        <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+          <PlayButton size="lg" />
+        </div>
+      </div>
+    )
+  }
+  {caption && !captionOverlay && (
+    <figcaption class="mt-3 text-center text-small text-fg-muted">{caption}</figcaption>
+  )}
+</figure>
+
+{
+  isPlayable && (
+    <script>
+      function initVideoPlayers() {
+        document.querySelectorAll<HTMLElement>('.video-player').forEach((player) => {
+          if (player.dataset.initialized === 'true') return;
+
+          const trigger = player.querySelector<HTMLButtonElement>('.video-player__trigger');
+          const frame = player.querySelector<HTMLElement>('.video-player__frame');
+          if (!trigger || !frame) return;
+
+          player.dataset.initialized = 'true';
+
+          trigger.addEventListener('click', () => {
+            const kind = player.dataset.embedKind;
+            const title = player.dataset.videoTitle ?? 'Video';
+
+            trigger.hidden = true;
+            frame.hidden = false;
+            frame.removeAttribute('hidden');
+            frame.classList.remove('hidden');
+            frame.setAttribute('aria-hidden', 'false');
+
+            if (kind === 'youtube' || kind === 'vimeo') {
+              const iframe = document.createElement('iframe');
+              iframe.src = player.dataset.embedUrl ?? '';
+              iframe.title = title;
+              iframe.allow =
+                'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+              iframe.allowFullscreen = true;
+              iframe.className = 'absolute inset-0 h-full w-full border-0';
+              frame.appendChild(iframe);
+              return;
+            }
+
+            if (kind === 'file') {
+              const video = document.createElement('video');
+              video.src = player.dataset.videoSrc ?? '';
+              video.controls = true;
+              video.playsInline = true;
+              video.className = 'absolute inset-0 h-full w-full bg-black object-contain';
+              frame.appendChild(video);
+              void video.play();
+            }
+          });
+        });
+      }
+
+      initVideoPlayers();
+      document.addEventListener('astro:page-load', initVideoPlayers);
+    </script>
+  )
+}

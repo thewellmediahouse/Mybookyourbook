@@ -1,0 +1,339 @@
+---
+interface GrowthPathStep {
+  title: string;
+  detail?: string;
+  price?: string;
+  highlight?: boolean;
+}
+
+interface Props {
+  title: string;
+  steps: GrowthPathStep[];
+  retainerLabel: string;
+  retainers: string[];
+  class?: string;
+  variant?: 'default' | 'hero';
+}
+
+const { title, steps, retainerLabel, retainers, class: className = '', variant = 'default' } =
+  Astro.props;
+---
+
+<aside
+  class:list={['growth-path-card', 'scroll-reveal', className, variant === 'hero' && 'growth-path-card--hero']}
+  aria-label={title}
+>
+  <div class="growth-path-card__glow" aria-hidden="true"></div>
+  <div class="growth-path-card__line" aria-hidden="true"></div>
+
+  <h2 class="growth-path-card__title">{title}</h2>
+
+  <ol class="growth-path-card__steps">
+    {
+      steps.map((step, index) => (
+        <li
+          class:list={[
+            'growth-path-card__step',
+            step.highlight && 'growth-path-card__step--highlight',
+          ]}
+          style={`--step-delay: ${index * 120}ms`}
+        >
+          <span class="growth-path-card__step-marker" aria-hidden="true">
+            {index + 1}
+          </span>
+          <div class="growth-path-card__step-body">
+            <p class="growth-path-card__step-title">{step.title}</p>
+            {step.detail && <p class="growth-path-card__step-detail">{step.detail}</p>}
+            {step.price && <p class="growth-path-card__step-price">{step.price}</p>}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="growth-path-card__retainers">
+    <p class="growth-path-card__retainers-label">{retainerLabel}</p>
+    <ul class="growth-path-card__retainer-grid">
+      {
+        retainers.map((name) => (
+          <li class="growth-path-card__retainer">{name}</li>
+        ))
+      }
+    </ul>
+  </div>
+</aside>
+
+<style>
+  .growth-path-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+    border-radius: 1.25rem;
+    border: 1px solid rgb(214 169 74 / 0.42);
+    background: rgb(2 8 23 / 0.62);
+    backdrop-filter: blur(16px);
+    box-shadow:
+      0 24px 48px rgb(0 0 0 / 0.45),
+      0 0 0 1px rgb(214 169 74 / 0.08) inset,
+      0 0 40px rgb(214 169 74 / 0.1);
+    overflow: hidden;
+  }
+
+  .growth-path-card__glow {
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 60%;
+    height: 55%;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgb(240 201 111 / 0.18) 0%, transparent 70%);
+    pointer-events: none;
+    animation: growth-path-glow 6s ease-in-out infinite alternate;
+  }
+
+  .growth-path-card__line {
+    position: absolute;
+    left: 2.35rem;
+    top: 4.5rem;
+    bottom: 6.5rem;
+    width: 2px;
+    background: linear-gradient(
+      180deg,
+      rgb(214 169 74 / 0.15),
+      rgb(240 201 111 / 0.65) 35%,
+      rgb(240 201 111 / 0.65) 65%,
+      rgb(214 169 74 / 0.2)
+    );
+    box-shadow: 0 0 12px rgb(240 201 111 / 0.35);
+    animation: growth-path-line-pulse 4s ease-in-out infinite;
+  }
+
+  .growth-path-card__title {
+    position: relative;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.2vw, 1.65rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #f6f2eb;
+  }
+
+  .growth-path-card__steps {
+    position: relative;
+    display: grid;
+    gap: 0.875rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .growth-path-card__step {
+    display: flex;
+    gap: 0.875rem;
+    align-items: flex-start;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgb(214 169 74 / 0.18);
+    background: rgb(6 14 28 / 0.55);
+    opacity: 0;
+    transform: translateY(0.75rem);
+    animation: growth-path-step-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    animation-delay: var(--step-delay, 0ms);
+  }
+
+  .growth-path-card__step--highlight {
+    border-color: rgb(240 201 111 / 0.55);
+    background: rgb(214 169 74 / 0.12);
+    box-shadow: 0 0 28px rgb(214 169 74 / 0.18);
+    animation:
+      growth-path-step-enter 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards,
+      growth-path-launch-pulse 3.5s ease-in-out 1.2s infinite;
+    animation-delay: var(--step-delay, 0ms), 1.2s;
+  }
+
+  .growth-path-card__step-marker {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1px solid rgb(214 169 74 / 0.45);
+    background: rgb(214 169 74 / 0.12);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #f0c96f;
+  }
+
+  .growth-path-card__step--highlight .growth-path-card__step-marker {
+    border-color: rgb(240 201 111 / 0.75);
+    background: linear-gradient(135deg, rgb(214 169 74 / 0.35), rgb(240 201 111 / 0.2));
+    color: #fff8e8;
+  }
+
+  .growth-path-card__step-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #f6f2eb;
+  }
+
+  .growth-path-card__step-detail {
+    margin: 0.25rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: #b8c0d0;
+  }
+
+  .growth-path-card__step-price {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #f0c96f;
+  }
+
+  .growth-path-card__retainers {
+    position: relative;
+    padding-top: 0.25rem;
+  }
+
+  .growth-path-card__retainers-label {
+    margin: 0 0 0.625rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(240 201 111 / 0.85);
+  }
+
+  .growth-path-card__retainer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .growth-path-card__retainer {
+    padding: 0.5rem 0.35rem;
+    border-radius: 0.625rem;
+    border: 1px solid rgb(214 169 74 / 0.22);
+    background: rgb(6 14 28 / 0.65);
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+    color: #e8ecf4;
+  }
+
+  .growth-path-card--hero {
+    gap: 1.5rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    border-radius: 1.5rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__line {
+    left: 2.75rem;
+    top: 5rem;
+    bottom: 7rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__title {
+    font-size: clamp(1.5rem, 2.8vw, 2rem);
+  }
+
+  .growth-path-card--hero .growth-path-card__steps {
+    gap: 1rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__step {
+    gap: 1rem;
+    padding: 1rem 1.125rem;
+    border-radius: 1rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__step-marker {
+    width: 2.125rem;
+    height: 2.125rem;
+    font-size: 0.875rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__step-title {
+    font-size: clamp(1rem, 1.6vw, 1.125rem);
+  }
+
+  .growth-path-card--hero .growth-path-card__step-detail {
+    font-size: 0.9375rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__step-price {
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+  }
+
+  .growth-path-card--hero .growth-path-card__retainers-label {
+    font-size: 0.75rem;
+  }
+
+  .growth-path-card--hero .growth-path-card__retainer {
+    padding: 0.625rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  @keyframes growth-path-step-enter {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes growth-path-glow {
+    from {
+      opacity: 0.65;
+      transform: translate(0, 0);
+    }
+
+    to {
+      opacity: 1;
+      transform: translate(-4%, 3%);
+    }
+  }
+
+  @keyframes growth-path-line-pulse {
+    0%,
+    100% {
+      opacity: 0.75;
+      box-shadow: 0 0 8px rgb(240 201 111 / 0.25);
+    }
+
+    50% {
+      opacity: 1;
+      box-shadow: 0 0 16px rgb(240 201 111 / 0.45);
+    }
+  }
+
+  @keyframes growth-path-launch-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgb(214 169 74 / 0.14);
+    }
+
+    50% {
+      box-shadow: 0 0 32px rgb(240 201 111 / 0.28);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .growth-path-card__glow,
+    .growth-path-card__line,
+    .growth-path-card__step,
+    .growth-path-card__step--highlight {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

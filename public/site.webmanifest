@@ -1,0 +1,19 @@
+{
+  "name": "The Well Media",
+  "short_name": "The Well",
+  "icons": [
+    {
+      "src": "/assets/the-well/logos/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/the-well/logos/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#D6A63E",
+  "background_color": "#050B16",
+  "display": "standalone"
+}

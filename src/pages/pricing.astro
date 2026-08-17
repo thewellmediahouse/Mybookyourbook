@@ -1,0 +1,74 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PackagesHero from '@/components/sections/packages/PackagesHero.astro';
+import PackagesPricingLogic from '@/components/sections/packages/PackagesPricingLogic.astro';
+import PackagesAlaCarteGrid from '@/components/sections/packages/PackagesAlaCarteGrid.astro';
+import PackagesLaunchPack from '@/components/sections/packages/PackagesLaunchPack.astro';
+import PackagesMonthlySupport from '@/components/sections/packages/PackagesMonthlySupport.astro';
+import PackagesPricingCTA from '@/components/sections/packages/PackagesPricingCTA.astro';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { packagesConfig } from '@/config/packages';
+import { seoConfig } from '@/config/seo';
+import '@/styles/packages-page.css';
+
+const sections = pagesConfig.sections.pricing;
+const content = contentConfig.pricing;
+const seo = seoConfig.pages.pricing;
+const launchBundle = packagesConfig.bundles[0];
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/pricing">
+  <div class="packages-page">
+    {sections.hero && (
+      <PackagesHero class="packages-page__section packages-page__section--hero" {...content.hero} />
+    )}
+
+    {sections.pricingLogic && (
+      <PackagesPricingLogic class="packages-page__section packages-page__section--pricing-logic" {...content.pricingLogic} />
+    )}
+
+    {
+      sections.launchPack && launchBundle && (
+        <PackagesLaunchPack
+          class="packages-page__section packages-page__section--launch-pack"
+          label={content.launchPack.label}
+          heading={content.launchPack.heading}
+          copy={content.launchPack.copy}
+          cta={content.launchPack.cta}
+          features={content.launchPack.features}
+          bundle={launchBundle}
+        />
+      )
+    }
+
+    {
+      sections.monthlySupport && (
+        <PackagesMonthlySupport
+          class="packages-page__section packages-page__section--monthly-support"
+          label={content.monthlySupport.label}
+          heading={content.monthlySupport.heading}
+          subheading={content.monthlySupport.subheading}
+          servicePackages={packagesConfig.servicePackages}
+          tierSummaries={packagesConfig.tierSummaries}
+        />
+      )
+    }
+
+    {
+      sections.alaCarte && packagesConfig.alaCarte.length > 0 && (
+        <PackagesAlaCarteGrid
+          class="packages-page__section packages-page__section--ala-carte"
+          label={content.alaCarte.label}
+          heading={content.alaCarte.heading}
+          subheading={content.alaCarte.subheading}
+          items={packagesConfig.alaCarte}
+        />
+      )
+    }
+
+    {sections.cta && (
+      <PackagesPricingCTA class="packages-page__section packages-page__section--cta" {...content.cta} />
+    )}
+  </div>
+</BaseLayout>

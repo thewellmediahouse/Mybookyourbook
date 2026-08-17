@@ -1,0 +1,79 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PortfolioHero from '@/components/sections/PortfolioHero.astro';
+import PortfolioVideosSection from '@/components/sections/PortfolioVideosSection.astro';
+import PortfolioBeforeAfterSection from '@/components/sections/PortfolioBeforeAfterSection.astro';
+import PortfolioGallerySection from '@/components/portfolio/PortfolioGallerySection.astro';
+import PortfolioLightbox from '@/components/portfolio/PortfolioLightbox.astro';
+import CTASection from '@/components/marketing/CTASection.astro';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { getPortfolioVideoItems } from '@/config/portfolio';
+import { portfolioGalleryConfig } from '@/config/portfolioGallery';
+import { seoConfig } from '@/config/seo';
+
+const sections = pagesConfig.sections.portfolio;
+const seo = seoConfig.pages.portfolio;
+const portfolioVideos = getPortfolioVideoItems();
+const gallery = portfolioGalleryConfig;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/portfolio">
+  {sections.hero && <PortfolioHero {...contentConfig.portfolio.hero} />}
+
+  {
+    sections.videos && (
+      <PortfolioVideosSection videos={portfolioVideos} />
+    )
+  }
+
+  {
+    sections.beforeAfter && (
+      <PortfolioBeforeAfterSection {...gallery.beforeAfter} />
+    )
+  }
+
+  {
+    sections.foodPhotographyGallery && (
+      <PortfolioGallerySection
+        id="portfolio-food-photography"
+        lightboxGroup="food-photography"
+        compactTop
+        {...gallery.foodPhotography}
+      />
+    )
+  }
+
+  {
+    sections.realEstateGallery && (
+      <PortfolioGallerySection
+        id="portfolio-real-estate"
+        lightboxGroup="real-estate"
+        {...gallery.realEstate}
+      />
+    )
+  }
+
+  {
+    sections.behindScenesGallery && (
+      <PortfolioGallerySection
+        id="portfolio-behind-scenes"
+        lightboxGroup="behind-scenes"
+        {...gallery.behindScenes}
+      />
+    )
+  }
+
+  {
+    sections.cta && (
+      <CTASection
+        heading={contentConfig.portfolio.cta.heading}
+        primaryCta={contentConfig.portfolio.cta.primaryCta}
+        secondaryCta={contentConfig.portfolio.cta.secondaryCta}
+        background="primary"
+      />
+    )
+  }
+
+  <PortfolioLightbox />
+</BaseLayout>

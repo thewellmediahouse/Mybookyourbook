@@ -1,0 +1,42 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import Button from '@/components/ui/Button.astro';
+import PortfolioPreviewCard from '@/components/media/PortfolioPreviewCard.astro';
+import type { PortfolioItem } from '@/config/portfolio';
+
+interface Props {
+  eyebrow?: string;
+  heading?: string;
+  subheading?: string;
+  items: PortfolioItem[];
+  cta?: { label: string; href: string };
+}
+
+const { eyebrow, heading = 'Featured work', subheading, items, cta } = Astro.props;
+---
+
+<section class="py-section">
+  <div class="container">
+    <SectionHeading
+      eyebrow={eyebrow}
+      heading={heading}
+      subheading={subheading}
+      align="center"
+      class="scroll-reveal mx-auto mb-12"
+    />
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {items.map((item, index) => (
+        <PortfolioPreviewCard item={item} style={`--reveal-delay: ${index * 70}ms`} />
+      ))}
+    </div>
+    {
+      cta && (
+        <div class="scroll-reveal mt-12 text-center">
+          <Button href={cta.href} variant="outline-contrast" size="lg">
+            {cta.label}
+          </Button>
+        </div>
+      )
+    }
+  </div>
+</section>

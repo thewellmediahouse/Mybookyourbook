@@ -1,0 +1,162 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import Button from '@/components/ui/Button.astro';
+import { companyConfig } from '@/config/company';
+import { designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsitePaymentSuccess;
+const { branding, contactRoute } = designStudioConfig;
+const whatsapp = companyConfig.messaging.link;
+---
+
+<BaseLayout
+  title={seo.title}
+  description={seo.description}
+  pathname="/design-your-website/payment/success"
+>
+  <section class="py-section-sm">
+    <Container>
+      <div class="mx-auto max-w-2xl text-center">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {branding.eyebrow}
+        </p>
+        <h1 class="mt-3 font-display text-h2 text-fg">
+          Your direction is chosen. Now we build it.
+        </h1>
+        <p class="mt-4 text-fg-soft" data-success-message>
+          Thank you. Your website direction, project brief, uploaded media and payment have been
+          received by The Well Media House.
+        </p>
+        <p class="mt-3 text-small text-fg-muted" data-success-status>
+          Confirming payment with PayFast…
+        </p>
+
+        <dl class="mx-auto mt-10 max-w-lg space-y-3 text-left text-small surface-card p-6" data-success-details>
+          <div>
+            <dt class="text-fg-muted">Project</dt>
+            <dd class="mt-1 text-fg" data-success-reference>—</dd>
+          </div>
+          <div>
+            <dt class="text-fg-muted">Selected direction</dt>
+            <dd class="mt-1 text-fg" data-success-concept>—</dd>
+          </div>
+          <div>
+            <dt class="text-fg-muted">Payment status</dt>
+            <dd class="mt-1 text-fg" data-success-payment>—</dd>
+          </div>
+          <div>
+            <dt class="text-fg-muted">Next step</dt>
+            <dd class="mt-1 text-fg-soft">
+              Our design team will use your brief, uploads, and chosen direction to build the
+              professional website.
+            </dd>
+          </div>
+        </dl>
+
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <Button href={whatsapp} variant="accent" size="sm" external>
+            WhatsApp Our Team
+          </Button>
+          <Button href="/" variant="outline" size="sm">Back to The Well Media House</Button>
+          <Button href={contactRoute} variant="ghost" size="sm">Back to checkout</Button>
+        </div>
+
+        <p class="mt-8 text-xs text-fg-muted">
+          This return page never marks payment as paid by itself. Only a verified PayFast
+          notification confirms payment.
+        </p>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<script>
+  import { loadProjectSession } from '@/scripts/design-studio/api';
+
+  async function refreshStatus(attempt = 0) {
+    const session = loadProjectSession();
+    const statusEl = document.querySelector('[data-success-status]');
+    const paymentEl = document.querySelector('[data-success-payment]');
+    const referenceEl = document.querySelector('[data-success-reference]');
+    const conceptEl = document.querySelector('[data-success-concept]');
+    const messageEl = document.querySelector('[data-success-message]');
+
+    if (!session?.projectId || !session.accessToken) {
+      if (statusEl) {
+        statusEl.textContent =
+          'Open this page from the same browser session used for checkout to see live status.';
+      }
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/design-studio/project/${encodeURIComponent(session.projectId)}`,
+        { headers: { 'x-design-studio-token': session.accessToken } },
+      );
+      if (!response.ok) throw new Error('Unable to load project.');
+      const data = (await response.json()) as {
+        project?: {
+          status?: string;
+          public_reference?: string;
+          selected_concept_id?: string | null;
+          paid_at?: string | null;
+        };
+        concepts?: Array<{ id: string; direction?: { name?: string } }>;
+      };
+
+      const project = data.project;
+      const selected = data.concepts?.find((c) => c.id === project?.selected_concept_id);
+      if (referenceEl) referenceEl.textContent = project?.public_reference || session.projectId;
+      if (conceptEl) conceptEl.textContent = selected?.direction?.name || 'Selected direction';
+
+      const status = project?.status || 'UNKNOWN';
+      const paid =
+        status === 'PAID' ||
+        status === 'READY_FOR_DESIGNER' ||
+        status === 'IN_DESIGN' ||
+        status === 'COMPLETED' ||
+        Boolean(project?.paid_at);
+
+      if (paymentEl) {
+        paymentEl.textContent = paid
+          ? `Verified (${status})`
+          : `Awaiting PayFast confirmation (${status})`;
+      }
+
+      if (paid) {
+        if (statusEl) {
+          statusEl.textContent = 'Payment verified. Your project is ready for our design team.';
+        }
+        if (messageEl) {
+          messageEl.textContent =
+            'Thank you. Your website direction, project brief, uploaded media and payment have been received by The Well Media House.';
+        }
+        return;
+      }
+
+      if (statusEl) {
+        statusEl.textContent =
+          attempt < 8
+            ? 'Waiting for PayFast notification… this usually takes a few seconds.'
+            : 'Still waiting for PayFast confirmation. If you completed payment, refresh shortly — the return page never marks paid on its own.';
+      }
+
+      if (attempt < 8) {
+        window.setTimeout(() => void refreshStatus(attempt + 1), 2500);
+      }
+    } catch {
+      if (statusEl) {
+        statusEl.textContent = 'Could not load payment status from this session.';
+      }
+    }
+  }
+
+  void refreshStatus();
+</script>

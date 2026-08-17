@@ -1,0 +1,162 @@
+---
+import type { NavItem } from '@/config/navigation';
+
+interface Props {
+  items: NavItem[];
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { items, class: className = '', ariaLabel = 'Main navigation' } = Astro.props;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function isItemActive(item: NavItem): boolean {
+  const href = item.href.replace(/\/$/, '') || '/';
+  if (currentPath === href) return true;
+  return Boolean(item.children?.some((child) => isItemActive(child)));
+}
+---
+
+<nav aria-label={ariaLabel} class={className}>
+  <ul class="flex flex-wrap items-center gap-1">
+    {
+      items.map((item) => {
+        const isActive = isItemActive(item);
+        const hasChildren = Boolean(item.children?.length);
+
+        if (!hasChildren) {
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'rounded-button px-3 py-2 text-small font-medium transition-colors',
+                  isActive ? 'nav-active-gold text-accent' : 'text-fg-muted hover:text-fg',
+                ]}
+                aria-current={currentPath === (item.href.replace(/\/$/, '') || '/') ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        }
+
+        return (
+          <li class="nav-dropdown relative">
+            <a
+              href={item.href}
+              class:list={[
+                'nav-dropdown__trigger inline-flex items-center gap-1 rounded-button px-3 py-2 text-small font-medium transition-colors',
+                isActive ? 'nav-active-gold text-accent' : 'text-fg-muted hover:text-fg',
+              ]}
+              aria-haspopup="true"
+              aria-expanded="false"
+              data-nav-dropdown-trigger
+            >
+              {item.label}
+              <svg class="h-3.5 w-3.5 opacity-70" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 10.94l3.71-3.71a.75.75 0 1 1 1.06 1.06l-4.24 4.24a.75.75 0 0 1-1.06 0L5.21 8.29a.75.75 0 0 1 .02-1.08Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </a>
+            <ul class="nav-dropdown__menu" role="menu">
+              {item.children!.map((child) => {
+                const childHref = child.href.replace(/\/$/, '') || '/';
+                const childActive = currentPath === childHref;
+                return (
+                  <li role="none">
+                    <a
+                      href={child.href}
+                      role="menuitem"
+                      class:list={[
+                        'nav-dropdown__link',
+                        childActive && 'nav-dropdown__link--active',
+                      ]}
+                      aria-current={childActive ? 'page' : undefined}
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .nav-dropdown__menu {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    left: 0;
+    z-index: 50;
+    min-width: 14rem;
+    padding: 0.4rem;
+    margin: 0;
+    list-style: none;
+    border-radius: 0.75rem;
+    border: 1px solid rgb(214 169 74 / 0.28);
+    background: rgb(6 14 28 / 0.96);
+    box-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.35rem);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease,
+      visibility 0.18s ease;
+  }
+
+  .nav-dropdown:hover .nav-dropdown__menu,
+  .nav-dropdown:focus-within .nav-dropdown__menu,
+  .nav-dropdown.is-open .nav-dropdown__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .nav-dropdown__link {
+    display: block;
+    padding: 0.65rem 0.85rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #c8cfdd;
+    text-decoration: none;
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
+
+  .nav-dropdown__link:hover,
+  .nav-dropdown__link--active {
+    color: #f0c96f;
+    background: rgb(214 169 74 / 0.1);
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-nav-dropdown-trigger]').forEach((trigger) => {
+    const parent = trigger.closest('.nav-dropdown');
+    if (!parent) return;
+
+    trigger.addEventListener('click', (event) => {
+      if (!parent.classList.contains('is-open') && window.matchMedia('(hover: none)').matches) {
+        event.preventDefault();
+        parent.classList.add('is-open');
+        trigger.setAttribute('aria-expanded', 'true');
+      }
+    });
+
+    document.addEventListener('click', (event) => {
+      if (!(event.target instanceof Node) || !parent.contains(event.target)) {
+        parent.classList.remove('is-open');
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    });
+  });
+</script>

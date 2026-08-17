@@ -1,0 +1,96 @@
+{
+  "recommended_path": "public/assets/the-well/",
+  "quality": "WebP quality 80-85, each file checked under 350 KB",
+  "assets": [
+    {
+      "file": "cta-growth-bg.webp",
+      "size_kb": 32.6,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "hero-premium-media-bg.webp",
+      "size_kb": 56.7,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "improved-homepage-mockup-reference.webp",
+      "size_kb": 133.2,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "logo-header-the-well.webp",
+      "size_kb": 12.4,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "logo-mark-w.webp",
+      "size_kb": 11.6,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-brand-campaign.webp",
+      "size_kb": 18.2,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-company-promo.webp",
+      "size_kb": 16.5,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-online-store.webp",
+      "size_kb": 14.2,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-product-demo.webp",
+      "size_kb": 16.7,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-product-photography.webp",
+      "size_kb": 17.1,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "portfolio-website-design.webp",
+      "size_kb": 14.3,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-business-growth-systems.webp",
+      "size_kb": 24.9,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-cinematic-video.webp",
+      "size_kb": 17.1,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-marketing-strategy.webp",
+      "size_kb": 24.7,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-product-demo-video.webp",
+      "size_kb": 17.3,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-product-photography.webp",
+      "size_kb": 17.8,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "service-website-design.webp",
+      "size_kb": 16.0,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    },
+    {
+      "file": "showreel-thumbnail.webp",
+      "size_kb": 37.0,
+      "use": "see CURSOR_INSTRUCTIONS.md"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+# Local Worker secrets for Design Studio (copy to .dev.vars — never commit real values)
+# Cloudflare Turnstile always-passes test keys:
+TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
+
+# OpenAI (required for Phase 7+ generation)
+OPENAI_API_KEY=
+OPENAI_TEXT_MODEL=gpt-4.1-mini
+OPENAI_IMAGE_MODEL=gpt-image-1-mini
+
+# PayFast — use sandbox for testing; set PAYFAST_MODE=live for production merchant.
+# Sandbox: https://sandbox.payfast.co.za
+PAYFAST_MODE=sandbox
+# PAYFAST_MERCHANT_ID=10000100
+# PAYFAST_MERCHANT_KEY=46f0cd694581a
+# PAYFAST_PASSPHRASE=
+# Public origin used for return/cancel/notify URLs (no trailing slash)
+# PUBLIC_SITE_URL=http://127.0.0.1:8787
+
+# Phase 12 — team handoff
+# FormSubmit destination for paid-project emails (activate once on FormSubmit)
+# DESIGN_STUDIO_NOTIFY_EMAIL=schalk@thewellmedia.com
+# Long random service token for /api/design-studio/internal/* (also put Cloudflare Access in front)
+# DESIGN_STUDIO_TEAM_TOKEN=
+
+# Full deploy steps: docs/DESIGN_STUDIO_DEPLOYMENT_CHECKLIST.md

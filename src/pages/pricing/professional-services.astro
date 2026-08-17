@@ -1,0 +1,76 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import PackagesHero from '@/components/sections/packages/PackagesHero.astro';
+import PackagesPricingLogic from '@/components/sections/packages/PackagesPricingLogic.astro';
+import PackagesLaunchPack from '@/components/sections/packages/PackagesLaunchPack.astro';
+import PackagesMonthlySupport from '@/components/sections/packages/PackagesMonthlySupport.astro';
+import PackagesPricingCTA from '@/components/sections/packages/PackagesPricingCTA.astro';
+import { raster } from '@/assets/raster';
+import { contentConfig } from '@/config/content';
+import { pagesConfig } from '@/config/pages';
+import { professionalServicesPackagesConfig } from '@/config/professionalServices';
+import { seoConfig } from '@/config/seo';
+import '@/styles/packages-page.css';
+
+const sections = pagesConfig.sections.professionalServices;
+const content = contentConfig.professionalServices;
+const seo = seoConfig.pages.professionalServices;
+const launchBundle = professionalServicesPackagesConfig.bundles[0];
+const pkg = professionalServicesPackagesConfig;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/pricing/professional-services">
+  <div class="packages-page">
+    {
+      sections.hero && (
+        <PackagesHero
+          class="packages-page__section packages-page__section--hero"
+          {...content.hero}
+          heroImage={raster.packages.professionalServicesHero}
+          heroImageAlt="Professional recording educational media content"
+        />
+      )
+    }
+
+    {
+      sections.pricingLogic && (
+        <PackagesPricingLogic
+          class="packages-page__section packages-page__section--pricing-logic"
+          {...content.pricingLogic}
+        />
+      )
+    }
+
+    {
+      sections.launchPack && launchBundle && (
+        <PackagesLaunchPack
+          class="packages-page__section packages-page__section--launch-pack"
+          label={content.launchPack.label}
+          heading={content.launchPack.heading}
+          copy={content.launchPack.copy}
+          cta={content.launchPack.cta}
+          features={content.launchPack.features}
+          bundle={launchBundle}
+          exclusions={pkg.launchPackExclusions}
+        />
+      )
+    }
+
+    {
+      sections.monthlySupport && (
+        <PackagesMonthlySupport
+          class="packages-page__section packages-page__section--monthly-support"
+          label={content.monthlySupport.label}
+          heading={content.monthlySupport.heading}
+          subheading={content.monthlySupport.subheading}
+          servicePackages={pkg.servicePackages}
+          tierSummaries={pkg.tierSummaries}
+        />
+      )
+    }
+
+    {sections.cta && (
+      <PackagesPricingCTA class="packages-page__section packages-page__section--cta" {...content.cta} />
+    )}
+  </div>
+</BaseLayout>

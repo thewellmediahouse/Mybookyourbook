@@ -1,0 +1,33 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import Pill from '@/components/ui/Pill.astro';
+import type { TierSummary } from '@/config/packages';
+
+interface Props {
+  heading: string;
+  tiers: TierSummary[];
+  note?: string;
+}
+
+const { heading, tiers, note } = Astro.props;
+---
+
+<section class="section-surface py-section-sm">
+  <div class="container">
+    <SectionHeading heading={heading} align="center" class="mb-8" />
+    <div class="flex flex-wrap justify-center gap-3">
+      {tiers.map((tier, index) => (
+        <Pill label={tier.label} active={index === 1} />
+      ))}
+    </div>
+    <div class="mx-auto mt-8 grid max-w-4xl gap-4 md:grid-cols-3">
+      {tiers.map((tier) => (
+        <div class="surface-card p-5 text-center">
+          <h3 class="text-h4 font-semibold">{tier.name}</h3>
+          <p class="mt-2 text-small text-fg-soft">{tier.tagline}</p>
+        </div>
+      ))}
+    </div>
+    {note && <p class="mx-auto mt-8 max-w-2xl text-center text-fg-muted">{note}</p>}
+  </div>
+</section>

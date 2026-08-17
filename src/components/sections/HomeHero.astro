@@ -1,0 +1,690 @@
+---
+import Button from '@/components/ui/Button.astro';
+import HeroHeading from '@/components/ui/HeroHeading.astro';
+import HeroGoldDustOverlay from '@/components/decor/HeroGoldDustOverlay.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import BrandLogo from '@/components/ui/BrandLogo.astro';
+import { raster } from '@/assets/raster';
+import type { ImageMetadata } from 'astro';
+import type { HeroContent, StatItem } from '@/config/content';
+
+interface Props extends HeroContent {
+  eyebrow?: string;
+  stats?: StatItem[];
+  showMobileLogo?: boolean;
+}
+
+const {
+  eyebrow,
+  heading,
+  headingHighlight,
+  subheading,
+  paragraph,
+  trustPoints,
+  primaryCta,
+  secondaryCta,
+  media,
+  stats,
+  showMobileLogo = true,
+} = Astro.props;
+
+const iconPaths: Record<NonNullable<StatItem['icon']>, string> = {
+  trophy:
+    'M12 2l2.4 4.8L20 8l-4 3.9L17 17l-5-2.6L7 17l1-5.1L4 8l5.6-1.2L12 2z',
+  clients:
+    'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+  experience:
+    'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z',
+  focus:
+    'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+};
+
+function parseStatValue(value: string): { target: number; suffix: string } | null {
+  const match = value.match(/^(\d+(?:\.\d+)?)(.*)$/);
+  if (!match) return null;
+  return { target: Number(match[1]), suffix: match[2] };
+}
+
+function isImageMetadata(value: unknown): value is ImageMetadata {
+  return typeof value === 'object' && value !== null && 'src' in value && 'width' in value && 'height' in value;
+}
+
+const optimizedHero = media?.src && isImageMetadata(media.src) ? media.src : null;
+const stringHero = typeof media?.src === 'string' && media.src.length > 0 ? media.src : null;
+/** Prefer intrinsic asset size so srcset is never capped by stale layout hints. */
+const heroWidth = optimizedHero?.width ?? media?.width ?? 1920;
+const heroHeight = optimizedHero?.height ?? media?.height ?? 1080;
+/**
+ * Layout attrs use CSS display size; srcset serves sharper desktop/retina rungs.
+ * Mobile stays on a dedicated <picture> source so LCP/SEO budgets stay intact.
+ */
+const heroRenderWidth = Math.min(heroWidth, 1600);
+const heroRenderHeight = Math.max(1, Math.round((heroRenderWidth * heroHeight) / heroWidth));
+const heroDesktopWidths = [...new Set([800, 1280, 1440, 1600, heroWidth])]
+  .filter((w) => w >= 800 && w <= heroWidth)
+  .sort((a, b) => a - b);
+const heroMobileWidths = [480, 720].filter((w) => w <= Math.max(heroWidth, 480));
+---
+
+<section class="home-hero relative">
+  <div class="home-hero__bg" aria-hidden="true" />
+  <div class="home-hero__dots" aria-hidden="true" />
+
+  <div class="container relative">
+    <div class="home-hero__stage scroll-reveal">
+      {
+        (optimizedHero || stringHero) && (
+          <div class="home-hero__visual">
+            {
+              showMobileLogo && (
+                <div class="home-hero__mobile-logo" aria-hidden="true">
+                  <BrandLogo
+                    src={raster.brand.logoWhiteFull}
+                    alt=""
+                    width={214}
+                    widths={[214, 320, 428]}
+                    sizes="(max-width: 768px) min(52vw, 13.5rem), 214px"
+                    class="home-hero__mobile-logo-image"
+                    loading="eager"
+                  />
+                </div>
+              )
+            }
+            {
+              optimizedHero ? (
+                <OptimizedImage
+                  src={optimizedHero}
+                  alt={media?.alt ?? ''}
+                  width={heroRenderWidth}
+                  height={heroRenderHeight}
+                  widths={heroDesktopWidths}
+                  sizes="(max-width: 1024px) 92vw, min(70vw, 1600px)"
+                  mobileWidths={heroMobileWidths}
+                  mobileSizes="100vw"
+                  quality={72}
+                  class="home-hero__camera"
+                  loading="eager"
+                  fetchpriority="high"
+                />
+              ) : (
+                <img
+                  src={stringHero!}
+                  alt={media?.alt ?? ''}
+                  width={heroRenderWidth}
+                  height={heroRenderHeight}
+                  class="home-hero__camera"
+                  loading="eager"
+                  fetchpriority="high"
+                  decoding="async"
+                />
+              )
+            }
+          </div>
+        )
+      }
+
+      <div class="home-hero__content">
+        {
+          (eyebrow || subheading) && (
+            <p class="home-hero__eyebrow">{subheading ?? eyebrow}</p>
+          )
+        }
+        <HeroHeading
+          heading={heading}
+          headingHighlight={headingHighlight}
+          class="home-hero__heading"
+        />
+        {
+          paragraph && (
+            <p class="home-hero__paragraph">{paragraph}</p>
+          )
+        }
+        {
+          trustPoints && trustPoints.length > 0 && (
+            <ul class="home-hero__checks">
+              {trustPoints.map((point) => (
+                <li>
+                  <span class="home-hero__check-icon" aria-hidden="true">✓</span>
+                  {point}
+                </li>
+              ))}
+            </ul>
+          )
+        }
+        <div class="home-hero__actions">
+          <Button href={primaryCta.href} variant="accent" size="lg" class="home-hero__btn-primary">
+            {primaryCta.label}
+          </Button>
+          {
+            secondaryCta && (
+              <a href={secondaryCta.href} class="home-hero__btn-secondary">
+                <span>{secondaryCta.label}</span>
+                <span class="home-hero__play" aria-hidden="true">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </span>
+              </a>
+            )
+          }
+        </div>
+      </div>
+    </div>
+
+    {
+      stats && stats.length > 0 && (
+        <div class="home-hero__stats premium-card scroll-reveal" aria-label="Company highlights">
+          <ul class="home-hero__stats-list">
+            {
+              stats.map((stat, index) => {
+                const parsed = parseStatValue(stat.value);
+                return (
+                <>
+                  <li class="home-hero__stat">
+                    {
+                      stat.icon && (
+                        <span class="home-hero__stat-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d={iconPaths[stat.icon]} />
+                          </svg>
+                        </span>
+                      )
+                    }
+                    <p
+                      class="home-hero__stat-value"
+                      data-stat-counter={parsed ? '' : undefined}
+                      data-target={parsed?.target}
+                      data-suffix={parsed?.suffix}
+                    >
+                      {stat.value}
+                    </p>
+                    <p class="home-hero__stat-label">{stat.label}</p>
+                  </li>
+                  {index < stats.length - 1 && (
+                    <li class="home-hero__stat-divider hidden md:block" aria-hidden="true" />
+                  )}
+                </>
+                );
+              })
+            }
+          </ul>
+        </div>
+      )
+    }
+  </div>
+
+  <HeroGoldDustOverlay class="home-hero__dust" />
+</section>
+
+<style>
+  .home-hero {
+    padding: clamp(2.5rem, 5vw, 4rem) 0 clamp(1.5rem, 3vw, 2.5rem);
+    background: #030f1e;
+    isolation: isolate;
+    overflow-x: clip;
+  }
+
+  .home-hero__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 50% 45% at 50% 42%, rgb(224 169 56 / 0.08) 0%, transparent 62%),
+      radial-gradient(ellipse 40% 35% at 50% 20%, rgb(30 167 255 / 0.04) 0%, transparent 55%),
+      linear-gradient(180deg, #020814 0%, #030f1e 55%, #061426 100%);
+    pointer-events: none;
+  }
+
+  .home-hero__dots {
+    position: absolute;
+    left: max(1rem, calc(50% - 40rem));
+    top: 18%;
+    bottom: 28%;
+    width: 3px;
+    background-image: radial-gradient(circle, rgb(224 169 56 / 0.45) 1px, transparent 1px);
+    background-size: 3px 14px;
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .home-hero__mobile-logo {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .home-hero__stage {
+      gap: 1.5rem;
+    }
+
+    .home-hero__content {
+      order: 1;
+    }
+
+    .home-hero__visual {
+      order: 2;
+      min-height: clamp(16rem, 58vw, 24rem);
+      justify-content: flex-end;
+      align-items: center;
+    }
+
+    .home-hero__mobile-logo {
+      display: flex;
+      align-items: center;
+      position: absolute;
+      left: 0;
+      top: 50%;
+      z-index: 4;
+      width: min(52vw, 13.5rem);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    :global(.home-hero__mobile-logo-image) {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      object-position: left center;
+      opacity: 0;
+      filter: blur(10px);
+      animation: home-hero-logo-dissolve 4.2s cubic-bezier(0.33, 1, 0.68, 1) 0.35s forwards;
+    }
+
+    :global(.home-hero__camera) {
+      width: 118%;
+      max-width: none;
+      margin-left: auto;
+      object-position: 72% center;
+    }
+  }
+
+  @keyframes home-hero-logo-dissolve {
+    0% {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 0.94;
+      filter: blur(0);
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(.home-hero__mobile-logo-image) {
+      animation: none;
+      opacity: 0.94;
+      filter: none;
+      transform: none;
+    }
+  }
+
+  .home-hero :global(.home-hero__dust) {
+    z-index: 20;
+  }
+
+  .home-hero__stage {
+    position: relative;
+    min-height: clamp(26rem, 48vw, 38rem);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  @media (min-width: 1024px) {
+    .home-hero__stage {
+      display: block;
+      position: relative;
+      width: 100%;
+      max-width: 80rem;
+      margin-inline: auto;
+      min-height: clamp(30rem, 52vw, 44rem);
+    }
+  }
+
+  .home-hero__visual {
+    position: relative;
+    width: 100%;
+    max-width: none;
+    margin-inline: auto;
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  @media (min-width: 1024px) {
+    .home-hero__visual {
+      position: absolute;
+      top: 50%;
+      left: 18%;
+      right: -12%;
+      width: auto;
+      height: clamp(30rem, 54vw, 46rem);
+      max-width: none;
+      margin: 0;
+      transform: translateY(-50%);
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
+
+  /* :global — class is on Astro <Image>/<Picture> inside child components */
+  :global(.home-hero__camera) {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: center;
+    filter: drop-shadow(0 28px 72px rgb(0 0 0 / 0.48));
+    -webkit-mask-image: radial-gradient(
+      ellipse 88% 78% at 50% 50%,
+      #000 32%,
+      transparent 100%
+    );
+    mask-image: radial-gradient(
+      ellipse 88% 78% at 50% 50%,
+      #000 32%,
+      transparent 100%
+    );
+  }
+
+  @media (min-width: 1024px) {
+    :global(.home-hero__camera) {
+      width: auto;
+      height: 100%;
+      min-width: min(96vw, 80rem);
+      max-width: none;
+      object-fit: contain;
+      object-position: 78% 50%;
+      transform: scale(1.14);
+      transform-origin: 82% 50%;
+      -webkit-mask-image: radial-gradient(
+        ellipse 92% 82% at 68% 50%,
+        #000 22%,
+        rgb(0 0 0 / 0.92) 42%,
+        transparent 100%
+      );
+      mask-image: radial-gradient(
+        ellipse 92% 82% at 68% 50%,
+        #000 22%,
+        rgb(0 0 0 / 0.92) 42%,
+        transparent 100%
+      );
+    }
+  }
+
+  .home-hero__content {
+    position: relative;
+    z-index: 3;
+    max-width: 42rem;
+    padding: 0.5rem 0 1rem;
+  }
+
+  @media (min-width: 1024px) {
+    .home-hero__content {
+      width: min(100%, 42rem);
+      max-width: 46%;
+      padding-top: clamp(1rem, 3vw, 2.5rem);
+      text-align: left;
+    }
+
+    .home-hero__content :global(h1),
+    .home-hero__content .home-hero__paragraph,
+    .home-hero__content .home-hero__checks li,
+    .home-hero__content .home-hero__eyebrow,
+    .home-hero__content .home-hero__actions {
+      text-shadow:
+        0 2px 24px rgb(3 15 30 / 0.92),
+        0 4px 48px rgb(3 15 30 / 0.75);
+    }
+  }
+
+  .home-hero__eyebrow {
+    margin-bottom: 1.5rem;
+    font-size: clamp(0.75rem, 1.1vw, 0.9375rem);
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--brand-accent, #e0a938);
+  }
+
+  :global(.home-hero__heading) {
+    font-size: clamp(3.5rem, 8.5vw, 6.25rem);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+  }
+
+  .home-hero__paragraph {
+    margin-top: 1.65rem;
+    max-width: 36rem;
+    font-size: clamp(1.125rem, 2vw, 1.4375rem);
+    line-height: 1.65;
+    color: var(--color-text-soft, #e2e8f0);
+  }
+
+  .home-hero__checks {
+    margin-top: 1.65rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  .home-hero__checks li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: clamp(1rem, 1.6vw, 1.1875rem);
+    color: var(--color-text-soft, #e2e8f0);
+  }
+
+  .home-hero__check-icon {
+    color: var(--brand-accent, #e0a938);
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .home-hero__actions {
+    margin-top: 2.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  :global(.home-hero__btn-primary) {
+    min-width: 12.5rem;
+    font-size: 1.0625rem;
+    padding-top: 0.95rem;
+    padding-bottom: 0.95rem;
+  }
+
+  .home-hero__btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.95rem 1.5rem;
+    border: 1px solid rgb(255 255 255 / 0.35);
+    border-radius: 9999px;
+    color: #fff;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .home-hero__btn-secondary:hover {
+    background: rgb(255 255 255 / 0.08);
+    border-color: rgb(255 255 255 / 0.5);
+    color: #fff;
+  }
+
+  .home-hero__play {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, #ffd977, #e0a938 55%, #9c6818);
+    color: #06111f;
+    box-shadow: 0 8px 20px rgb(224 169 56 / 0.28);
+  }
+
+  .home-hero__play svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    translate: 1px 0;
+  }
+
+  .home-hero__stats {
+    position: relative;
+    z-index: 3;
+    margin-top: clamp(1.5rem, 3vw, 2.5rem);
+    padding: 1.35rem 1rem;
+  }
+
+  .home-hero__stats-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 768px) {
+    .home-hero__stats-list {
+      display: flex;
+      align-items: stretch;
+      justify-content: space-between;
+      gap: 0;
+    }
+  }
+
+  .home-hero__stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.35rem;
+    flex: 1;
+    padding: 0 0.75rem;
+  }
+
+  .home-hero__stat-divider {
+    width: 1px;
+    align-self: stretch;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgb(224 169 56 / 0.28) 50%,
+      transparent
+    );
+    list-style: none;
+  }
+
+  .home-hero__stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    color: var(--brand-accent, #e0a938);
+  }
+
+  .home-hero__stat-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .home-hero__stat-value {
+    font-family: var(--font-display);
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-text, #f4f6fa);
+  }
+
+  .home-hero__stat-label {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--color-text-muted, #b8c0ce);
+    text-wrap: balance;
+  }
+
+  @media (max-width: 1023px) {
+    .home-hero__stage {
+      min-height: auto;
+    }
+  }
+
+  @media (max-width: 639px) {
+    .home-hero__actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    :global(.home-hero__btn-primary),
+    .home-hero__btn-secondary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<script>
+  function easeOutCubic(t: number): number {
+    return 1 - (1 - t) ** 3;
+  }
+
+  function animateCounter(el: HTMLElement) {
+    const target = Number(el.dataset.target);
+    const suffix = el.dataset.suffix ?? '';
+    if (!Number.isFinite(target)) return;
+
+    const duration = 1800;
+    const start = performance.now();
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const value = Math.round(target * easeOutCubic(progress));
+      el.textContent = `${value}${suffix}`;
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+
+    el.textContent = `0${suffix}`;
+    requestAnimationFrame(tick);
+  }
+
+  function initStatCounters() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const counters = document.querySelectorAll<HTMLElement>('[data-stat-counter]');
+    if (!counters.length) return;
+
+    if (prefersReducedMotion) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const el = entry.target as HTMLElement;
+          if (el.dataset.counted === 'true') return;
+          el.dataset.counted = 'true';
+          animateCounter(el);
+          observer.unobserve(el);
+        });
+      },
+      { threshold: 0.4 },
+    );
+
+    counters.forEach((counter) => observer.observe(counter));
+  }
+
+  initStatCounters();
+  document.addEventListener('astro:page-load', initStatCounters);
+</script>

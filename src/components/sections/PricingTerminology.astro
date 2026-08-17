@@ -1,0 +1,32 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import type { TerminologyEntry } from '@/config/packages';
+
+interface Props {
+  heading?: string;
+  subheading?: string;
+  entries: TerminologyEntry[];
+}
+
+const {
+  heading = 'Terminology Definitions',
+  subheading,
+  entries,
+} = Astro.props;
+---
+
+<section class="py-section-sm">
+  <div class="container space-y-8">
+    <SectionHeading heading={heading} subheading={subheading} />
+    <dl class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        entries.map((entry) => (
+          <div class="surface-card p-6">
+            <dt class="text-h4 font-semibold text-fg">{entry.term}</dt>
+            <dd class="mt-2 text-small text-fg-soft">{entry.definition}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

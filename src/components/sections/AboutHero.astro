@@ -1,0 +1,105 @@
+---
+import HomeHero from '@/components/sections/HomeHero.astro';
+import type { HeroContent } from '@/config/content';
+
+type Props = HeroContent;
+---
+
+<div class="about-hero">
+  <HomeHero {...Astro.props} showMobileLogo={false} />
+</div>
+
+<style>
+  .about-hero :global(.home-hero__stage) {
+    min-height: clamp(28rem, 56vw, 40rem);
+  }
+
+  .about-hero :global(.home-hero__visual) {
+    position: relative;
+    width: min(100%, 22rem);
+    max-width: none;
+    margin-inline: auto;
+  }
+
+  .about-hero :global(.home-hero__visual)::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgb(3 15 30 / 0.82) 0%, rgb(3 15 30 / 0.35) 28%, transparent 55%),
+      linear-gradient(180deg, transparent 55%, rgb(3 15 30 / 0.45) 100%);
+  }
+
+  .about-hero :global(.home-hero__camera) {
+    width: 100%;
+    height: auto;
+    max-height: min(62vh, 34rem);
+    object-fit: contain;
+    object-position: center bottom;
+    filter: drop-shadow(0 28px 72px rgb(0 0 0 / 0.42));
+    transform: none !important;
+    min-width: unset !important;
+    -webkit-mask-image:
+      linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 0.45) 16%, #000 36%, #000 100%),
+      radial-gradient(ellipse 88% 86% at 58% 70%, #000 40%, transparent 100%) !important;
+    mask-image:
+      linear-gradient(90deg, transparent 0%, rgb(0 0 0 / 0.45) 16%, #000 36%, #000 100%),
+      radial-gradient(ellipse 88% 86% at 58% 70%, #000 40%, transparent 100%) !important;
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  @media (min-width: 1024px) {
+    .about-hero :global(.home-hero__stage) {
+      min-height: clamp(32rem, 48vw, 42rem);
+    }
+
+    .about-hero :global(.home-hero__content) {
+      z-index: 4;
+      max-width: min(100%, 40%);
+    }
+
+    .about-hero :global(.home-hero__visual) {
+      position: absolute;
+      top: 50%;
+      left: 46%;
+      right: -4%;
+      width: auto;
+      height: clamp(30rem, 48vw, 40rem);
+      margin: 0;
+      transform: translateY(-50%);
+      justify-content: flex-end;
+      align-items: flex-end;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .about-hero :global(.home-hero__visual)::after {
+      background:
+        linear-gradient(90deg, rgb(3 15 30 / 0.96) 0%, rgb(3 15 30 / 0.7) 18%, rgb(3 15 30 / 0.22) 40%, transparent 58%),
+        linear-gradient(180deg, transparent 60%, rgb(3 15 30 / 0.35) 100%);
+    }
+
+    .about-hero :global(.home-hero__camera) {
+      width: auto;
+      height: 100%;
+      max-width: min(48vw, 36rem);
+      max-height: none;
+      min-width: 0 !important;
+      object-fit: contain;
+      object-position: 88% 100%;
+      transform: none !important;
+      transform-origin: 88% 100%;
+      -webkit-mask-image:
+        linear-gradient(90deg, transparent 0%, transparent 10%, rgb(0 0 0 / 0.3) 24%, #000 44%, #000 86%, transparent 100%),
+        radial-gradient(ellipse 88% 86% at 72% 70%, #000 34%, transparent 100%) !important;
+      mask-image:
+        linear-gradient(90deg, transparent 0%, transparent 10%, rgb(0 0 0 / 0.3) 24%, #000 44%, #000 86%, transparent 100%),
+        radial-gradient(ellipse 88% 86% at 72% 70%, #000 34%, transparent 100%) !important;
+      -webkit-mask-composite: source-in;
+      mask-composite: intersect;
+    }
+  }
+</style>

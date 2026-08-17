@@ -1,0 +1,902 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import Button from '@/components/ui/Button.astro';
+import { designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsiteResults;
+const { branding, copy, createRoute } = designStudioConfig;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/design-your-website/results/">
+  <section class="py-section-sm">
+    <Container>
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {branding.eyebrow}
+        </p>
+        <h1 class="mt-3 font-display text-h2 text-fg sm:text-h1">{copy.resultsHeading}</h1>
+        <p class="mt-3 text-fg-soft" data-results-subtitle>
+          Loading your website directions…
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Button href={createRoute} variant="outline" size="sm">Edit brief</Button>
+          <Button href="/design-your-website" variant="ghost" size="sm">Back to overview</Button>
+          <button
+            type="button"
+            class="hidden inline-flex items-center justify-center rounded-button border-2 border-accent bg-transparent px-3 py-1.5 text-small font-medium text-fg-soft transition-colors hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-50"
+            data-retry-images
+          >
+            Retry failed visuals
+          </button>
+        </div>
+      </div>
+
+      <div
+        class="mx-auto mt-8 hidden max-w-3xl rounded-xl border border-accent/40 bg-accent/10 px-5 py-4 text-center"
+        data-selection-banner
+        role="status"
+      >
+        <p class="text-small font-medium tracking-[0.14em] text-accent uppercase">Selected direction</p>
+        <p class="mt-1 font-display text-h3 text-fg" data-selection-name></p>
+        <p class="mt-2 text-small text-fg-soft" data-selection-blurb></p>
+        <p class="mt-2 text-xs text-fg-muted">Continue to checkout from your selected concept card below.</p>
+      </div>
+
+      <p
+        class="mx-auto mt-8 hidden max-w-2xl rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-center text-small text-fg"
+        data-results-error
+        role="alert"
+      >
+      </p>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2" data-results-grid></div>
+
+      <div class="mt-14 hidden" data-compare-section aria-labelledby="concept-compare-heading">
+        <h2 id="concept-compare-heading" class="font-display text-h3 text-fg">Compare directions</h2>
+        <div class="mt-6 overflow-x-auto" data-compare-table></div>
+      </div>
+
+      <div class="mt-14 hidden surface-card p-6 sm:p-8" data-brief-summary>
+        <h2 class="font-display text-h3 text-fg">Your brief</h2>
+        <p class="mt-2 text-small text-fg-muted">
+          The direction you choose will be built from these requirements.
+        </p>
+        <dl class="mt-6 grid gap-4 text-small sm:grid-cols-2" data-brief-summary-body></dl>
+      </div>
+
+      <p class="mt-10 text-center text-small text-fg-muted" data-results-note>
+        Concept visuals are inspiration for the professional build — final websites may differ.
+      </p>
+    </Container>
+  </section>
+
+  <div
+    id="concept-detail-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="concept-detail-title"
+    aria-hidden="true"
+    hidden
+  >
+    <div class="surface-card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+      <div class="flex items-start justify-between gap-4">
+        <h2 id="concept-detail-title" class="font-display text-h3 text-fg"></h2>
+        <button
+          type="button"
+          class="rounded-button border border-[var(--brand-border-subtle)] px-3 py-1 text-small text-fg-soft hover:border-accent/40"
+          data-close-concept-modal
+        >
+          Close
+        </button>
+      </div>
+      <div id="concept-detail-body" class="mt-4 space-y-3 text-small text-fg-soft"></div>
+    </div>
+  </div>
+
+  <div
+    id="mockup-lightbox"
+    class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/85 p-4"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mockup-lightbox-title"
+    aria-hidden="true"
+    hidden
+    data-mockup-lightbox
+  >
+    <div class="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-white/10 bg-[#050A18]">
+      <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <h2 id="mockup-lightbox-title" class="font-display text-h3 text-fg" data-mockup-lightbox-title>
+          Full mockup
+        </h2>
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            href="#"
+            download="website-mockup.png"
+            class="inline-flex items-center justify-center rounded-button border-2 border-accent bg-transparent px-3 py-1.5 text-small font-medium text-fg-soft transition-colors hover:bg-accent/10"
+            data-mockup-download
+          >
+            Download image
+          </a>
+          <button
+            type="button"
+            class="rounded-button border border-white/20 px-3 py-1.5 text-small text-fg-soft hover:border-accent/40"
+            data-close-mockup-lightbox
+          >
+            Close
+          </button>
+        </div>
+      </div>
+      <div class="min-h-0 flex-1 overflow-auto p-3 sm:p-4">
+        <img
+          src=""
+          alt="Full website mockup preview"
+          class="mx-auto max-h-[75vh] w-auto max-w-full object-contain"
+          data-mockup-lightbox-image
+        />
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import {
+    loadProjectSession,
+    retryDesignStudioImages,
+    saveProjectSession,
+    selectDesignStudioConcept,
+    startDesignStudioGeneration,
+  } from '@/scripts/design-studio/api';
+  import { initConceptDetailModal } from '@/scripts/design-studio/conceptModal';
+
+  const contactRoute = '/design-your-website/contact';
+  const imageBlobUrls = new Map<string, string>();
+
+  type PublicConcept = {
+    id: string;
+    slot: number;
+    status: string;
+    hasImage?: boolean;
+    imagePath?: string | null;
+    canRetry?: boolean;
+    errorCode?: string | null;
+    direction: {
+      id?: string;
+      name?: string;
+      oneLineConcept?: string;
+      targetFeeling?: string[];
+      colourDirection?: string[];
+      conversionStrategy?: string;
+      differentiators?: string[];
+      layoutDirection?: string;
+      heroDirection?: string;
+      typographyDirection?: string;
+      sectionFlow?: string[];
+      bestFor?: string;
+    };
+  };
+
+  type ProjectPayload = {
+    status?: string;
+    selected_concept_id?: string | null;
+    public_reference?: string;
+    brief?: {
+      businessName?: string;
+      industry?: string;
+      customIndustry?: string;
+      websiteType?: string;
+      primaryStyle?: string;
+      secondaryStyle?: string;
+      goals?: string[];
+      features?: string[];
+      pages?: string[];
+      freeTextBrief?: string;
+      market?: string;
+    };
+  };
+
+  function projectIdFromLocation(): string | null {
+    const parts = window.location.pathname.replace(/\/+$/, '').split('/');
+    const last = parts[parts.length - 1] || '';
+    if (last && last !== 'results' && last !== 'demo') return decodeURIComponent(last);
+    return new URLSearchParams(window.location.search).get('id');
+  }
+
+  function escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;');
+  }
+
+  function sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  function needsVisualWork(concept: PublicConcept): boolean {
+    if (concept.hasImage) return false;
+    return (
+      concept.status === 'PENDING' ||
+      concept.status === 'GENERATING' ||
+      Boolean(concept.canRetry)
+    );
+  }
+
+  function visualLoaderHtml(label: string): string {
+    return `
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#050A18]/70" data-concept-loader>
+        <div class="size-9 animate-spin rounded-full border-2 border-white/20 border-t-accent" aria-hidden="true"></div>
+        <p class="px-4 text-center text-xs text-fg-muted">${escapeHtml(label)}</p>
+      </div>`;
+  }
+
+  async function fetchConceptImageBlob(path: string, token: string): Promise<string | null> {
+    try {
+      const response = await fetch(path, {
+        headers: { 'x-design-studio-token': token },
+      });
+      if (!response.ok) return null;
+      const blob = await response.blob();
+      return URL.createObjectURL(blob);
+    } catch {
+      return null;
+    }
+  }
+
+  function selectable(concept: PublicConcept): boolean {
+    return concept.status === 'READY' || concept.status === 'FAILED';
+  }
+
+  function renderPlaceholderCards(): string {
+    return [1, 2, 3, 4]
+      .map(
+        (n) => `
+      <article class="surface-card flex h-full flex-col overflow-hidden p-0" data-placeholder-card>
+        <div class="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-[#0a1a2e] via-[#061426] to-[#050A18]">
+          <div class="absolute inset-0">${visualLoaderHtml('Creating direction…')}</div>
+          <p class="absolute right-4 bottom-4 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-fg-muted">Generating</p>
+        </div>
+        <div class="flex flex-1 flex-col p-6">
+          <p class="text-xs tracking-[0.16em] text-accent uppercase">Concept ${String(n).padStart(2, '0')}</p>
+          <div class="mt-3 h-6 w-2/3 rounded bg-white/10"></div>
+          <div class="mt-3 h-4 w-full rounded bg-white/5"></div>
+          <div class="mt-2 h-4 w-5/6 rounded bg-white/5"></div>
+        </div>
+      </article>`,
+      )
+      .join('');
+  }
+
+  function renderConceptShell(
+    concept: PublicConcept,
+    index: number,
+    selectedId: string | null,
+  ): string {
+    const d = concept.direction || {};
+    const number = String(index + 1).padStart(2, '0');
+    const isSelected = selectedId === concept.id;
+    const feelings = (d.targetFeeling || [])
+      .map(
+        (t) =>
+          `<li class="rounded-full border border-[var(--brand-border-subtle)] px-3 py-1 text-xs text-fg-muted">${escapeHtml(t)}</li>`,
+      )
+      .join('');
+    const colours = (d.colourDirection || [])
+      .slice(0, 4)
+      .map(
+        (c) =>
+          `<span class="size-5 rounded-full border border-white/20" style="background:${escapeHtml(c)}" title="${escapeHtml(c)}"></span>`,
+      )
+      .join('');
+
+    const waitingOnVisual = needsVisualWork(concept);
+    const statusLabel =
+      concept.status === 'FAILED'
+        ? 'Visual failed'
+        : waitingOnVisual
+          ? 'Generating visual…'
+          : concept.hasImage
+            ? 'Concept preview'
+            : 'Direction only';
+
+    const chooseDisabled = !selectable(concept);
+    const chooseLabel = isSelected ? 'Selected' : 'Choose This Direction';
+    const mediaInner = waitingOnVisual
+      ? `${visualLoaderHtml('Generating website preview…')}
+         <div class="absolute inset-x-6 top-6 rounded-t-lg border border-white/10 bg-black/25 p-3 opacity-40" aria-hidden="true">
+           <div class="mb-3 flex items-center gap-1.5">
+             <span class="size-2 rounded-full bg-white/30"></span>
+             <span class="size-2 rounded-full bg-white/30"></span>
+             <span class="size-2 rounded-full bg-white/30"></span>
+           </div>
+           <div class="space-y-2">
+             <div class="h-2 w-1/3 rounded bg-accent/50"></div>
+             <div class="h-2 w-2/3 rounded bg-white/20"></div>
+           </div>
+         </div>`
+      : `<div class="absolute inset-x-6 top-6 rounded-t-lg border border-white/10 bg-black/35 p-3 backdrop-blur-sm" data-concept-placeholder>
+              <div class="mb-3 flex items-center gap-1.5">
+                <span class="size-2 rounded-full bg-white/30"></span>
+                <span class="size-2 rounded-full bg-white/30"></span>
+                <span class="size-2 rounded-full bg-white/30"></span>
+              </div>
+              <div class="space-y-2">
+                <div class="h-2 w-1/3 rounded bg-accent/70"></div>
+                <div class="h-2 w-2/3 rounded bg-white/25"></div>
+                <div class="mt-4 grid grid-cols-3 gap-2">
+                  <div class="aspect-video rounded bg-white/10"></div>
+                  <div class="aspect-video rounded bg-white/15"></div>
+                  <div class="aspect-video rounded bg-white/10"></div>
+                </div>
+              </div>
+            </div>`;
+
+    const checkoutBlock = isSelected
+      ? `<a
+            href="${escapeHtml(contactRoute)}"
+            class="btn-accent mt-3 inline-flex w-full items-center justify-center rounded-button px-3 py-2.5 text-small font-medium transition-colors hover:brightness-105"
+            data-card-checkout
+          >Continue to checkout</a>`
+      : '';
+
+    return `
+      <article class="surface-card flex h-full flex-col overflow-hidden p-0 ${isSelected ? 'ring-2 ring-accent' : ''}" data-concept-card="${escapeHtml(concept.id)}">
+        <div class="group relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-[#0a1a2e] via-[#061426] to-[#050A18]" data-preview-frame="${escapeHtml(concept.id)}">
+          <div class="absolute inset-0 flex items-start justify-center" data-concept-media="${escapeHtml(concept.id)}">
+            ${mediaInner}
+          </div>
+          <div
+            class="pointer-events-none absolute inset-0 flex items-end justify-center bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 transition-opacity duration-200 group-hover:pointer-events-auto group-hover:opacity-100 group-focus-within:pointer-events-auto group-focus-within:opacity-100"
+            data-preview-actions
+          >
+            <div class="mb-4 flex flex-wrap items-center justify-center gap-2 px-3">
+              <button
+                type="button"
+                class="inline-flex items-center justify-center rounded-button border border-white/30 bg-black/50 px-3 py-1.5 text-xs font-medium text-fg backdrop-blur-sm hover:border-accent/50 disabled:cursor-not-allowed disabled:opacity-40"
+                data-open-mockup="${escapeHtml(concept.id)}"
+                ${concept.hasImage ? '' : 'disabled'}
+              >View full mockup</button>
+              <a
+                href="#"
+                download="${escapeHtml((d.name || `concept-${number}`).replace(/\s+/g, '-').toLowerCase())}-mockup.png"
+                class="inline-flex items-center justify-center rounded-button border border-white/30 bg-black/50 px-3 py-1.5 text-xs font-medium text-fg backdrop-blur-sm hover:border-accent/50 ${concept.hasImage ? '' : 'pointer-events-none opacity-40'}"
+                data-download-mockup="${escapeHtml(concept.id)}"
+              >Download</a>
+            </div>
+          </div>
+          <p class="absolute right-4 top-4 rounded-full border border-white/15 bg-black/40 px-3 py-1 text-xs text-fg-muted" data-concept-status>${statusLabel}</p>
+        </div>
+        <div class="flex flex-1 flex-col p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs tracking-[0.16em] text-accent uppercase">Concept ${number}</p>
+              <h2 class="mt-1 font-display text-h3 text-fg">${escapeHtml(d.name || `Direction ${number}`)}</h2>
+            </div>
+            <div class="flex gap-1.5" aria-label="Colour direction">${colours}</div>
+          </div>
+          <p class="mt-3 text-body text-fg-soft">${escapeHtml(d.oneLineConcept || '')}</p>
+          <ul class="mt-3 flex flex-wrap gap-2" role="list">${feelings}</ul>
+          <div class="mt-auto flex flex-col gap-2 pt-6">
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="inline-flex items-center justify-center rounded-button border-2 border-accent bg-transparent px-3 py-1.5 text-small font-medium text-fg-soft transition-colors hover:bg-accent/10" data-concept-view="${escapeHtml(concept.id)}">Details</button>
+              <button
+                type="button"
+                class="btn-accent inline-flex flex-1 items-center justify-center rounded-button px-3 py-1.5 text-small font-medium transition-colors hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50 ${isSelected ? 'ring-2 ring-offset-2 ring-offset-[var(--color-background)] ring-accent' : ''}"
+                data-concept-choose="${escapeHtml(concept.id)}"
+                ${chooseDisabled ? 'disabled' : ''}
+                ${isSelected ? 'aria-pressed="true"' : 'aria-pressed="false"'}
+              >${chooseLabel}</button>
+            </div>
+            ${checkoutBlock}
+          </div>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderCompareTable(concepts: PublicConcept[]): string {
+    const headers = concepts
+      .map((c) => `<th scope="col" class="px-3 py-3 font-medium text-fg">${escapeHtml(c.direction.name || `Concept ${c.slot}`)}</th>`)
+      .join('');
+    const row = (label: string, cells: string[]) => `
+      <tr class="border-b border-[var(--brand-border-subtle)]/60 align-top">
+        <th scope="row" class="py-3 pr-4 font-medium text-fg-muted">${escapeHtml(label)}</th>
+        ${cells.map((cell) => `<td class="px-3 py-3">${cell}</td>`).join('')}
+      </tr>`;
+
+    return `
+      <table class="w-full min-w-[40rem] border-collapse text-left text-small">
+        <thead>
+          <tr class="border-b border-[var(--brand-border-subtle)] text-fg-muted">
+            <th scope="col" class="py-3 pr-4 font-medium">Lens</th>
+            ${headers}
+          </tr>
+        </thead>
+        <tbody class="text-fg-soft">
+          ${row(
+            'Best for',
+            concepts.map((c) => escapeHtml(c.direction.bestFor || c.direction.oneLineConcept || '—')),
+          )}
+          ${row(
+            'Visual character',
+            concepts.map((c) => escapeHtml((c.direction.targetFeeling || []).join(', ') || '—')),
+          )}
+          ${row(
+            'Conversion focus',
+            concepts.map((c) => escapeHtml(c.direction.conversionStrategy || '—')),
+          )}
+          ${row(
+            'Key features',
+            concepts.map((c) => escapeHtml((c.direction.differentiators || []).join(' · ') || '—')),
+          )}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function renderBriefSummary(brief: ProjectPayload['brief']): string {
+    if (!brief) return '';
+    const industry = brief.customIndustry || brief.industry || '—';
+    const style = [brief.primaryStyle, brief.secondaryStyle].filter(Boolean).join(' · ') || '—';
+    const entries: Array<[string, string]> = [
+      ['Business', brief.businessName || '—'],
+      ['Industry', industry],
+      ['Website type', brief.websiteType || '—'],
+      ['Style', style],
+      ['Market', brief.market || '—'],
+      ['Goals', (brief.goals || []).join(', ') || '—'],
+      ['Features', (brief.features || []).join(', ') || '—'],
+      ['Pages', (brief.pages || []).join(', ') || '—'],
+    ];
+    if (brief.freeTextBrief) {
+      entries.push(['Brief note', brief.freeTextBrief]);
+    }
+    return entries
+      .map(
+        ([label, value]) => `
+      <div>
+        <dt class="text-fg-muted">${escapeHtml(label)}</dt>
+        <dd class="mt-1 text-fg-soft">${escapeHtml(value)}</dd>
+      </div>`,
+      )
+      .join('');
+  }
+
+  async function hydrateImages(concepts: PublicConcept[], token: string) {
+    await Promise.all(
+      concepts.map(async (concept) => {
+        if (!concept.hasImage || !concept.imagePath) return;
+        const url = await fetchConceptImageBlob(concept.imagePath, token);
+        if (!url) return;
+        imageBlobUrls.set(concept.id, url);
+        const media = document.querySelector(`[data-concept-media="${concept.id}"]`);
+        if (!media) return;
+        media.innerHTML = `<img src="${url}" alt="" class="h-full w-full object-contain object-top" loading="lazy" decoding="async" />`;
+        const status = document.querySelector(
+          `[data-concept-card="${concept.id}"] [data-concept-status]`,
+        );
+        if (status) status.textContent = 'Concept preview';
+
+        const downloadLink = document.querySelector<HTMLAnchorElement>(
+          `[data-download-mockup="${concept.id}"]`,
+        );
+        if (downloadLink) {
+          downloadLink.href = url;
+          downloadLink.classList.remove('pointer-events-none', 'opacity-40');
+        }
+        const openBtn = document.querySelector<HTMLButtonElement>(
+          `[data-open-mockup="${concept.id}"]`,
+        );
+        if (openBtn) openBtn.disabled = false;
+      }),
+    );
+  }
+
+  function openMockupLightbox(conceptId: string, title: string) {
+    const url = imageBlobUrls.get(conceptId);
+    if (!url) return;
+    const lightbox = document.querySelector<HTMLElement>('[data-mockup-lightbox]');
+    const image = document.querySelector<HTMLImageElement>('[data-mockup-lightbox-image]');
+    const titleEl = document.querySelector('[data-mockup-lightbox-title]');
+    const download = document.querySelector<HTMLAnchorElement>('[data-mockup-download]');
+    if (!lightbox || !image) return;
+    image.src = url;
+    if (titleEl) titleEl.textContent = title || 'Full mockup';
+    if (download) {
+      download.href = url;
+      download.download = `${(title || 'website-mockup').replace(/\s+/g, '-').toLowerCase()}-mockup.png`;
+    }
+    lightbox.hidden = false;
+    lightbox.setAttribute('aria-hidden', 'false');
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    document.body.classList.add('overflow-hidden');
+  }
+
+  function closeMockupLightbox() {
+    const lightbox = document.querySelector<HTMLElement>('[data-mockup-lightbox]');
+    const image = document.querySelector<HTMLImageElement>('[data-mockup-lightbox-image]');
+    if (!lightbox) return;
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    lightbox.hidden = true;
+    lightbox.setAttribute('aria-hidden', 'true');
+    if (image) image.src = '';
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  async function main() {
+    const subtitle = document.querySelector('[data-results-subtitle]');
+    const errorEl = document.querySelector('[data-results-error]');
+    const grid = document.querySelector('[data-results-grid]');
+    const note = document.querySelector('[data-results-note]');
+    const retryBtn = document.querySelector<HTMLButtonElement>('[data-retry-images]');
+    const banner = document.querySelector('[data-selection-banner]');
+    const selectionName = document.querySelector('[data-selection-name]');
+    const selectionBlurb = document.querySelector('[data-selection-blurb]');
+    const compareSection = document.querySelector('[data-compare-section]');
+    const compareTable = document.querySelector('[data-compare-table]');
+    const briefSummary = document.querySelector('[data-brief-summary]');
+    const briefBody = document.querySelector('[data-brief-summary-body]');
+    const lightbox = document.querySelector<HTMLElement>('[data-mockup-lightbox]');
+    const closeLightboxBtn = document.querySelector('[data-close-mockup-lightbox]');
+    const projectId = projectIdFromLocation();
+    const session = loadProjectSession();
+
+    function bindMockupActions(list: PublicConcept[]) {
+      grid?.querySelectorAll<HTMLButtonElement>('[data-open-mockup]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-open-mockup');
+          if (!id) return;
+          const concept = list.find((c) => c.id === id);
+          openMockupLightbox(id, concept?.direction.name || 'Full mockup');
+        });
+      });
+      grid?.querySelectorAll<HTMLAnchorElement>('[data-download-mockup]').forEach((link) => {
+        link.addEventListener('click', (event) => {
+          const id = link.getAttribute('data-download-mockup');
+          if (!id) return;
+          const url = imageBlobUrls.get(id);
+          if (!url) {
+            event.preventDefault();
+            return;
+          }
+          link.href = url;
+        });
+      });
+    }
+
+    closeLightboxBtn?.addEventListener('click', closeMockupLightbox);
+    lightbox?.addEventListener('click', (event) => {
+      if (event.target === lightbox) closeMockupLightbox();
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && lightbox && !lightbox.hidden) closeMockupLightbox();
+    });
+
+    if (!projectId) {
+      if (subtitle) subtitle.textContent = 'Missing project reference.';
+      return;
+    }
+
+    if (!session?.accessToken || session.projectId !== projectId) {
+      if (subtitle) {
+        subtitle.textContent =
+          'Open this page from the same browser session that created the project, or restart the wizard.';
+      }
+      if (errorEl) {
+        errorEl.textContent = 'A valid project access token was not found in this session.';
+        errorEl.classList.remove('hidden');
+      }
+      return;
+    }
+
+    let concepts: PublicConcept[] = [];
+    let project: ProjectPayload = {};
+    let activeSession = session;
+    let modalApi: ReturnType<typeof initConceptDetailModal> | null = null;
+    let visualsInFlight = false;
+
+    function updateSelectionUi(selectedId: string | null) {
+      const selected = concepts.find((c) => c.id === selectedId) || null;
+      if (banner && selectionName && selectionBlurb) {
+        if (selected) {
+          banner.classList.remove('hidden');
+          selectionName.textContent = selected.direction.name || 'Selected direction';
+          selectionBlurb.textContent =
+            selected.direction.oneLineConcept ||
+            'Your chosen direction is saved. Use Continue to checkout on the selected card.';
+        } else {
+          banner.classList.add('hidden');
+        }
+      }
+    }
+
+    function showPlaceholders(message: string) {
+      if (subtitle) subtitle.textContent = message;
+      if (grid) grid.innerHTML = renderPlaceholderCards();
+    }
+
+    function bindChooseButtons() {
+      grid?.querySelectorAll<HTMLButtonElement>('[data-concept-choose]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const conceptId = btn.getAttribute('data-concept-choose');
+          if (!conceptId || btn.disabled) return;
+          const previousLabel = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = 'Saving…';
+          if (errorEl) errorEl.classList.add('hidden');
+          try {
+            const result = await selectDesignStudioConcept(
+              projectId!,
+              activeSession.accessToken,
+              conceptId,
+            );
+            project = {
+              ...project,
+              status: result.status,
+              selected_concept_id: result.selectedConcept.id,
+            };
+            activeSession = {
+              ...activeSession,
+              status: result.status || 'CONCEPT_SELECTED',
+              pendingGeneration: null,
+            };
+            saveProjectSession(activeSession);
+            await loadAndRender();
+          } catch (error) {
+            btn.disabled = false;
+            btn.textContent = previousLabel || 'Choose This Direction';
+            if (errorEl) {
+              errorEl.textContent =
+                error instanceof Error ? error.message : 'Unable to select this direction.';
+              errorEl.classList.remove('hidden');
+            }
+          }
+        });
+      });
+    }
+
+    async function loadAndRender() {
+      const response = await fetch(`/api/design-studio/project/${encodeURIComponent(projectId!)}`, {
+        headers: { 'x-design-studio-token': activeSession.accessToken },
+      });
+      if (!response.ok) {
+        throw new Error('Unable to load project concepts.');
+      }
+      const data = (await response.json()) as {
+        project?: ProjectPayload;
+        concepts?: PublicConcept[];
+      };
+      project = data.project || {};
+      concepts = data.concepts || [];
+      const selectedId = project.selected_concept_id || null;
+      const pendingCount = concepts.filter(needsVisualWork).length;
+      const withImages = concepts.filter((c) => c.hasImage).length;
+
+      if (subtitle) {
+        if (!concepts.length) {
+          subtitle.textContent =
+            project.status === 'GENERATING'
+              ? 'Creating your 4 website directions…'
+              : 'No concepts yet for this project.';
+        } else {
+          const statusNote =
+            project.status === 'CONCEPT_SELECTED' ? ' · direction selected' : '';
+          const visualNote =
+            pendingCount > 0
+              ? ` · loading visuals (${withImages}/4)`
+              : withImages
+                ? ` · ${withImages} visuals`
+                : '';
+          subtitle.textContent = `Project ${project.public_reference || projectId} · ${concepts.length} directions${visualNote}${statusNote}`;
+        }
+      }
+
+      if (note) {
+        note.textContent =
+          pendingCount > 0
+            ? 'Visual previews are loading in each card. You can Edit brief anytime — generation continues in this tab.'
+            : 'Concept visuals are inspiration for the professional build — final websites may differ.';
+      }
+
+      const retryable = concepts.filter((c) => needsVisualWork(c));
+      if (retryBtn) {
+        if (retryable.length > 0 && !visualsInFlight) {
+          retryBtn.classList.remove('hidden');
+          retryBtn.disabled = false;
+          retryBtn.textContent =
+            retryable.some((c) => c.canRetry) && retryable.every((c) => c.status === 'FAILED')
+              ? `Retry failed visuals (${retryable.length})`
+              : `Resume visuals (${retryable.length})`;
+        } else if (retryable.length === 0) {
+          retryBtn.classList.add('hidden');
+        }
+      }
+
+      if (grid) {
+        grid.innerHTML = concepts.length
+          ? concepts
+              .map((concept, index) => renderConceptShell(concept, index, selectedId))
+              .join('')
+          : renderPlaceholderCards();
+      }
+
+      if (compareSection && compareTable) {
+        if (concepts.length) {
+          compareSection.classList.remove('hidden');
+          compareTable.innerHTML = renderCompareTable(concepts);
+        } else {
+          compareSection.classList.add('hidden');
+        }
+      }
+
+      if (briefSummary && briefBody && project.brief) {
+        briefSummary.classList.remove('hidden');
+        briefBody.innerHTML = renderBriefSummary(project.brief);
+      }
+
+      updateSelectionUi(selectedId);
+
+      const modalConcepts = concepts.map((c) => ({
+        id: c.id,
+        name: c.direction.name || `Concept ${c.slot}`,
+        oneLineConcept: c.direction.oneLineConcept || '',
+        layoutDirection: c.direction.layoutDirection || '',
+        heroDirection: c.direction.heroDirection || '',
+        typographyDirection: c.direction.typographyDirection || '',
+        sectionFlow: c.direction.sectionFlow || [],
+        conversionStrategy: c.direction.conversionStrategy || '',
+        differentiators: c.direction.differentiators || [],
+        colourDirection: c.direction.colourDirection,
+        targetFeeling: c.direction.targetFeeling,
+        bestFor: c.direction.bestFor,
+      }));
+      modalApi = initConceptDetailModal(modalConcepts);
+
+      bindChooseButtons();
+      await hydrateImages(concepts, activeSession.accessToken);
+      bindMockupActions(concepts);
+      return concepts;
+    }
+
+    async function generateDirectionsFromPending() {
+      const pending = activeSession.pendingGeneration;
+      if (!pending?.turnstileToken) return;
+
+      showPlaceholders('Creating your 4 website directions…');
+      activeSession = { ...activeSession, pendingGeneration: null, status: 'GENERATING' };
+      saveProjectSession(activeSession);
+
+      try {
+        const result = (await startDesignStudioGeneration(
+          projectId!,
+          activeSession.accessToken,
+          {
+            turnstileToken: pending.turnstileToken,
+            brief: pending.brief,
+          },
+        )) as { status?: string };
+
+        activeSession = {
+          ...activeSession,
+          status: result.status || 'GENERATED',
+          pendingGeneration: null,
+        };
+        saveProjectSession(activeSession);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Unable to generate directions.';
+        if (
+          message.includes('already has a concept generation batch') ||
+          message.includes('already in progress')
+        ) {
+          activeSession = { ...activeSession, pendingGeneration: null };
+          saveProjectSession(activeSession);
+          return;
+        }
+        if (message.includes('maximum number of generation attempts')) {
+          throw new Error(
+            'This project used up its generation attempts. Return to the wizard, complete the security check, and generate again.',
+          );
+        }
+        throw error;
+      }
+    }
+
+    async function waitForConcepts(maxAttempts = 90) {
+      for (let i = 0; i < maxAttempts; i += 1) {
+        await loadAndRender();
+        if (concepts.length >= 4) return true;
+        if (project.status === 'FAILED') {
+          throw new Error('Direction generation failed. Please return to the wizard and try again.');
+        }
+        if (i === 0 || i % 3 === 0) {
+          showPlaceholders('Creating your 4 website directions… this can take a minute.');
+        }
+        await sleep(2000);
+      }
+      return concepts.length >= 4;
+    }
+
+    async function generateVisualsInParallel() {
+      if (visualsInFlight) return;
+      visualsInFlight = true;
+      if (retryBtn) {
+        retryBtn.disabled = true;
+        retryBtn.textContent = 'Generating visuals…';
+      }
+
+      try {
+        // Fire all pending slots together — each Worker request does one image.
+        for (let round = 0; round < 2; round += 1) {
+          const pending = concepts.filter(needsVisualWork);
+          if (pending.length === 0) break;
+
+          await Promise.all(
+            pending.map(async (concept) => {
+              try {
+                await retryDesignStudioImages(projectId!, activeSession.accessToken, {
+                  conceptIds: [concept.id],
+                  limit: 1,
+                });
+              } catch (error) {
+                console.error('visual generation slot failed', concept.id, error);
+              }
+            }),
+          );
+          await loadAndRender();
+        }
+      } finally {
+        visualsInFlight = false;
+        await loadAndRender();
+      }
+    }
+
+    try {
+      // Immediate redirect from wizard: start AI directions here with loaders visible.
+      if (activeSession.pendingGeneration?.turnstileToken) {
+        await generateDirectionsFromPending();
+      }
+
+      await loadAndRender();
+
+      if (concepts.length < 4) {
+        showPlaceholders('Creating your 4 website directions…');
+        const ready = await waitForConcepts();
+        if (!ready) {
+          throw new Error('Directions are taking too long. Refresh this page or restart the wizard.');
+        }
+      }
+
+      await loadAndRender();
+      // Kick off visuals without blocking — client can Edit brief / go Back anytime.
+      if (concepts.some(needsVisualWork)) {
+        void generateVisualsInParallel();
+      }
+
+      retryBtn?.addEventListener('click', async () => {
+        if (!retryBtn || retryBtn.disabled || visualsInFlight) return;
+        if (errorEl) errorEl.classList.add('hidden');
+        void generateVisualsInParallel();
+      });
+    } catch (error) {
+      if (subtitle) subtitle.textContent = 'Could not load your directions.';
+      if (errorEl) {
+        errorEl.textContent =
+          error instanceof Error ? error.message : 'Something went wrong loading results.';
+        errorEl.classList.remove('hidden');
+      }
+    }
+
+    void modalApi;
+  }
+
+  void main();
+</script>

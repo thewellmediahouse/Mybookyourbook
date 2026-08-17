@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 48" role="img" aria-label="The Well Media">
+  <rect width="200" height="48" rx="8" fill="#061426"/>
+  <circle cx="24" cy="24" r="14" fill="none" stroke="#D9A441" stroke-width="2"/>
+  <text x="24" y="29" text-anchor="middle" fill="#D9A441" font-family="Georgia, serif" font-size="16" font-weight="700">W</text>
+  <text x="48" y="20" fill="#FFFFFF" font-family="Georgia, serif" font-size="13" font-weight="600">The Well</text>
+  <text x="48" y="36" fill="#D9A441" font-family="system-ui, sans-serif" font-size="11" font-weight="500">Media House</text>
+</svg>

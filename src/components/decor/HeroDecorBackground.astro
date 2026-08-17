@@ -1,0 +1,42 @@
+---
+interface Props {
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  poster?: string;
+  opacity?: number;
+  class?: string;
+}
+
+const { type, src, alt = '', poster, opacity = 1, class: className = '' } = Astro.props;
+---
+
+<div
+  class={`hero-decor-bg ${className}`}
+  style={`--hero-decor-opacity: ${opacity}`}
+  aria-hidden="true"
+>
+  {
+    type === 'video' ? (
+      <video
+        src={src}
+        poster={poster}
+        class="hero-decor-media"
+        autoplay
+        muted
+        playsinline
+        preload="auto"
+      />
+    ) : (
+      <img
+        src={src}
+        alt={alt}
+        width="1920"
+        height="1080"
+        class="hero-decor-media"
+        loading="eager"
+        decoding="async"
+      />
+    )
+  }
+</div>

@@ -1,0 +1,45 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "the-well-media",
+	"main": "workers/app.ts",
+	"compatibility_date": "2026-07-04",
+	"workers_dev": true,
+	// Serve the live site from this Worker (static pages + Design Studio APIs).
+	"routes": [
+		{ "pattern": "thewellmedia.com/*", "zone_name": "thewellmedia.com" },
+		{ "pattern": "www.thewellmedia.com/*", "zone_name": "thewellmedia.com" }
+	],
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS",
+		"not_found_handling": "404-page",
+		// Invoke Worker first for Design Studio APIs + dynamic results shells.
+		"run_worker_first": [
+			"/api/*",
+			"/design-your-website/results/*"
+		]
+	},
+	// Non-secret runtime config (secrets stay in `wrangler secret put` / `.dev.vars`)
+	"vars": {
+		"PUBLIC_SITE_URL": "https://thewellmedia.com",
+		"PUBLIC_TURNSTILE_SITE_KEY": "0x4AAAAAAD3XVpJh-S8psGfC",
+		"OPENAI_TEXT_MODEL": "gpt-5.6",
+		"OPENAI_IMAGE_MODEL": "gpt-image-2",
+		"PAYFAST_MODE": "live",
+		"DESIGN_STUDIO_NOTIFY_EMAIL": "schalk@thewellmedia.com"
+	},
+	"d1_databases": [
+		{
+			"binding": "DESIGN_STUDIO_DB",
+			"database_name": "well-media-design-studio",
+			"database_id": "e87d8042-a4cb-457d-9651-4bae6f627753",
+			"migrations_dir": "migrations"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "DESIGN_STUDIO_ASSETS",
+			"bucket_name": "well-media-design-studio-assets"
+		}
+	]
+}

@@ -1,0 +1,661 @@
+---
+/**
+ * ConsultationProcessSection — Client Growth Process / Consultation Journey
+ * Homepage placement: directly after ClientShowcase, before ServicesPreview.
+ * Edit copy in src/config/content.ts → home.consultationProcess
+ */
+import type { ConsultationProcessContent } from '@/config/content';
+
+interface Props extends ConsultationProcessContent {}
+
+const { heading, subheading, steps, cta } = Astro.props;
+
+const stepIcons = [
+  /* 1 Discovery Call */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v2a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z"/><path d="M6 10v1a6 6 0 0 0 12 0v-1"/><path d="M9 18h6"/><path d="M10 21h4"/></svg>`,
+  /* 2 Business Growth Audit */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/><path d="M8 11h6M11 8v6"/></svg>`,
+  /* 3 Strategic Structure */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h16"/><circle cx="18" cy="12" r="2"/></svg>`,
+  /* 4 Premium Media Creation */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h8l4 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="m10 10 4 2.5L10 15Z"/></svg>`,
+  /* 5 Website & Sales System */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 17v3M16 17v3"/></svg>`,
+  /* 6 Launch & Content Management */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>`,
+  /* 7 Growth Review */
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 18V6"/><path d="M4 18h16"/><path d="M8 18v-5M12 18V8M16 18v-3"/></svg>`,
+];
+---
+
+<section
+  class="consultation-process"
+  id="consultation-process"
+  data-consultation-process
+  aria-labelledby="consultation-process-heading"
+>
+  <!-- Background: navy gradient, light beams, gold particles (CSS only) -->
+  <div class="consultation-process__backdrop" aria-hidden="true">
+    <div class="consultation-process__gradient" />
+    <span class="consultation-process__beam consultation-process__beam--1" />
+    <span class="consultation-process__beam consultation-process__beam--2" />
+    <span class="consultation-process__beam consultation-process__beam--3" />
+    {
+      Array.from({ length: 8 }).map((_, index) => (
+        <span class="consultation-process__particle" style={`--particle-i: ${index}`} />
+      ))
+    }
+  </div>
+
+  <div class="container consultation-process__inner">
+    <header class="consultation-process__header scroll-reveal">
+      <h2 id="consultation-process-heading" class="consultation-process__heading">
+        {heading}
+      </h2>
+      <p class="consultation-process__subheading">{subheading}</p>
+    </header>
+
+    <div class="consultation-process__timeline" data-process-timeline>
+      <!-- Animated connector line (horizontal desktop / vertical mobile) -->
+      <div class="consultation-process__line-track" aria-hidden="true">
+        <span class="consultation-process__line-fill" data-process-line-fill />
+      </div>
+
+      <ol class="consultation-process__steps">
+        {
+          steps.map((step, index) => (
+            <li
+              class="consultation-process__step"
+              data-process-step
+              style={`--step-index: ${index}`}
+            >
+              <article class="consultation-process__card">
+                <div class="consultation-process__marker">
+                  <span class="consultation-process__marker-ring" aria-hidden="true" />
+                  <span class="consultation-process__number">{index + 1}</span>
+                </div>
+
+                <div
+                  class="consultation-process__icon"
+                  set:html={stepIcons[index] ?? stepIcons[0]}
+                />
+
+                <p class="consultation-process__label">{step.label}</p>
+                <h3 class="consultation-process__title">{step.title}</h3>
+                <p class="consultation-process__text">{step.text}</p>
+              </article>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <!-- Final CTA card -->
+    <aside class="consultation-process__cta scroll-reveal">
+      <div class="consultation-process__cta-glow" aria-hidden="true" />
+      <h3 class="consultation-process__cta-heading">{cta.heading}</h3>
+      <p class="consultation-process__cta-text">{cta.text}</p>
+      <a href={cta.button.href} class="btn-accent consultation-process__cta-btn">
+        {cta.button.label}
+      </a>
+    </aside>
+  </div>
+</section>
+
+<style>
+  /* ── ConsultationProcessSection — layout & theme ── */
+  .consultation-process {
+    position: relative;
+    overflow: hidden;
+    padding-block: clamp(4rem, 7vw, 6rem);
+    isolation: isolate;
+  }
+
+  .consultation-process__backdrop {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .consultation-process__gradient {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 90% 60% at 50% -10%, rgb(214 166 62 / 0.1) 0%, transparent 55%),
+      linear-gradient(180deg, #030f1e 0%, #050a18 45%, #030812 100%);
+  }
+
+  .consultation-process__beam {
+    position: absolute;
+    width: 1px;
+    height: 55%;
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgb(247 198 87 / 0.35) 45%,
+      transparent
+    );
+    opacity: 0.55;
+    /* No blur — animated filter:blur is costly while scrolling this long section */
+    animation: none;
+  }
+
+  .consultation-process.is-inview .consultation-process__beam {
+    animation: consultation-beam 9s ease-in-out infinite;
+  }
+
+  .consultation-process__beam--1 {
+    left: 12%;
+    top: -10%;
+    animation-delay: 0s;
+  }
+
+  .consultation-process__beam--2 {
+    left: 52%;
+    top: -15%;
+    animation-delay: -3s;
+    opacity: 0.35;
+  }
+
+  .consultation-process__beam--3 {
+    right: 14%;
+    top: -8%;
+    animation-delay: -6s;
+  }
+
+  .consultation-process__particle {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgb(247 198 87 / 0.75);
+    box-shadow: 0 0 10px rgb(214 166 62 / 0.55);
+    left: calc(8% + (var(--particle-i) * 11%));
+    top: calc(18% + (var(--particle-i) * 7%));
+    animation: none;
+    animation-delay: calc(var(--particle-i) * -0.8s);
+  }
+
+  .consultation-process.is-inview .consultation-process__particle {
+    animation: consultation-particle calc(6s + (var(--particle-i) * 0.6s)) ease-in-out infinite;
+  }
+
+  @keyframes consultation-beam {
+    0%,
+    100% {
+      transform: translateY(0) scaleY(1);
+      opacity: 0.35;
+    }
+    50% {
+      transform: translateY(8%) scaleY(1.08);
+      opacity: 0.7;
+    }
+  }
+
+  @keyframes consultation-particle {
+    0%,
+    100% {
+      transform: translate(0, 0);
+      opacity: 0.25;
+    }
+    50% {
+      transform: translate(12px, -18px);
+      opacity: 0.85;
+    }
+  }
+
+  @keyframes consultation-pulse-ring {
+    0% {
+      transform: scale(0.92);
+      opacity: 0.85;
+    }
+    70% {
+      transform: scale(1.35);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.35);
+      opacity: 0;
+    }
+  }
+
+  .consultation-process__inner {
+    position: relative;
+    z-index: 1;
+  }
+
+  .consultation-process__header {
+    max-width: 46rem;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: clamp(2.5rem, 5vw, 3.5rem);
+  }
+
+  .consultation-process__heading {
+    font-family: var(--font-display, inherit);
+    font-size: clamp(1.85rem, 3.5vw, 2.85rem);
+    font-weight: 700;
+    line-height: 1.12;
+    color: var(--color-text, #fff);
+  }
+
+  .consultation-process__subheading {
+    margin-top: 1.15rem;
+    font-size: clamp(1rem, 1.6vw, 1.125rem);
+    line-height: 1.65;
+    color: rgb(255 255 255 / 0.72);
+  }
+
+  .consultation-process__timeline {
+    position: relative;
+  }
+
+  /* Connector line */
+  .consultation-process__line-track {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .consultation-process__line-fill {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgb(214 166 62 / 0.2),
+      rgb(247 198 87 / 0.85) 50%,
+      rgb(214 166 62 / 0.35)
+    );
+    transform: scaleX(0);
+    transform-origin: left center;
+    border-radius: 999px;
+    box-shadow: 0 0 16px rgb(214 166 62 / 0.35);
+  }
+
+  /* Mobile: vertical timeline */
+  .consultation-process__line-track {
+    left: 1.45rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+  }
+
+  .consultation-process__line-fill {
+    transform: scaleY(0);
+    transform-origin: top center;
+    background: linear-gradient(
+      180deg,
+      rgb(214 166 62 / 0.25),
+      rgb(247 198 87 / 0.85) 50%,
+      rgb(214 166 62 / 0.35)
+    );
+  }
+
+  .consultation-process__steps {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 1.25rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .consultation-process__step {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+    transition:
+      opacity 0.65s ease,
+      transform 0.65s ease;
+    transition-delay: calc(0.45s + (var(--step-index) * 120ms));
+  }
+
+  .consultation-process.is-active .consultation-process__step {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  .consultation-process__card {
+    position: relative;
+    margin-left: 3.25rem;
+    padding: 1.35rem 1.25rem;
+    border-radius: 1.375rem;
+    /* Opaque-enough fill instead of backdrop-filter — 7 blurred cards jank desktop scroll */
+    background: linear-gradient(145deg, rgb(18 32 52 / 0.94) 0%, rgb(10 20 36 / 0.92) 100%);
+    border: 1px solid rgb(214 166 62 / 0.28);
+    box-shadow: 0 20px 60px rgb(0 0 0 / 0.28);
+    transition:
+      transform 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .consultation-process__card:hover {
+    transform: translateY(-4px);
+    border-color: rgb(247 198 87 / 0.72);
+    box-shadow:
+      0 24px 70px rgb(0 0 0 / 0.32),
+      0 0 40px rgb(214 166 62 / 0.14);
+  }
+
+  .consultation-process__card:hover .consultation-process__icon {
+    color: #ffe08a;
+    box-shadow: 0 0 24px rgb(214 166 62 / 0.35);
+  }
+
+  .consultation-process__card:hover .consultation-process__marker-ring {
+    animation: consultation-pulse-ring 1.4s ease-out infinite;
+  }
+
+  .consultation-process__marker {
+    position: absolute;
+    left: -3.25rem;
+    top: 1.35rem;
+    width: 2.9rem;
+    height: 2.9rem;
+    display: grid;
+    place-items: center;
+  }
+
+  .consultation-process__marker-ring {
+    position: absolute;
+    inset: -4px;
+    border-radius: 999px;
+    border: 1px solid rgb(247 198 87 / 0.45);
+    opacity: 0;
+  }
+
+  .consultation-process__card:hover .consultation-process__marker-ring,
+  .consultation-process__step.is-current .consultation-process__marker-ring {
+    opacity: 1;
+    animation: consultation-pulse-ring 1.8s ease-out infinite;
+  }
+
+  .consultation-process__number {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #f3c45e;
+    background: linear-gradient(145deg, rgb(255 217 119 / 0.18), rgb(214 166 62 / 0.1));
+    border: 1px solid rgb(214 166 62 / 0.45);
+    box-shadow: 0 0 20px rgb(214 166 62 / 0.2);
+  }
+
+  .consultation-process__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    margin-bottom: 0.85rem;
+    border-radius: 0.75rem;
+    color: #f3c45e;
+    background: rgb(214 166 62 / 0.08);
+    border: 1px solid rgb(214 166 62 / 0.22);
+    transition:
+      color 0.3s ease,
+      box-shadow 0.3s ease;
+  }
+
+  .consultation-process__icon :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .consultation-process__label {
+    margin: 0 0 0.35rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgb(247 198 87 / 0.85);
+  }
+
+  .consultation-process__title {
+    margin: 0 0 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text, #fff);
+  }
+
+  .consultation-process__text {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: rgb(255 255 255 / 0.72);
+  }
+
+  /* Desktop: horizontal timeline */
+  @media (min-width: 1024px) {
+    .consultation-process__line-track {
+      left: 0;
+      right: 0;
+      top: 2.35rem;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+
+    .consultation-process__line-fill {
+      transform: scaleX(0);
+      transform-origin: left center;
+      background: linear-gradient(
+        90deg,
+        rgb(214 166 62 / 0.2),
+        rgb(247 198 87 / 0.85) 50%,
+        rgb(214 166 62 / 0.35)
+      );
+    }
+
+    .consultation-process.is-active .consultation-process__line-fill {
+      transform: scaleX(1);
+      transition: transform 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+    }
+
+    .consultation-process__steps {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 1rem;
+      padding-top: 0.5rem;
+    }
+
+    .consultation-process__step {
+      min-width: 0;
+    }
+
+    .consultation-process__card {
+      margin-left: 0;
+      min-height: 100%;
+      padding: 1.25rem 1rem 1.35rem;
+      text-align: center;
+    }
+
+    .consultation-process__marker {
+      position: relative;
+      left: auto;
+      top: auto;
+      margin: 0 auto 0.85rem;
+    }
+
+    .consultation-process__icon {
+      margin-inline: auto;
+    }
+  }
+
+  @media (min-width: 1024px) and (max-width: 1399px) {
+    .consultation-process__steps {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 1rem;
+      padding-bottom: 0.5rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgb(214 166 62 / 0.35) transparent;
+    }
+
+    .consultation-process__step {
+      flex: 0 0 min(16rem, 78vw);
+      scroll-snap-align: start;
+    }
+  }
+
+  .consultation-process.is-active .consultation-process__line-fill {
+    transform: scaleY(1);
+    transition: transform 1.35s cubic-bezier(0.22, 1, 0.36, 1) 0.35s;
+  }
+
+  @media (min-width: 1024px) {
+    .consultation-process.is-active .consultation-process__line-fill {
+      transform: scaleX(1);
+    }
+  }
+
+  /* Final CTA card */
+  .consultation-process__cta {
+    position: relative;
+    overflow: hidden;
+    margin-top: clamp(2.5rem, 5vw, 3.5rem);
+    padding: clamp(1.75rem, 3vw, 2.5rem);
+    text-align: center;
+    border-radius: 1.5rem;
+    border: 1px solid rgb(214 166 62 / 0.32);
+    background: linear-gradient(145deg, rgb(8 22 40 / 0.92), rgb(4 14 28 / 0.88));
+    box-shadow: 0 0 50px rgb(214 166 62 / 0.1);
+  }
+
+  .consultation-process__cta-glow {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 70% 80% at 50% 100%, rgb(214 166 62 / 0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .consultation-process__cta-heading {
+    position: relative;
+    margin: 0;
+    font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+    font-weight: 700;
+    color: var(--color-text, #fff);
+  }
+
+  .consultation-process__cta-text {
+    position: relative;
+    margin: 0.85rem auto 0;
+    max-width: 36rem;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.72);
+  }
+
+  .consultation-process__cta-btn {
+    position: relative;
+    display: inline-flex;
+    margin-top: 1.35rem;
+    padding: 0.95rem 2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 0 28px rgb(214 166 62 / 0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .consultation-process__beam,
+    .consultation-process__particle {
+      animation: none;
+    }
+
+    .consultation-process__step {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .consultation-process__line-fill {
+      transform: scaleX(1);
+    }
+
+    @media (max-width: 1023px) {
+      .consultation-process__line-fill {
+        transform: scaleY(1);
+      }
+    }
+  }
+</style>
+
+<script>
+  /** ConsultationProcessSection — scroll-triggered timeline animation */
+  function initConsultationProcess() {
+    const section = document.querySelector<HTMLElement>('[data-consultation-process]');
+    if (!section || section.dataset.processInitialized === 'true') return;
+
+    section.dataset.processInitialized = 'true';
+    const steps = section.querySelectorAll<HTMLElement>('[data-process-step]');
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const setCurrentStep = (index: number) => {
+      steps.forEach((step, i) => {
+        step.classList.toggle('is-current', i === index);
+      });
+    };
+
+    // Pause decorative beam/particle CSS while off-screen (desktop scroll hotspot).
+    const inviewObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          section.classList.toggle('is-inview', entry.isIntersecting);
+        });
+      },
+      { rootMargin: '60px 0px', threshold: 0 },
+    );
+    inviewObserver.observe(section);
+
+    if (prefersReducedMotion) {
+      section.classList.add('is-active', 'is-inview');
+      steps.forEach((step) => step.classList.add('is-visible'));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          section.classList.add('is-active');
+
+          steps.forEach((step, index) => {
+            window.setTimeout(() => {
+              step.classList.add('is-visible');
+              setCurrentStep(index);
+            }, 450 + index * 120);
+          });
+
+          observer.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -5% 0px' },
+    );
+
+    observer.observe(section);
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        observer.disconnect();
+        inviewObserver.disconnect();
+        delete section.dataset.processInitialized;
+      },
+      { once: true },
+    );
+  }
+
+  initConsultationProcess();
+  document.addEventListener('astro:page-load', initConsultationProcess);
+</script>

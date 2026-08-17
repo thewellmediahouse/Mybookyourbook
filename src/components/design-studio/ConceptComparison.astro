@@ -1,0 +1,65 @@
+---
+import type { ConceptDirection } from '@/types/designStudio';
+
+interface Props {
+  concepts: ConceptDirection[];
+}
+
+const { concepts } = Astro.props;
+---
+
+<section class="mt-14" aria-labelledby="concept-compare-heading">
+  <h2 id="concept-compare-heading" class="font-display text-h3 text-fg">
+    Compare directions
+  </h2>
+  <div class="mt-6 overflow-x-auto">
+    <table class="w-full min-w-[40rem] border-collapse text-left text-small">
+      <thead>
+        <tr class="border-b border-[var(--brand-border-subtle)] text-fg-muted">
+          <th scope="col" class="py-3 pr-4 font-medium">Lens</th>
+          {
+            concepts.map((concept) => (
+              <th scope="col" class="px-3 py-3 font-medium text-fg">
+                {concept.name}
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody class="text-fg-soft">
+        <tr class="border-b border-[var(--brand-border-subtle)]/60 align-top">
+          <th scope="row" class="py-3 pr-4 font-medium text-fg-muted">Best for</th>
+          {
+            concepts.map((concept) => (
+              <td class="px-3 py-3">{concept.bestFor ?? '—'}</td>
+            ))
+          }
+        </tr>
+        <tr class="border-b border-[var(--brand-border-subtle)]/60 align-top">
+          <th scope="row" class="py-3 pr-4 font-medium text-fg-muted">Visual character</th>
+          {
+            concepts.map((concept) => (
+              <td class="px-3 py-3">{concept.targetFeeling.join(', ')}</td>
+            ))
+          }
+        </tr>
+        <tr class="border-b border-[var(--brand-border-subtle)]/60 align-top">
+          <th scope="row" class="py-3 pr-4 font-medium text-fg-muted">Conversion focus</th>
+          {
+            concepts.map((concept) => (
+              <td class="px-3 py-3">{concept.conversionStrategy}</td>
+            ))
+          }
+        </tr>
+        <tr class="align-top">
+          <th scope="row" class="py-3 pr-4 font-medium text-fg-muted">Key features</th>
+          {
+            concepts.map((concept) => (
+              <td class="px-3 py-3">{concept.differentiators.join(' · ')}</td>
+            ))
+          }
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

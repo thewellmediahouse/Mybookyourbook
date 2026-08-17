@@ -1,0 +1,60 @@
+---
+import PlayButton from '@/components/media/PlayButton.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+import { getCategoryLabel, type PortfolioItem } from '@/config/portfolio';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  item: PortfolioItem;
+  class?: string;
+}
+
+const { item, class: className = '' } = Astro.props;
+const categoryLabel = getCategoryLabel(item.category);
+const href = `/portfolio/${item.slug}`;
+
+function isImageMetadata(value: unknown): value is ImageMetadata {
+  return typeof value === 'object' && value !== null && 'src' in value && 'width' in value && 'height' in value;
+}
+---
+
+<a
+  href={href}
+  class={`group surface-card block overflow-hidden transition hover:shadow-elevated ${className}`}
+>
+  <div class="relative aspect-[4/3] overflow-hidden bg-black/20">
+    {
+      isImageMetadata(item.image) ? (
+        <OptimizedImage
+          src={item.image}
+          alt={item.imageAlt}
+          width={600}
+          height={450}
+          widths={[300, 450, 600, 900]}
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          class="h-full w-full object-cover transition group-hover:scale-[1.02]"
+          loading="lazy"
+        />
+      ) : (
+        <img
+          src={item.image}
+          alt={item.imageAlt}
+          width="600"
+          height="450"
+          class="h-full w-full object-cover transition group-hover:scale-[1.02]"
+          loading="lazy"
+        />
+      )
+    }
+    {item.isVideo && (
+      <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+        <PlayButton />
+      </div>
+    )}
+  </div>
+  <div class="p-5">
+    <p class="text-xs font-semibold uppercase tracking-wide text-accent">{categoryLabel}</p>
+    <h3 class="mt-2 text-h4 font-semibold text-fg">{item.title}</h3>
+    <p class="mt-2 text-small text-fg-soft">{item.description}</p>
+  </div>
+</a>

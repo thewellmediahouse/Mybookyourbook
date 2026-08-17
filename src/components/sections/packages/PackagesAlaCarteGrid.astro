@@ -1,0 +1,140 @@
+---
+import type { AlaCarteItem } from '@/config/packages';
+
+interface Props {
+  label: string;
+  heading: string;
+  subheading?: string;
+  items: AlaCarteItem[];
+  class?: string;
+}
+
+const { label, heading, subheading, items, class: className = '' } = Astro.props;
+
+const icons = [
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M3 9h18M8 17v3M16 17v3"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6 5 3H2"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 3 3 7.5 12 12l9-4.5L12 3Z"/><path d="M3 12.5 12 17l9-4.5"/><path d="M3 17.5 12 22l9-4.5"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 15c1.5-3 6.5-3 8 0"/><circle cx="9" cy="10" r="1" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.8 4 6.2 4 9s-1.5 6.2-4 9M12 3c-2.5 2.8-4 6.2-4 9s1.5 6.2 4 9"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h8l4 3h2a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/><path d="m10 10 4 2.5L10 15Z"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10.5" r="1.5"/><path d="m21 16-5.5-5.5L5 19"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.5-3 4.5-4.5 7-4.5s5.5 1.5 7 4.5"/></svg>`,
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 5v14M16 5v14M4 10h16M4 14h16"/></svg>`,
+];
+---
+
+<section id="once-off-services" class:list={['packages-section', 'packages-alacarte', className]} aria-labelledby="alacarte-heading">
+  <div class="container">
+    <header class="packages-alacarte__header scroll-reveal">
+      <p class="packages-eyebrow">{label}</p>
+      <h2 id="alacarte-heading" class="packages-alacarte__heading">{heading}</h2>
+      {subheading && <p class="packages-alacarte__subheading">{subheading}</p>}
+    </header>
+
+    <div class="packages-alacarte__grid">
+      {
+        items.map((entry, index) => (
+          <article class="packages-alacarte-card scroll-reveal">
+            <div class="packages-alacarte-card__icon" set:html={icons[index] ?? icons[0]} />
+            <div class="packages-alacarte-card__body">
+              <h3 class="packages-alacarte-card__title">{entry.item}</h3>
+              <p class="packages-alacarte-card__price">{entry.price}</p>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .packages-alacarte__header {
+    margin-bottom: clamp(1.75rem, 3vw, 2.5rem);
+  }
+
+  .packages-alacarte__heading {
+    margin: 0.5rem 0 0;
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  }
+
+  .packages-alacarte__subheading {
+    margin: 0.75rem 0 0;
+    max-width: 40rem;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: #c8cfdd;
+  }
+
+  .packages-alacarte__grid {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  @media (min-width: 640px) {
+    .packages-alacarte__grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 900px) {
+    .packages-alacarte__grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .packages-alacarte__grid {
+      grid-template-columns: repeat(5, 1fr);
+    }
+  }
+
+  .packages-alacarte-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    min-height: 100%;
+    padding: 1.125rem 1rem;
+    border-radius: 0.875rem;
+    border: 1px solid rgb(214 169 74 / 0.24);
+    background: rgb(6 14 28 / 0.88);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .packages-alacarte-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 32px rgb(0 0 0 / 0.28);
+  }
+
+  .packages-alacarte-card__icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.625rem;
+    border: 1px solid rgb(214 169 74 / 0.3);
+    background: rgb(214 169 74 / 0.1);
+    color: #f0c96f;
+  }
+
+  .packages-alacarte-card__icon :global(svg) {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .packages-alacarte-card__title {
+    margin: 0 0 0.5rem;
+    font-size: 0.8125rem;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .packages-alacarte-card__price {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: #f0c96f;
+  }
+</style>

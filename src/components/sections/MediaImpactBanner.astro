@@ -1,0 +1,99 @@
+---
+/**
+ * MediaImpactBanner — full-width “Bad Media / Great Media” banner.
+ * Placement: homepage, directly above InteractiveExperiences (Business Growth Score).
+ */
+import type { ImageMetadata } from 'astro';
+import { raster } from '@/assets/raster';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+
+interface Props {
+  image?: ImageMetadata;
+  imageAlt?: string;
+  width?: number;
+  height?: number;
+}
+
+const {
+  image = raster.banners.badMediaGreatMedia,
+  imageAlt = 'Bad media costs you. Great media sells. Before and after examples for media, photos, and websites.',
+  width = 1350,
+  height = 759,
+} = Astro.props;
+---
+
+<section class="media-impact-banner" aria-label="Media quality comparison">
+  <div class="media-impact-banner__blend media-impact-banner__blend--top" aria-hidden="true" />
+  <div class="media-impact-banner__blend media-impact-banner__blend--bottom" aria-hidden="true" />
+
+  <figure class="media-impact-banner__frame">
+    <OptimizedImage
+      src={image}
+      alt={imageAlt}
+      width={width}
+      height={height}
+      widths={[640, 960, 1350, 1920]}
+      sizes="100vw"
+      class="media-impact-banner__image"
+      loading="lazy"
+    />
+    <figcaption class="sr-only">
+      Bad media costs you. Great media sells. Before and after comparisons for video production,
+      product photography, and website design. Build trust, drive sales, elevate your brand, and
+      stand out from competitors.
+    </figcaption>
+  </figure>
+</section>
+
+<style>
+  .media-impact-banner {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    background: #030f1e;
+    margin-top: -0.5rem;
+  }
+
+  .media-impact-banner__frame {
+    margin: 0;
+    width: 100%;
+  }
+
+  /* :global — class is on Astro <Image> inside OptimizedImage */
+  :global(.media-impact-banner__image) {
+    display: block;
+    width: 100%;
+    height: auto;
+    vertical-align: middle;
+  }
+
+  .media-impact-banner__blend {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .media-impact-banner__blend--top {
+    top: 0;
+    height: clamp(3rem, 8vw, 5rem);
+    background: linear-gradient(
+      180deg,
+      #030f1e 0%,
+      rgb(3 15 30 / 0.72) 45%,
+      transparent 100%
+    );
+  }
+
+  .media-impact-banner__blend--bottom {
+    bottom: 0;
+    height: clamp(3.5rem, 9vw, 6rem);
+    background: linear-gradient(
+      0deg,
+      #030f1e 0%,
+      rgb(3 15 30 / 0.78) 42%,
+      transparent 100%
+    );
+  }
+</style>

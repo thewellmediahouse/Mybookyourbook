@@ -1,0 +1,53 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import Button from '@/components/ui/Button.astro';
+import type { GrowthPathCard } from '@/config/content';
+
+interface Props {
+  heading: string;
+  cards: GrowthPathCard[];
+}
+
+const { heading, cards } = Astro.props;
+---
+
+<section id="packages" class="py-section">
+  <div class="container">
+    <SectionHeading heading={heading} align="center" class="scroll-reveal mb-12" />
+    <ul class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {
+        cards.map((card, index) => (
+          <li
+            class="premium-card growth-path-card scroll-reveal flex flex-col p-7"
+            style={`--reveal-delay: ${index * 100}ms`}
+          >
+            <h3 class="text-h3 font-semibold text-fg">{card.title}</h3>
+            <p class="mt-4 flex-1 text-fg-soft">{card.description}</p>
+            <div class="mt-8">
+              <Button href={card.cta.href} variant="accent" size="md" class="w-full sm:w-auto">
+                {card.cta.label}
+              </Button>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .growth-path-card {
+    transition:
+      transform 0.35s ease,
+      border-color 0.35s ease,
+      box-shadow 0.35s ease;
+  }
+
+  .growth-path-card:hover {
+    transform: translateY(-6px);
+    border-color: rgb(224 169 56 / 0.45);
+    box-shadow:
+      0 24px 80px rgb(0 0 0 / 0.28),
+      0 0 40px rgb(224 169 56 / 0.1);
+  }
+</style>

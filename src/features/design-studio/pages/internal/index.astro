@@ -1,0 +1,210 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import { designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsiteInternal;
+const { branding } = designStudioConfig;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/design-your-website/internal">
+  <section class="py-section-sm">
+    <Container>
+      <div class="mx-auto max-w-4xl">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {branding.eyebrow} · Internal
+        </p>
+        <h1 class="mt-3 font-display text-h2 text-fg">Design Studio handoffs</h1>
+        <p class="mt-3 max-w-2xl text-fg-soft">
+          Retrieve paid projects for the design team. In production, put Cloudflare Access in front
+          of this path and <code class="text-fg">/api/design-studio/internal/*</code>. Do not use
+          weak shared passwords.
+        </p>
+
+        <div class="mt-8 surface-card space-y-4 p-6">
+          <label class="block text-left">
+            <span class="text-small text-fg-label">Team service token</span>
+            <input
+              type="password"
+              autocomplete="off"
+              data-team-token
+              class="mt-1.5 w-full rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-3 py-2.5 text-body text-fg"
+              placeholder="DESIGN_STUDIO_TEAM_TOKEN"
+            />
+          </label>
+          <div class="flex flex-wrap gap-3">
+            <label class="text-small text-fg-muted">
+              Status
+              <select
+                data-status-filter
+                class="ml-2 rounded-button border border-[var(--brand-border-subtle)] bg-transparent px-2 py-1.5 text-fg"
+              >
+                <option value="">Active funnel</option>
+                <option value="READY_FOR_DESIGNER">Ready for designer</option>
+                <option value="PAID">Paid</option>
+                <option value="AWAITING_PAYMENT">Awaiting payment</option>
+                <option value="IN_DESIGN">In design</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              class="btn-accent inline-flex items-center justify-center rounded-button px-4 py-2 text-small font-medium"
+              data-load-projects
+            >
+              Load projects
+            </button>
+          </div>
+          <p class="hidden text-small text-fg" data-internal-error role="alert"></p>
+        </div>
+
+        <div class="mt-8 overflow-x-auto" data-project-table-wrap>
+          <table class="hidden w-full min-w-[40rem] border-collapse text-left text-small" data-project-table>
+            <thead>
+              <tr class="border-b border-[var(--brand-border-subtle)] text-fg-muted">
+                <th class="py-2 pr-3 font-medium">Reference</th>
+                <th class="py-2 pr-3 font-medium">Status</th>
+                <th class="py-2 pr-3 font-medium">Business</th>
+                <th class="py-2 pr-3 font-medium">Contact</th>
+                <th class="py-2 font-medium">Handoff</th>
+              </tr>
+            </thead>
+            <tbody data-project-rows></tbody>
+          </table>
+        </div>
+
+        <pre
+          class="mt-8 hidden max-h-[32rem] overflow-auto rounded-xl border border-[var(--brand-border-subtle)] bg-black/20 p-4 text-xs text-fg-soft"
+          data-handoff-json
+        ></pre>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<script>
+  const TOKEN_KEY = 'wellmedia.designStudio.teamToken.v1';
+
+  function tokenHeaders(token: string): HeadersInit {
+    return { 'x-design-studio-team-token': token };
+  }
+
+  async function main() {
+    const tokenInput = document.querySelector('[data-team-token]');
+    const filter = document.querySelector('[data-status-filter]');
+    const loadBtn = document.querySelector('[data-load-projects]');
+    const errorEl = document.querySelector('[data-internal-error]');
+    const table = document.querySelector('[data-project-table]');
+    const rows = document.querySelector('[data-project-rows]');
+    const handoffPre = document.querySelector('[data-handoff-json]');
+
+    if (tokenInput instanceof HTMLInputElement) {
+      tokenInput.value = sessionStorage.getItem(TOKEN_KEY) || '';
+    }
+
+    async function loadHandoff(projectId: string, token: string) {
+      const response = await fetch(
+        `/api/design-studio/internal/handoff/${encodeURIComponent(projectId)}`,
+        { headers: tokenHeaders(token) },
+      );
+      if (!response.ok) {
+        const data = (await response.json().catch(() => null)) as {
+          error?: { message?: string };
+        } | null;
+        throw new Error(data?.error?.message || 'Unable to load handoff.');
+      }
+      const data = (await response.json()) as { handoff: unknown };
+      if (handoffPre) {
+        handoffPre.textContent = JSON.stringify(data.handoff, null, 2);
+        handoffPre.classList.remove('hidden');
+        handoffPre.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    loadBtn?.addEventListener('click', async () => {
+      errorEl?.classList.add('hidden');
+      const token =
+        tokenInput instanceof HTMLInputElement ? tokenInput.value.trim() : '';
+      if (!token) {
+        if (errorEl) {
+          errorEl.textContent = 'Enter the team service token configured in Worker secrets.';
+          errorEl.classList.remove('hidden');
+        }
+        return;
+      }
+      sessionStorage.setItem(TOKEN_KEY, token);
+
+      const status =
+        filter instanceof HTMLSelectElement ? filter.value : '';
+      const url = status
+        ? `/api/design-studio/internal/projects?status=${encodeURIComponent(status)}`
+        : '/api/design-studio/internal/projects';
+
+      try {
+        const response = await fetch(url, { headers: tokenHeaders(token) });
+        if (!response.ok) {
+          const data = (await response.json().catch(() => null)) as {
+            error?: { message?: string };
+          } | null;
+          throw new Error(data?.error?.message || 'Unable to load projects.');
+        }
+        const data = (await response.json()) as {
+          projects: Array<{
+            id: string;
+            publicReference: string;
+            status: string;
+            businessName: string | null;
+            contactName: string | null;
+            contactEmail: string | null;
+          }>;
+        };
+
+        if (!rows || !table) return;
+        rows.innerHTML = data.projects
+          .map(
+            (p) => `
+          <tr class="border-b border-[var(--brand-border-subtle)]/60">
+            <td class="py-2 pr-3 text-fg">${p.publicReference}</td>
+            <td class="py-2 pr-3 text-fg-soft">${p.status}</td>
+            <td class="py-2 pr-3 text-fg-soft">${p.businessName || '—'}</td>
+            <td class="py-2 pr-3 text-fg-soft">${p.contactName || '—'}<br/><span class="text-fg-muted">${p.contactEmail || ''}</span></td>
+            <td class="py-2">
+              <button type="button" class="text-accent underline-offset-2 hover:underline" data-open-handoff="${p.id}">
+                Open handoff
+              </button>
+            </td>
+          </tr>`,
+          )
+          .join('');
+        table.classList.remove('hidden');
+
+        rows.querySelectorAll('[data-open-handoff]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const id = btn.getAttribute('data-open-handoff');
+            if (!id) return;
+            void loadHandoff(id, token).catch((error) => {
+              if (errorEl) {
+                errorEl.textContent =
+                  error instanceof Error ? error.message : 'Unable to load handoff.';
+                errorEl.classList.remove('hidden');
+              }
+            });
+          });
+        });
+      } catch (error) {
+        if (errorEl) {
+          errorEl.textContent =
+            error instanceof Error ? error.message : 'Unable to load projects.';
+          errorEl.classList.remove('hidden');
+        }
+      }
+    });
+  }
+
+  void main();
+</script>

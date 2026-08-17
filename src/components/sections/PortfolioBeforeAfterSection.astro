@@ -1,0 +1,94 @@
+---
+import BeforeAfterCard from '@/components/portfolio/BeforeAfterCard.astro';
+import type { BeforeAfterItem } from '@/config/portfolioGallery';
+
+interface Props {
+  eyebrow: string;
+  heading: string;
+  subheading: string;
+  items: BeforeAfterItem[];
+}
+
+const { eyebrow, heading, subheading, items } = Astro.props;
+---
+
+<section id="portfolio-before-after" class="portfolio-before-after">
+  <div class="container">
+    <header class="portfolio-before-after__header scroll-reveal">
+      <p class="portfolio-before-after__eyebrow">{eyebrow}</p>
+      <h2 class="portfolio-before-after__heading">{heading}</h2>
+      <p class="portfolio-before-after__subheading">{subheading}</p>
+    </header>
+
+    <div class="portfolio-before-after__grid">
+      {items.map((item) => <BeforeAfterCard {...item} />)}
+    </div>
+  </div>
+</section>
+
+<style>
+  .portfolio-before-after {
+    position: relative;
+    isolation: isolate;
+    padding-top: clamp(1rem, 2.5vw, 1.75rem);
+    padding-bottom: clamp(0.5rem, 1vw, 0.75rem);
+    background: #000000;
+  }
+
+  .portfolio-before-after::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 55% 42% at 18% 42%, rgb(217 164 65 / 0.1), transparent 68%),
+      radial-gradient(ellipse 55% 42% at 82% 58%, rgb(217 164 65 / 0.1), transparent 68%);
+  }
+
+  .portfolio-before-after > .container {
+    position: relative;
+    z-index: 1;
+  }
+
+  .portfolio-before-after__header {
+    max-width: 44rem;
+    margin-bottom: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  .portfolio-before-after__eyebrow {
+    margin: 0 0 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brand-accent, #d6a94a);
+  }
+
+  .portfolio-before-after__heading {
+    margin: 0 0 0.75rem;
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3rem);
+    line-height: 1.1;
+    color: var(--color-text, #f6f2eb);
+  }
+
+  .portfolio-before-after__subheading {
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--color-text-soft, #b8c0d0);
+  }
+
+  .portfolio-before-after__grid {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+  }
+
+  @media (min-width: 900px) {
+    .portfolio-before-after__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+</style>

@@ -1,0 +1,311 @@
+---
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<div class={`hero-gold-dust ${className}`} aria-hidden="true">
+  <div class="hero-gold-dust__glow hero-gold-dust__glow--a" />
+  <div class="hero-gold-dust__glow hero-gold-dust__glow--b" />
+  <div class="hero-gold-dust__glow hero-gold-dust__glow--c" />
+  <div class="hero-gold-dust__glow hero-gold-dust__glow--d" />
+  <canvas class="hero-gold-dust__canvas" />
+</div>
+
+<style>
+  .hero-gold-dust {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    overflow: hidden;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  }
+
+  .hero-gold-dust__glow {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(72px);
+    opacity: 0.72;
+    mix-blend-mode: screen;
+  }
+
+  .hero-gold-dust__glow--a {
+    width: min(62vw, 42rem);
+    height: min(62vw, 42rem);
+    top: 4%;
+    left: 12%;
+    background: radial-gradient(circle, rgb(255 217 119 / 0.42) 0%, transparent 68%);
+    animation: hero-dust-glow-a 16s ease-in-out infinite alternate;
+  }
+
+  .hero-gold-dust__glow--b {
+    width: min(56vw, 36rem);
+    height: min(56vw, 36rem);
+    top: 22%;
+    right: 4%;
+    background: radial-gradient(circle, rgb(224 169 56 / 0.36) 0%, transparent 70%);
+    animation: hero-dust-glow-b 20s ease-in-out infinite alternate;
+  }
+
+  .hero-gold-dust__glow--c {
+    width: min(50vw, 32rem);
+    height: min(50vw, 32rem);
+    bottom: 6%;
+    left: 38%;
+    background: radial-gradient(circle, rgb(243 196 94 / 0.3) 0%, transparent 72%);
+    animation: hero-dust-glow-c 24s ease-in-out infinite alternate;
+  }
+
+  .hero-gold-dust__glow--d {
+    width: min(44vw, 28rem);
+    height: min(44vw, 28rem);
+    top: 48%;
+    left: 28%;
+    background: radial-gradient(circle, rgb(255 236 170 / 0.28) 0%, transparent 74%);
+    animation: hero-dust-glow-d 18s ease-in-out infinite alternate;
+  }
+
+  .hero-gold-dust__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.92;
+    mix-blend-mode: screen;
+  }
+
+  @keyframes hero-dust-glow-a {
+    0% {
+      transform: translate(-4%, -2%) scale(1);
+      opacity: 0.58;
+    }
+    100% {
+      transform: translate(6%, 4%) scale(1.1);
+      opacity: 0.82;
+    }
+  }
+
+  @keyframes hero-dust-glow-b {
+    0% {
+      transform: translate(3%, 2%) scale(1.06);
+      opacity: 0.52;
+    }
+    100% {
+      transform: translate(-8%, -3%) scale(0.98);
+      opacity: 0.78;
+    }
+  }
+
+  @keyframes hero-dust-glow-c {
+    0% {
+      transform: translate(-5%, 3%) scale(0.98);
+      opacity: 0.48;
+    }
+    100% {
+      transform: translate(4%, -4%) scale(1.08);
+      opacity: 0.72;
+    }
+  }
+
+  @keyframes hero-dust-glow-d {
+    0% {
+      transform: translate(2%, -3%) scale(1.02);
+      opacity: 0.44;
+    }
+    100% {
+      transform: translate(-6%, 5%) scale(1.12);
+      opacity: 0.68;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-gold-dust {
+      mix-blend-mode: normal;
+    }
+
+    .hero-gold-dust__glow {
+      animation: none;
+      opacity: 0.55;
+      mix-blend-mode: normal;
+    }
+
+    .hero-gold-dust__canvas {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  interface DustParticle {
+    x: number;
+    y: number;
+    size: number;
+    opacity: number;
+    vx: number;
+    vy: number;
+    twinkle: number;
+    twinkleSpeed: number;
+    hue: number;
+  }
+
+  function initHeroGoldDust() {
+    const root = document.querySelector<HTMLElement>('.hero-gold-dust');
+    const canvas = root?.querySelector<HTMLCanvasElement>('.hero-gold-dust__canvas');
+    if (!root || !canvas) return;
+    if (root.dataset.initialized === 'true') return;
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reducedMotion) return;
+
+    root.dataset.initialized = 'true';
+
+    const ctx = canvas.getContext('2d', { alpha: true });
+    if (!ctx) return;
+
+    let particles: DustParticle[] = [];
+    let width = 0;
+    let height = 0;
+    let dpr = 1;
+    let rafId = 0;
+    let running = false;
+    let resizeRaf = 0;
+
+    const palette = [
+      'rgba(255, 217, 119, ',
+      'rgba(243, 196, 94, ',
+      'rgba(224, 169, 56, ',
+      'rgba(255, 236, 170, ',
+      'rgba(255, 248, 210, ',
+    ];
+
+    function createParticles(count: number): DustParticle[] {
+      return Array.from({ length: count }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        size: Math.random() * 2.4 + 0.75,
+        opacity: Math.random() * 0.55 + 0.28,
+        // Slightly faster than original so the field reads as alive, not static
+        vx: Math.random() * 0.26 + 0.1,
+        vy: Math.random() * 0.16 - 0.05,
+        twinkle: Math.random() * Math.PI * 2,
+        twinkleSpeed: Math.random() * 0.03 + 0.01,
+        hue: Math.floor(Math.random() * palette.length),
+      }));
+    }
+
+    function drawParticle(p: DustParticle) {
+      const alpha = p.opacity * (0.65 + Math.sin(p.twinkle) * 0.35);
+      const color = palette[p.hue % palette.length];
+
+      // Soft glow only on the largest particles (radial gradients are expensive).
+      if (p.size > 2.1) {
+        const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2.6);
+        glow.addColorStop(0, `${color}${alpha * 0.45})`);
+        glow.addColorStop(1, `${color}0)`);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * 2.6, 0, Math.PI * 2);
+        ctx.fillStyle = glow;
+        ctx.fill();
+      }
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `${color}${alpha})`;
+      ctx.fill();
+    }
+
+    function resize() {
+      const rect = root.getBoundingClientRect();
+      width = Math.max(rect.width, 1);
+      height = Math.max(rect.height, 1);
+      // Cap DPR harder on phones — canvas pixels dominate cost.
+      const smallScreen = width < 768;
+      dpr = Math.min(window.devicePixelRatio || 1, smallScreen ? 1.25 : 1.5);
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const density = width < 768 ? 55 : width < 1024 ? 90 : 130;
+      particles = createParticles(density);
+    }
+
+    function scheduleResize() {
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        resize();
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.twinkle += p.twinkleSpeed;
+
+        if (p.x > width + 12) p.x = -12;
+        if (p.x < -12) p.x = width + 12;
+        if (p.y > height + 12) p.y = -12;
+        if (p.y < -12) p.y = height + 12;
+
+        drawParticle(p);
+      }
+    }
+
+    function tick() {
+      if (!running) return;
+      draw();
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function start() {
+      if (running) return;
+      running = true;
+      tick();
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(rafId);
+    }
+
+    // Defer first layout read until after paint to avoid forced reflow on boot.
+    requestAnimationFrame(() => {
+      resize();
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries.some((entry) => entry.isIntersecting);
+          if (visible) start();
+          else stop();
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -12% 0px' },
+      );
+
+      observer.observe(root);
+
+      window.addEventListener('resize', scheduleResize, { passive: true });
+
+      document.addEventListener(
+        'astro:before-swap',
+        () => {
+          stop();
+          observer.disconnect();
+          window.removeEventListener('resize', scheduleResize);
+          if (resizeRaf) cancelAnimationFrame(resizeRaf);
+        },
+        { once: true },
+      );
+    });
+  }
+
+  initHeroGoldDust();
+  document.addEventListener('astro:page-load', initHeroGoldDust);
+</script>

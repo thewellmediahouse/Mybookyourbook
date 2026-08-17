@@ -1,0 +1,55 @@
+---
+import Card from '@/components/ui/Card.astro';
+import type { PackageTier } from '@/config/packages';
+import { getTierIcon, getFeaturedTierLabel } from '@/utils/packageAccent';
+
+interface Props {
+  tier: PackageTier;
+  featured?: boolean;
+  featuredLabel?: string;
+}
+
+const { tier, featured = false, featuredLabel = getFeaturedTierLabel() } = Astro.props;
+const tierIcon = getTierIcon(tier.icon);
+---
+
+<Card
+  id={tier.id}
+  class={`package-tier-card relative flex flex-col ${featured ? 'package-tier-card--featured' : ''}`}
+>
+  {
+    featured && (
+      <span class="package-tier-badge">{featuredLabel}</span>
+    )
+  }
+  <div class="flex items-start gap-3">
+    {
+      tierIcon && (
+        <span
+          class="package-tier-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-card text-lg"
+          aria-hidden="true"
+        >
+          {tierIcon}
+        </span>
+      )
+    }
+    <div class="min-w-0 flex-1">
+      <h4 class="text-h4 font-semibold uppercase text-fg">{tier.name}</h4>
+      <p class="package-tier-accent text-h3 mt-2 font-bold">
+        {tier.price}
+        {tier.period && <span class="text-body text-fg-muted font-normal"> / {tier.period}</span>}
+      </p>
+    </div>
+  </div>
+  {tier.description && <p class="mt-3 text-fg-soft">{tier.description}</p>}
+  <ul class="mt-4 space-y-2 text-small text-fg-soft">
+    {
+      tier.features.map((feature) => (
+        <li class="flex gap-2">
+          <span class="package-tier-accent shrink-0" aria-hidden="true">✓</span>
+          {feature}
+        </li>
+      ))
+    }
+  </ul>
+</Card>

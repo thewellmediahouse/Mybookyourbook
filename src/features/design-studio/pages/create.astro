@@ -1,0 +1,461 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import DesignStudioProgress from '@/components/design-studio/DesignStudioProgress.astro';
+import FormField from '@/components/forms/FormField.astro';
+import SelectField from '@/components/forms/SelectField.astro';
+import TextAreaField from '@/components/forms/TextAreaField.astro';
+import { designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsiteCreate;
+const {
+  industries,
+  goals,
+  websiteTypes,
+  styles,
+  colourModes,
+  features,
+  suggestedPages,
+  uploads,
+  reviewDisclaimer,
+  copy,
+  wizardSteps,
+  createRoute,
+  demoResultsRoute,
+  storageKey,
+} = designStudioConfig;
+
+const industryOptions = industries.map((label) => ({ value: label, label }));
+const styleOptions = styles.map((label) => ({ value: label, label }));
+const colourOptions = colourModes.map((label) => ({ value: label, label }));
+const customScopeTypes = websiteTypes
+  .filter((t) => 'note' in t && t.note)
+  .map((t) => t.value);
+
+const { pricing } = designStudioConfig;
+
+// Prefer .env at build time; fall back to config (never the Cloudflare test site key in prod).
+const turnstileSiteKey =
+  (import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '').trim() ||
+  designStudioConfig.turnstileSiteKey;
+
+const wizardConfig = {
+  storageKey,
+  demoResultsRoute,
+  resultsRoutePrefix: '/design-your-website/results',
+  stepCount: wizardSteps.length,
+  stepLabels: wizardSteps.map((s) => s.label),
+  customScopeTypes,
+  turnstileSiteKey,
+  pricing: {
+    currency: pricing.currency,
+    staticWebsitePriceZar: pricing.staticWebsitePriceZar,
+    websiteWithShopPriceZar: pricing.websiteWithShopPriceZar,
+    onlineShopFromZar: pricing.onlineShopFromZar,
+    onlineShopToZar: pricing.onlineShopToZar,
+    depositPercent: pricing.depositPercent,
+  },
+};
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname={createRoute}>
+  <section class="py-section-sm">
+    <Container size="narrow">
+      <div class="mb-8">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {designStudioConfig.branding.eyebrow}
+        </p>
+        <h1 class="mt-2 font-display text-h2 text-fg">Create your website direction</h1>
+        <p class="mt-2 text-fg-soft">
+          No account needed. Your answers stay on this device until generation is connected.
+        </p>
+      </div>
+
+      <div
+        id="design-studio-wizard"
+        class="surface-card p-5 sm:p-8"
+        data-wizard-root
+        data-wizard-config={JSON.stringify(wizardConfig)}
+      >
+        <DesignStudioProgress currentStep={1} />
+
+        <p
+          class="mt-4 hidden rounded-xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-small text-fg"
+          data-wizard-error
+          role="alert"
+        >
+        </p>
+
+        <form class="mt-8" data-wizard-form novalidate>
+          <!-- Step 1: Business -->
+          <fieldset data-wizard-step="1" class="space-y-5">
+            <legend class="font-display text-h3 text-fg">About your business</legend>
+            <FormField name="businessName" label="Business name" required />
+            <SelectField name="industry" label="Industry" options={industryOptions} required />
+            <div class="hidden" data-custom-industry>
+              <FormField name="customIndustry" label="Describe your industry" />
+            </div>
+            <TextAreaField
+              name="businessDescription"
+              label="Short business description"
+              required
+              rows={4}
+              placeholder="What do you do, who do you serve, and what makes you different?"
+            />
+            <FormField
+              name="existingWebsiteUrl"
+              label="Current / old website address (optional)"
+              type="text"
+              placeholder="https://www.yourbusiness.com"
+              help="We’ll scan this site for messaging, services, and logo cues to inform your new directions."
+            />
+            <FormField
+              name="market"
+              label="Main location / market (optional)"
+              placeholder="e.g. Jeffreys Bay, Eastern Cape"
+            />
+          </fieldset>
+
+          <!-- Step 2: Goals -->
+          <fieldset data-wizard-step="2" class="hidden space-y-4" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Primary goals</legend>
+            <p class="text-small text-fg-muted">Select all that apply.</p>
+            <div class="grid gap-2 sm:grid-cols-2">
+              {
+                goals.map((goal) => (
+                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--brand-border-subtle)] px-4 py-3 hover:border-accent/40">
+                    <input
+                      type="checkbox"
+                      name="goals"
+                      value={goal}
+                      class="mt-1 size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                    />
+                    <span class="text-small text-fg-soft">{goal}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </fieldset>
+
+          <!-- Step 3: Website type -->
+          <fieldset data-wizard-step="3" class="hidden space-y-4" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Website type</legend>
+            <div class="space-y-2">
+              {
+                websiteTypes.map((type) => (
+                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--brand-border-subtle)] px-4 py-3 hover:border-accent/40">
+                    <input
+                      type="radio"
+                      name="websiteType"
+                      value={type.value}
+                      class="mt-1 size-4 border-accent/40 text-accent focus:ring-accent"
+                      required
+                    />
+                    <span>
+                      <span class="block text-small text-fg-soft">{type.label}</span>
+                      {'note' in type && type.note ? (
+                        <span class="mt-1 block text-xs text-fg-muted">{type.note}</span>
+                      ) : null}
+                    </span>
+                  </label>
+                ))
+              }
+            </div>
+            <p
+              class="hidden rounded-xl border border-accent/30 bg-accent/5 px-4 py-3 text-small text-fg-soft"
+              data-custom-scope-note
+            >
+              Custom scope — final price confirmed by our team.
+            </p>
+          </fieldset>
+
+          <!-- Step 4: Style -->
+          <fieldset data-wizard-step="4" class="hidden space-y-5" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Visual style</legend>
+            <SelectField
+              name="primaryStyle"
+              label="Primary style"
+              options={styleOptions}
+              required
+            />
+            <SelectField
+              name="secondaryStyle"
+              label="Secondary influence (optional)"
+              options={styleOptions}
+            />
+          </fieldset>
+
+          <!-- Step 5: Colours -->
+          <fieldset data-wizard-step="5" class="hidden space-y-5" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Colour direction</legend>
+            <SelectField
+              name="colourMode"
+              label="Colour approach"
+              options={colourOptions}
+              required
+            />
+            <div class="hidden" data-custom-colours>
+              <FormField
+                name="customColours"
+                label="Custom colours (1–4 hex values, comma-separated)"
+                placeholder="#0B1220, #D9A441"
+              />
+            </div>
+          </fieldset>
+
+          <!-- Step 6: Features -->
+          <fieldset data-wizard-step="6" class="hidden space-y-4" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Functionality</legend>
+            <p class="text-small text-fg-muted">
+              Static business website (up to 4 pages):
+              <span class="text-fg-soft">R{pricing.staticWebsitePriceZar.toLocaleString('en-ZA')}</span>
+              · Website + online shop:
+              <span class="text-fg-soft"
+                >R{pricing.onlineShopFromZar.toLocaleString('en-ZA')} – R{pricing.onlineShopToZar.toLocaleString('en-ZA')}</span
+              >
+            </p>
+            <div class="grid gap-2 sm:grid-cols-2">
+              {
+                features.map((feature) => (
+                  <label class="flex cursor-pointer items-start gap-3 rounded-xl border border-[var(--brand-border-subtle)] px-4 py-3 hover:border-accent/40">
+                    <input
+                      type="checkbox"
+                      name="features"
+                      value={feature}
+                      class="mt-1 size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                    />
+                    <span class="text-small text-fg-soft">{feature}</span>
+                  </label>
+                ))
+              }
+            </div>
+
+            <div
+              class="hidden space-y-4 rounded-xl border border-accent/25 bg-accent/5 p-4"
+              data-shop-details
+            >
+              <p class="text-small font-medium text-fg">Online shop details</p>
+              <FormField
+                name="productCount"
+                label="Approximate product count"
+                placeholder="e.g. 20–50"
+              />
+              <fieldset>
+                <legend class="mb-2 text-small text-fg-label">Product kinds</legend>
+                <div class="flex flex-wrap gap-3">
+                  {
+                    ['Physical products', 'Digital products', 'Services'].map((kind) => (
+                      <label class="flex items-center gap-2 text-small text-fg-soft">
+                        <input
+                          type="checkbox"
+                          name="productKinds"
+                          value={kind}
+                          class="size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                        />
+                        {kind}
+                      </label>
+                    ))
+                  }
+                </div>
+              </fieldset>
+              <label class="flex items-center gap-2 text-small text-fg-soft">
+                <input
+                  type="checkbox"
+                  name="deliveryRequired"
+                  class="size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                />
+                Delivery required?
+              </label>
+              <label class="flex items-center gap-2 text-small text-fg-soft">
+                <input
+                  type="checkbox"
+                  name="onlinePaymentRequired"
+                  class="size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                />
+                Online payment required?
+              </label>
+            </div>
+          </fieldset>
+
+          <!-- Step 7: Pages -->
+          <fieldset data-wizard-step="7" class="hidden space-y-4" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Suggested pages</legend>
+            <div class="grid gap-2 sm:grid-cols-2">
+              {
+                suggestedPages.map((page) => (
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-[var(--brand-border-subtle)] px-4 py-3 hover:border-accent/40">
+                    <input
+                      type="checkbox"
+                      name="pages"
+                      value={page}
+                      class="size-4 rounded border-accent/40 text-accent focus:ring-accent"
+                      checked={page === 'Home' || page === 'About' || page === 'Contact'}
+                    />
+                    <span class="text-small text-fg-soft">{page}</span>
+                  </label>
+                ))
+              }
+            </div>
+            <FormField
+              name="customPages"
+              label="Custom page names (optional, comma-separated)"
+              placeholder="e.g. Pricing, Locations"
+            />
+          </fieldset>
+
+          <!-- Step 8: Uploads -->
+          <fieldset data-wizard-step="8" class="hidden space-y-4" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Uploads</legend>
+            <p class="text-small text-fg-muted">
+              Logo, brand guide, product photos, team photos, or reference screenshots.
+              Accepted: {uploads.acceptedFormatsLabel}.
+            </p>
+            <p class="rounded-xl border border-accent/25 bg-accent/5 px-4 py-3 text-small text-fg-soft">
+              {uploads.demoModeNote}
+            </p>
+            <input
+              type="file"
+              data-upload-input
+              multiple
+              accept=".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf"
+              class="block w-full text-small text-fg-soft file:mr-4 file:rounded-button file:border-0 file:bg-accent/20 file:px-4 file:py-2 file:text-small file:font-medium file:text-accent"
+            />
+            <ul class="space-y-2" data-upload-list role="list"></ul>
+          </fieldset>
+
+          <!-- Step 9: Brief -->
+          <fieldset data-wizard-step="9" class="hidden space-y-5" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">{copy.briefHeading}</legend>
+            <TextAreaField
+              name="freeTextBrief"
+              label="Your dream website"
+              required
+              rows={6}
+              placeholder={copy.briefPlaceholder}
+            />
+            <TextAreaField
+              name="avoid"
+              label={copy.avoidLabel}
+              rows={3}
+              placeholder="e.g. No stock photos of handshakes, no purple gradients, no cluttered pop-ups."
+            />
+          </fieldset>
+
+          <!-- Step 10: Review -->
+          <fieldset data-wizard-step="10" class="hidden space-y-5" aria-hidden="true">
+            <legend class="font-display text-h3 text-fg">Review your brief</legend>
+            <dl data-wizard-review class="rounded-xl border border-[var(--brand-border-subtle)] px-4">
+            </dl>
+            <p class="text-small text-fg-muted">{reviewDisclaimer}</p>
+            <label class="flex items-start gap-3 text-small text-fg-soft">
+              <input
+                type="checkbox"
+                name="acceptedTerms"
+                class="mt-1 size-4 rounded border-accent/40 text-accent focus:ring-accent"
+              />
+              <span>
+                I agree to the
+                <a href="/terms" class="text-accent underline-offset-2 hover:underline">Terms</a>
+                and
+                <a href="/privacy" class="text-accent underline-offset-2 hover:underline">Privacy Policy</a>,
+                and I understand these concepts are creative directions — not the final website.
+              </span>
+            </label>
+            <div class="space-y-2">
+              <p class="text-small text-fg-label">Security check</p>
+              <div data-turnstile class="cf-turnstile min-h-[65px]"></div>
+              <p class="text-xs text-fg-muted">
+                Protected by Cloudflare Turnstile. Tick the checkbox above, complete the security
+                check, then click <strong class="text-fg-soft">Generate directions</strong> —
+                you’ll go straight to results while directions and visuals load in each card.
+              </p>
+            </div>
+          </fieldset>
+        </form>
+
+        <p
+          class="mt-4 hidden rounded-xl border border-accent/30 bg-accent/10 px-4 py-3 text-small text-fg-soft"
+          data-wizard-status
+          role="status"
+          aria-live="polite"
+        >
+        </p>
+
+        <div
+          class="mt-6 rounded-xl border border-[var(--brand-border-subtle)] bg-[var(--color-surface,transparent)] px-4 py-3"
+          data-price-estimate
+          aria-live="polite"
+        >
+          <p class="text-xs tracking-[0.14em] text-accent uppercase">Estimated package</p>
+          <p class="mt-1 font-display text-h3 text-fg" data-price-estimate-headline>
+            R{pricing.staticWebsitePriceZar.toLocaleString('en-ZA')}
+          </p>
+          <p class="mt-1 text-small text-fg-muted" data-price-estimate-detail>
+            Static / business website (up to 4 pages). Updates as you choose type and features.
+          </p>
+        </div>
+
+        <div class="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-[var(--brand-border-subtle)] pt-6">
+          <button
+            type="button"
+            data-wizard-back
+            class="inline-flex items-center justify-center rounded-button border-2 border-accent/50 bg-transparent px-5 py-2.5 text-body font-medium text-fg-soft transition-colors hover:bg-accent/10 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Back
+          </button>
+          <div class="flex flex-wrap items-center justify-end gap-3">
+            <button
+              type="button"
+              data-wizard-next
+              class="btn-accent inline-flex items-center justify-center rounded-button px-5 py-2.5 text-body font-medium hover:brightness-105"
+            >
+              Continue
+            </button>
+            <button
+              type="button"
+              data-wizard-generate
+              class="btn-accent hidden items-center justify-center rounded-button px-5 py-2.5 text-body font-medium hover:brightness-105 disabled:cursor-wait disabled:opacity-70"
+            >
+              {copy.generateCta}
+            </button>
+            <a
+              href="/design-your-website/results/"
+              data-wizard-view-results
+              class="btn-accent hidden items-center justify-center rounded-button px-5 py-2.5 text-body font-medium hover:brightness-105"
+            >
+              Go to generated previews
+            </a>
+            <button
+              type="button"
+              data-wizard-start-fresh
+              class="hidden items-center justify-center rounded-button border-2 border-accent/50 bg-transparent px-5 py-2.5 text-body font-medium text-fg-soft transition-colors hover:bg-accent/10"
+            >
+              Start fresh generation
+            </button>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" defer></script>
+
+<script>
+  import {
+    initDesignStudioWizard,
+    type WizardConfigPayload,
+  } from '@/scripts/design-studio/wizard';
+
+  const root = document.querySelector<HTMLElement>('[data-wizard-root]');
+  const raw = root?.dataset.wizardConfig;
+  if (root && raw) {
+    const config = JSON.parse(raw) as WizardConfigPayload;
+    initDesignStudioWizard(root, config);
+  }
+</script>

@@ -1,0 +1,11 @@
+---
+import ContactForm from '@/components/forms/ContactForm.astro';
+
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<ContactForm class={className} />

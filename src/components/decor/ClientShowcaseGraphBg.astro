@@ -1,0 +1,111 @@
+---
+---
+
+<div class="client-showcase-graph-bg" aria-hidden="true">
+  <svg
+    class="client-showcase-graph-bg__svg"
+    viewBox="0 0 1600 420"
+    preserveAspectRatio="none"
+  >
+    <defs>
+      <linearGradient id="showcase-bg-graph-stroke" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="rgb(214 165 79 / 0)" />
+        <stop offset="18%" stop-color="rgb(242 199 107 / 0.55)" />
+        <stop offset="55%" stop-color="rgb(255 236 170 / 0.95)" />
+        <stop offset="82%" stop-color="rgb(224 169 56 / 0.65)" />
+        <stop offset="100%" stop-color="rgb(214 165 79 / 0)" />
+      </linearGradient>
+      <linearGradient id="showcase-bg-graph-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="rgb(214 165 79 / 0.16)" />
+        <stop offset="100%" stop-color="rgb(214 165 79 / 0)" />
+      </linearGradient>
+      <filter id="showcase-bg-graph-glow" x="-10%" y="-40%" width="120%" height="180%">
+        <feGaussianBlur stdDeviation="4" result="blur" />
+        <feMerge>
+          <feMergeNode in="blur" />
+          <feMergeNode in="SourceGraphic" />
+        </feMerge>
+      </filter>
+    </defs>
+
+    <path
+      class="client-showcase-graph-bg__area"
+      d="M -40 360 L -40 300 L 120 278 L 280 248 L 440 205 L 600 158 L 760 118 L 920 82 L 1080 52 L 1240 32 L 1400 18 L 1640 8 L 1640 360 Z"
+    />
+    <path
+      class="client-showcase-graph-bg__line"
+      d="M -40 300 L 120 278 L 280 248 L 440 205 L 600 158 L 760 118 L 920 82 L 1080 52 L 1240 32 L 1400 18 L 1640 8"
+      pathLength="100"
+    />
+    <path
+      class="client-showcase-graph-bg__line client-showcase-graph-bg__line--trail"
+      d="M -40 300 L 120 278 L 280 248 L 440 205 L 600 158 L 760 118 L 920 82 L 1080 52 L 1240 32 L 1400 18 L 1640 8"
+      pathLength="100"
+    />
+  </svg>
+</div>
+
+<style>
+  .client-showcase-graph-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    opacity: 0.75;
+  }
+
+  .client-showcase-graph-bg__svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .client-showcase-graph-bg__area {
+    fill: url(#showcase-bg-graph-fill);
+    opacity: 0.45;
+  }
+
+  .client-showcase-graph-bg__line {
+    fill: none;
+    stroke: url(#showcase-bg-graph-stroke);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: url(#showcase-bg-graph-glow);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    animation: showcase-bg-graph-draw 14s linear infinite;
+  }
+
+  .client-showcase-graph-bg__line--trail {
+    stroke-width: 1.5;
+    opacity: 0.45;
+    animation-delay: -7s;
+  }
+
+  @keyframes showcase-bg-graph-draw {
+    0% {
+      stroke-dashoffset: 100;
+      opacity: 0.35;
+    }
+    15% {
+      opacity: 0.95;
+    }
+    85% {
+      opacity: 0.95;
+    }
+    100% {
+      stroke-dashoffset: 0;
+      opacity: 0.35;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .client-showcase-graph-bg__line {
+      animation: none;
+      stroke-dashoffset: 0;
+      opacity: 0.55;
+    }
+  }
+</style>

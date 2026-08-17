@@ -1,0 +1,75 @@
+---
+import { getImage } from 'astro:assets';
+import { siteConfig } from '@/config/site';
+import { seoConfig } from '@/config/seo';
+import { raster } from '@/assets/raster';
+import { getSiteUrl } from '@/utils/site-url';
+import { resolveCanonicalUrl } from '@/utils/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  pathname?: string;
+  ogImage?: string;
+  noindex?: boolean;
+}
+
+const { title, description, pathname = '/', ogImage, noindex = false } = Astro.props;
+
+const fullTitle = title.includes(seoConfig.titleSuffix)
+  ? title
+  : `${title} | ${seoConfig.titleSuffix}`;
+
+const siteUrl = getSiteUrl(Astro.site);
+const canonical = resolveCanonicalUrl(siteUrl, pathname);
+
+const optimizedOg = await getImage({
+  src: raster.og.default,
+  width: 1200,
+  height: 630,
+  format: 'webp',
+});
+
+const image = ogImage
+  ? ogImage.startsWith('http')
+    ? ogImage
+    : resolveCanonicalUrl(siteUrl, ogImage)
+  : new URL(optimizedOg.src, siteUrl).href;
+const ogImageType = image.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={image} />
+<meta property="og:image:secure_url" content={image} />
+<meta property="og:image:type" content={ogImageType} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={siteConfig.defaultOgImageAlt} />
+<meta property="og:site_name" content={siteConfig.name} />
+<meta property="og:locale" content={siteConfig.locale.replace('-', '_')} />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={siteConfig.defaultOgImageAlt} />
+{seoConfig.twitterHandle && (
+  <meta name="twitter:site" content={`@${seoConfig.twitterHandle}`} />
+)}
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: siteConfig.name,
+  url: siteUrl,
+  description: siteConfig.shortDescription,
+  logo: resolveCanonicalUrl(siteUrl, '/assets/the-well/logos/favicon-32x32.png'),
+})} />

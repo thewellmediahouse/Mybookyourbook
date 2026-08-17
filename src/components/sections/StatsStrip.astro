@@ -1,0 +1,105 @@
+---
+import type { StatItem } from '@/config/content';
+
+interface Props {
+  items: StatItem[];
+}
+
+const { items } = Astro.props;
+
+const iconPaths: Record<NonNullable<StatItem['icon']>, string> = {
+  trophy:
+    'M12 2l2.4 4.8L20 8l-4 3.9L17 17l-5-2.6L7 17l1-5.1L4 8l5.6-1.2L12 2z',
+  clients:
+    'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z',
+  experience:
+    'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z',
+  focus:
+    'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+};
+---
+
+<section class="stats-strip py-section-sm" aria-label="Company highlights">
+  <div class="container">
+    <div class="premium-card stats-strip__inner scroll-reveal">
+      <ul class="stats-strip__list">
+        {
+          items.map((stat) => (
+            <li class="stats-strip__item">
+              {
+                stat.icon && (
+                  <span class="stats-strip__icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor">
+                      <path d={iconPaths[stat.icon]} />
+                    </svg>
+                  </span>
+                )
+              }
+              <div>
+                <p class="stats-strip__value">{stat.value}</p>
+                <p class="stats-strip__label">{stat.label}</p>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+</section>
+
+<style>
+  .stats-strip__inner {
+    padding: 1.5rem 1.25rem;
+  }
+
+  .stats-strip__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 768px) {
+    .stats-strip__list {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem;
+    }
+  }
+
+  .stats-strip__item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    justify-content: center;
+    text-align: left;
+  }
+
+  .stats-strip__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: rgb(224 169 56 / 0.12);
+    color: var(--brand-accent, #e0a938);
+  }
+
+  .stats-strip__value {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--color-text, #f4f6fa);
+  }
+
+  .stats-strip__label {
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--color-text-muted, #b8c0ce);
+  }
+</style>

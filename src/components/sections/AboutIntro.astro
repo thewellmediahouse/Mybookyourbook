@@ -1,0 +1,326 @@
+---
+import type { ImageMetadata } from 'astro';
+import Container from '@/components/ui/Container.astro';
+import OptimizedImage from '@/components/ui/OptimizedImage.astro';
+
+interface Props {
+  heading: string;
+  /** Line under the name, e.g. role title */
+  role?: string;
+  /** Line under the role, e.g. credentials */
+  credentials?: string;
+  /** Single paragraph (legacy). Ignored when `paragraphs` is provided. */
+  paragraph?: string;
+  /** Multi-paragraph body. Supports `**bold**` markers. */
+  paragraphs?: readonly string[];
+  image?: {
+    src: ImageMetadata;
+    alt: string;
+    width?: number;
+    height?: number;
+  };
+}
+
+const { heading, role, credentials, paragraph, paragraphs, image } = Astro.props;
+
+const body = paragraphs?.length
+  ? paragraphs
+  : paragraph
+    ? [paragraph]
+    : [];
+
+function renderInline(text: string) {
+  return text.split(/(\*\*[^*]+\*\*)/g).map((part) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return { type: 'strong' as const, text: part.slice(2, -2) };
+    }
+    return { type: 'text' as const, text: part };
+  });
+}
+
+const imageWidth = image?.width ?? 819;
+const imageHeight = image?.height ?? 1024;
+const hasImage = Boolean(image);
+---
+
+<section class="about-intro py-section-sm" data-about-intro>
+  <Container size={hasImage ? 'wide' : 'narrow'}>
+    <div
+      class:list={[
+        'about-intro__layout',
+        hasImage && 'about-intro__layout--split',
+      ]}
+    >
+      {
+        image && (
+          <div class="about-intro__portrait" data-about-intro-portrait>
+            <OptimizedImage
+              src={image.src}
+              alt={image.alt}
+              width={imageWidth}
+              height={imageHeight}
+              widths={[400, 560, 720, imageWidth]}
+              sizes="(max-width: 1024px) min(100vw, 36rem), min(42vw, 34rem)"
+              class="about-intro__photo aspect-[4/5] w-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        )
+      }
+
+      <div class="about-intro__copy" data-about-intro-copy>
+        <header class="about-intro__header shrink-0">
+          <h2 class="text-h2 font-bold text-fg">{heading}</h2>
+          {role && <p class="mt-2 text-lg font-medium text-accent">{role}</p>}
+          {
+            credentials && (
+              <p class="mt-1 text-sm tracking-wide text-fg-muted">{credentials}</p>
+            )
+          }
+        </header>
+
+        <div class="about-intro__body" data-about-intro-body>
+          <div class="about-intro__prose space-y-5 text-lg leading-relaxed text-fg-soft">
+            {
+              body.map((text) => (
+                <p>
+                  {renderInline(text).map((part) =>
+                    part.type === 'strong' ? (
+                      <strong class="font-semibold text-fg">{part.text}</strong>
+                    ) : (
+                      part.text
+                    ),
+                  )}
+                </p>
+              ))
+            }
+          </div>
+          <div class="about-intro__fade" aria-hidden="true"></div>
+        </div>
+
+        {
+          body.length > 0 && (
+            <button
+              type="button"
+              class="about-intro__toggle"
+              data-about-intro-toggle
+              aria-expanded="false"
+            >
+              Read more
+            </button>
+          )
+        }
+      </div>
+    </div>
+  </Container>
+</section>
+
+<script>
+  function initAboutIntro() {
+    document.querySelectorAll('[data-about-intro]').forEach((section) => {
+      if (!(section instanceof HTMLElement)) return;
+      if (section.dataset.bound === 'true') return;
+      section.dataset.bound = 'true';
+
+      const portrait = section.querySelector('[data-about-intro-portrait]');
+      const copy = section.querySelector('[data-about-intro-copy]');
+      const body = section.querySelector('[data-about-intro-body]');
+      const toggle = section.querySelector('[data-about-intro-toggle]');
+      if (
+        !(copy instanceof HTMLElement) ||
+        !(body instanceof HTMLElement) ||
+        !(toggle instanceof HTMLElement)
+      ) {
+        return;
+      }
+
+      const sync = () => {
+        const expanded = copy.classList.contains('is-expanded');
+        const desktop = window.matchMedia('(min-width: 1024px)').matches;
+
+        if (expanded) {
+          copy.style.height = '';
+          body.style.maxHeight = '';
+          toggle.hidden = false;
+          return;
+        }
+
+        if (desktop && portrait instanceof HTMLElement) {
+          const target = portrait.offsetHeight;
+          copy.style.height = `${target}px`;
+          body.style.maxHeight = '';
+        } else {
+          copy.style.height = '';
+          body.style.maxHeight = '16rem';
+        }
+
+        const overflows = body.scrollHeight > body.clientHeight + 4;
+        toggle.hidden = !overflows;
+      };
+
+      toggle.addEventListener('click', () => {
+        const expanded = copy.classList.toggle('is-expanded');
+        toggle.setAttribute('aria-expanded', String(expanded));
+        toggle.textContent = expanded ? 'Read less' : 'Read more';
+        sync();
+        if (!expanded) {
+          copy.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+
+      const images = section.querySelectorAll('img');
+      images.forEach((img) => {
+        if (img.complete) return;
+        img.addEventListener('load', sync, { once: true });
+      });
+
+      sync();
+      window.addEventListener('resize', sync, { passive: true });
+    });
+  }
+
+  initAboutIntro();
+  document.addEventListener('astro:page-load', initAboutIntro);
+</script>
+
+<style>
+  .about-intro__layout--split {
+    display: grid;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .about-intro__portrait {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    max-width: 36rem;
+    margin-inline: auto;
+  }
+
+  .about-intro__portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      linear-gradient(
+        90deg,
+        var(--color-background-deep, #050a18) 0%,
+        transparent 14%,
+        transparent 86%,
+        var(--color-background-deep, #050a18) 100%
+      ),
+      linear-gradient(180deg, transparent 72%, var(--color-background-deep, #050a18) 100%);
+  }
+
+  .about-intro__portrait :global(.about-intro__photo) {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      #000 12%,
+      #000 88%,
+      transparent 100%
+    );
+  }
+
+  .about-intro__copy {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .about-intro__body {
+    position: relative;
+    margin-top: 1.5rem;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .about-intro__fade {
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 5.5rem;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      var(--color-background-deep, #050a18) 100%
+    );
+  }
+
+  .about-intro__copy.is-expanded .about-intro__body {
+    overflow: visible;
+  }
+
+  .about-intro__copy.is-expanded .about-intro__fade {
+    display: none;
+  }
+
+  .about-intro__toggle {
+    flex-shrink: 0;
+    margin-top: 1rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    text-align: left;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+
+  .about-intro__toggle:hover {
+    text-decoration: underline;
+  }
+
+  @media (min-width: 1024px) {
+    .about-intro__layout--split {
+      grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+
+    .about-intro__portrait {
+      max-width: none;
+      margin-inline: 0;
+    }
+
+    .about-intro__portrait::after {
+      background:
+        linear-gradient(
+          90deg,
+          transparent 0%,
+          transparent 70%,
+          var(--color-background-deep, #050a18) 100%
+        ),
+        linear-gradient(180deg, transparent 78%, var(--color-background-deep, #050a18) 100%);
+    }
+
+    .about-intro__portrait :global(.about-intro__photo) {
+      -webkit-mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        #000 10%,
+        #000 78%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        90deg,
+        transparent 0%,
+        #000 10%,
+        #000 78%,
+        transparent 100%
+      );
+    }
+  }
+</style>

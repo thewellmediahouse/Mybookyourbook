@@ -1,0 +1,85 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import Button from '@/components/ui/Button.astro';
+import ConceptCard from '@/components/design-studio/ConceptCard.astro';
+import ConceptComparison from '@/components/design-studio/ConceptComparison.astro';
+import { demoConcepts, designStudioConfig } from '@/config/designStudio';
+import { seoConfig } from '@/config/seo';
+import { designStudioNotFoundIfDisabled } from '@/utils/design-studio/featureGate';
+
+const disabled = designStudioNotFoundIfDisabled();
+if (disabled) return disabled;
+
+const seo = seoConfig.pages.designYourWebsiteResults;
+const { copy, branding, createRoute } = designStudioConfig;
+---
+
+<BaseLayout
+  title={seo.title}
+  description={seo.description}
+  pathname="/design-your-website/results/demo"
+>
+  <section class="py-section-sm">
+    <Container>
+      <div class="mx-auto max-w-3xl text-center">
+        <p class="text-small font-medium tracking-[0.18em] text-accent uppercase">
+          {branding.eyebrow}
+        </p>
+        <h1 class="mt-3 font-display text-h2 text-fg sm:text-h1">{copy.resultsHeading}</h1>
+        <p class="mt-3 text-fg-soft">
+          Demo concepts for preview. Live results use your AI-generated directions and visuals
+          from the wizard session.
+        </p>
+        <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <Button href={createRoute} variant="outline" size="sm">Edit brief</Button>
+          <Button href="/design-your-website" variant="ghost" size="sm">Back to overview</Button>
+        </div>
+      </div>
+
+      <div class="mt-12 grid gap-6 md:grid-cols-2">
+        {
+          demoConcepts.map((concept, index) => (
+            <ConceptCard concept={concept} index={index} demoMode />
+          ))
+        }
+      </div>
+
+      <ConceptComparison concepts={demoConcepts} />
+
+      <div
+        id="concept-detail-modal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="concept-detail-title"
+        hidden
+      >
+        <div class="surface-card max-h-[90vh] w-full max-w-2xl overflow-y-auto p-6">
+          <div class="flex items-start justify-between gap-4">
+            <h2 id="concept-detail-title" class="font-display text-h3 text-fg"></h2>
+            <button
+              type="button"
+              class="rounded-button border border-[var(--brand-border-subtle)] px-3 py-1 text-small text-fg-soft hover:border-accent/40"
+              data-close-concept-modal
+            >
+              Close
+            </button>
+          </div>
+          <div id="concept-detail-body" class="mt-4 space-y-3 text-small text-fg-soft"></div>
+        </div>
+      </div>
+    </Container>
+  </section>
+</BaseLayout>
+
+<div id="demo-concepts-data" class="hidden" data-concepts={JSON.stringify(demoConcepts)}></div>
+
+<script>
+  import { initConceptDetailModal } from '@/scripts/design-studio/conceptModal';
+
+  const dataEl = document.getElementById('demo-concepts-data');
+  const raw = dataEl?.dataset.concepts || '[]';
+  const concepts = JSON.parse(raw);
+  initConceptDetailModal(concepts);
+</script>
