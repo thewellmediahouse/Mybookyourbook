@@ -1,0 +1,73 @@
+---
+/**
+ * Closing CTA with optional full-bleed background image + scrim.
+ * Prefer lean copy: eyebrow, heading, one paragraph, dual CTAs.
+ */
+import Button from '@/components/ui/Button.astro';
+import ConfigImage from '@/components/ui/ConfigImage.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  paragraph?: string;
+  primaryCta: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+  /** Raster key or public path — decorative background */
+  image?: { src: string; alt?: string };
+  class?: string;
+}
+
+const {
+  eyebrow,
+  heading,
+  paragraph,
+  primaryCta,
+  secondaryCta,
+  image,
+  class: className = '',
+} = Astro.props;
+---
+
+<section class:list={['band-dark relative overflow-hidden bg-[var(--brand-primary)] py-20 md:py-28', className]}>
+  {
+    image?.src && (
+      <div class="absolute inset-0" aria-hidden="true">
+        <ConfigImage
+          src={image.src}
+          alt={image.alt ?? ''}
+          width={1800}
+          height={1200}
+          widths={[960, 1280, 1600, 1800]}
+          sizes="100vw"
+          class="h-full w-full object-cover opacity-35"
+          loading="lazy"
+        />
+        <div class="absolute inset-0 bg-gradient-to-r from-[var(--brand-primary)] via-[color-mix(in_srgb,var(--brand-primary)_85%,transparent)] to-[color-mix(in_srgb,var(--brand-primary)_45%,transparent)]" />
+      </div>
+    )
+  }
+
+  <div class="container relative z-10 max-w-2xl">
+    {
+      eyebrow && (
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--brand-accent)]">
+          {eyebrow}
+        </p>
+      )
+    }
+    <h2 class="mt-4 font-display text-h2 font-bold leading-tight text-fg md:text-h1">{heading}</h2>
+    {paragraph && <p class="mt-4 text-base leading-relaxed text-fg-soft md:text-lg">{paragraph}</p>}
+    <div class="mt-8 flex flex-wrap gap-3">
+      <Button href={primaryCta.href} variant="accent" size="lg">
+        {primaryCta.label}
+      </Button>
+      {
+        secondaryCta && (
+          <Button href={secondaryCta.href} variant="outline-contrast" size="lg">
+            {secondaryCta.label}
+          </Button>
+        )
+      }
+    </div>
+  </div>
+</section>

@@ -1,0 +1,60 @@
+---
+import Button from '@/components/ui/Button.astro';
+import Badge from '@/components/ui/Badge.astro';
+import HeroHeading from '@/components/ui/HeroHeading.astro';
+import ConfigImage from '@/components/ui/ConfigImage.astro';
+
+interface Props {
+  eyebrow?: string;
+  heading: string;
+  headingHighlight?: string;
+  subheading?: string;
+  primaryCta?: { label: string; href: string };
+  secondaryCta?: { label: string; href: string };
+}
+
+const { eyebrow, heading, headingHighlight, subheading, primaryCta, secondaryCta } = Astro.props;
+---
+
+<section class="section-hero relative overflow-hidden py-section">
+  <div class="container">
+    <div class="grid items-center gap-12 lg:grid-cols-2">
+      <div>
+        {eyebrow && <Badge class="mb-4">{eyebrow}</Badge>}
+        <HeroHeading heading={heading} headingHighlight={headingHighlight} />
+        {subheading && (
+          <p class="mt-6 max-w-xl text-lg text-fg-soft">{subheading}</p>
+        )}
+        {
+          (primaryCta || secondaryCta) && (
+            <div class="mt-8 flex flex-wrap gap-4">
+              {primaryCta && (
+                <Button href={primaryCta.href} variant="accent" size="lg">
+                  {primaryCta.label}
+                </Button>
+              )}
+              {secondaryCta && (
+                <Button href={secondaryCta.href} variant="outline-contrast" size="lg">
+                  {secondaryCta.label}
+                </Button>
+              )}
+            </div>
+          )
+        }
+      </div>
+      <div class="relative">
+        <div class="aspect-[4/3] overflow-hidden rounded-card bg-black/20 shadow-elevated ring-1 ring-white/10">
+          <ConfigImage
+            src="/images/hero.svg"
+            alt="Professional team collaborating in a modern workspace"
+            width={800}
+            height={600}
+            class="h-full w-full object-cover"
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

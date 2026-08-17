@@ -1,0 +1,42 @@
+---
+description: Astro business template — agent contract for config-driven static sites
+alwaysApply: true
+---
+
+# Agent contract
+
+**Canonical:** `docs/AGENT.md`. **Content:** `SITE_SPEC.yaml` (`docs/SITE_SPEC.schema.json` + `docs/SITE_SPEC.example.yaml`) → `src/config/*`.
+**Lookup:** `docs/PLATFORM.md` (components, tokens, SEO/a11y/LH). **Provision/deploy:** `docs/DEPLOY.md`. **Go-live / OG:** `docs/go-live.md`. **Shop:** `docs/SHOP.md`. **ChatGPT pack:** `docs/prompts/`.
+
+## Hard constraints
+
+- Astro + TS + Tailwind v4 + MDX; static only; Cloudflare Pages
+- Lockfile: npm 10.9.x–compatible `package-lock.json` for Pages `npm ci`
+- Never: React/Vue/Svelte/SSR/DB/backends unless asked
+- Client content only in config + assets — never in shared components
+- Reuse sections/UI; one-offs → `src/components/site/*`; promote to platform only if reusable (see `docs/AGENT.md` ladder)
+
+## Config
+
+Core: `site`, `company`, `navigation`, `services`, `seo`, `form`
+Optional: `design`, `packages`, `portfolio`, `content`, `faq`, `testimonials`, `pages`, `shop`, `analytics`, `thank-you`
+Composition: `pages.ts` toggles — do not hardcode page structure
+
+## Style / media / forms
+
+- Semantic only: `text-fg*`, `surface-card`, `btn-accent` — never `text-neutral-*` / `bg-white`
+- Rasters → `src/assets/` + `raster.ts` + OptimizedImage/BrandLogo/ConfigImage. **Default both desktop and mobile srcset from the start.** Raw `<img>` and jpg/png/webp in `public/` are forbidden except SVG, favicon/ico, icons, video, and 1×1 tracking pixels. Shopify catalog photos → `ShopifyImage` (CDN `width`).
+- Forms via `form.ts`; default FormSubmit
+
+## New site workflow
+
+0. Provision: private GitHub + Pages preview (`docs/DEPLOY.md`, skill `site-provision`)
+1. Validate/fill `SITE_SPEC.yaml` (external ChatGPT: `docs/prompts/01-fill-spec.md`)
+2. Apply → `src/config/*` (`docs/prompts/02-apply-spec.md`)
+3. Assets (`docs/prompts/03-assets.md`)
+4. `npm run check && npm run build`
+5. Lighthouse desktop+mobile → ≥90, target 100 (`docs/prompts/04-lighthouse.md`)
+
+## Diff discipline
+
+Config-first. Minimal diffs. Match local naming/imports. No unrelated edits.

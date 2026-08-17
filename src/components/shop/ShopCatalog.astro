@@ -1,0 +1,83 @@
+---
+import { shopConfig } from '@/config/shop';
+import { loadShopCatalog } from '@/lib/shopify/products';
+import Button from '@/components/ui/Button.astro';
+import ProductGrid from './ProductGrid.astro';
+import LiveStockSync from './LiveStockSync.astro';
+
+const live = shopConfig.live;
+const empty = shopConfig.emptyCatalog;
+const catalogError = shopConfig.catalogError;
+const configMissing = shopConfig.configMissing;
+const result = await loadShopCatalog(50);
+const isDev = import.meta.env.DEV;
+---
+
+<section class="py-section">
+  <div class="container space-y-10">
+    <div class="max-w-3xl space-y-4">
+      <span class="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+        {live.eyebrow}
+      </span>
+      <h1 class="text-h1 font-semibold text-fg">
+        {live.heading}
+        {
+          live.headingHighlight && (
+            <span class="mt-1 block text-gradient-gold">{live.headingHighlight}</span>
+          )
+        }
+      </h1>
+      <p class="text-lg text-fg-muted">{live.paragraph}</p>
+      {
+        live.secondaryCtas.length > 0 && (
+          <div class="flex flex-wrap gap-3">
+            {live.secondaryCtas.map((cta) => (
+              <Button variant="secondary" href={cta.href} external={cta.external}>
+                {cta.label}
+              </Button>
+            ))}
+          </div>
+        )
+      }
+    </div>
+
+    {
+      result.status === 'success' ? (
+        <>
+          <ProductGrid products={result.products} />
+          <LiveStockSync />
+        </>
+      ) : result.status === 'empty' ? (
+        <div class="surface-card max-w-2xl space-y-3 p-8">
+          <h2 class="text-h3 font-semibold text-fg">{empty.heading}</h2>
+          <p class="text-fg-muted">{empty.paragraph}</p>
+          <div class="pt-2">
+            <Button variant="secondary" href="/contact/">
+              Contact us
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div class="surface-card max-w-2xl space-y-3 p-8">
+          <h2 class="text-h3 font-semibold text-fg">
+            {result.status === 'config_missing' ? configMissing.heading : catalogError.heading}
+          </h2>
+          <p class="text-fg-muted">
+            {isDev && result.status === 'config_missing'
+              ? result.message || configMissing.devParagraph
+              : result.status === 'config_missing'
+                ? configMissing.paragraph
+                : catalogError.paragraph}
+          </p>
+          <div class="pt-2">
+            <Button variant="accent" href="/shop/">
+              {result.status === 'config_missing'
+                ? configMissing.retryLabel
+                : catalogError.retryLabel}
+            </Button>
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>

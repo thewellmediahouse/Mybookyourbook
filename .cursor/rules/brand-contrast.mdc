@@ -1,0 +1,19 @@
+---
+description: Warn before applying brand colors that fail WCAG AA (Lighthouse contrast) — simple hex math, never run Lighthouse for this
+globs: src/config/site.ts,src/config/design.ts,src/utils/branding.ts,docs/SITE_SPEC*
+alwaysApply: true
+---
+
+# Brand contrast (design phase)
+
+When the user requests or you are about to write **text-on-background brand colors** (`site.branding`, `design.colors`, SITE_SPEC branding, gold-on-cream, muted grey body, light text on tinted bands):
+
+1. **Do not run Lighthouse.** Use `src/utils/contrast.ts` (`contrastRatio` / `checkContrastPairs`) — WCAG 2.1 relative luminance.
+2. Check at least: `text` vs `background` (**4.5:1**), `textMuted` / `textSoft` vs `background` (**4.5:1** — Lighthouse flags this often), `text` vs `backgroundDeep` if used as copy on dark bands, accent/button label vs button fill (**4.5:1** if the label is body-sized; **3:1** only for large/bold).
+3. Skip non-hex (gradients, rgba). Skip SVG/icons.
+4. If any pair **fails**: **stop writing those colors.** Tell the user the pair, ratio (1 decimal), and the floor. Ask **“Are you sure?”** — this will likely fail a Lighthouse a11y contrast audit. Proceed only if they confirm; then note the risk. Do not silently restyle their brand to “fix” it.
+5. If they confirm a fail, still use semantic tokens (`text-fg*`) — never `text-neutral-*` to dodge contrast.
+
+```
+text #94a3b8 on bg #f8fafc → ~2.5:1 (need 4.5:1). Are you sure? Lighthouse will likely flag this.
+```

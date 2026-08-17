@@ -1,0 +1,136 @@
+---
+import type { NavItem } from '@/config/navigation';
+
+interface Props {
+  items: NavItem[];
+  class?: string;
+  ariaLabel?: string;
+}
+
+const { items, class: className = '', ariaLabel = 'Main navigation' } = Astro.props;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
+
+function normalizeHref(href: string) {
+  return href.replace(/\/$/, '').split('#')[0] || '/';
+}
+
+function isItemActive(item: NavItem) {
+  const href = normalizeHref(item.href);
+  if (currentPath === href) return true;
+  if (item.children?.length) {
+    if (href !== '/' && currentPath.startsWith(`${href}/`)) return true;
+    return item.children.some((child) => {
+      const childHref = normalizeHref(child.href);
+      return currentPath === childHref || (childHref !== '/' && currentPath.startsWith(`${childHref}/`));
+    });
+  }
+  return false;
+}
+---
+
+<nav aria-label={ariaLabel} class:list={['site-nav', className]}>
+  <ul class="flex flex-wrap items-center gap-1">
+    {
+      items.map((item) => {
+        const isActive = isItemActive(item);
+        const hasChildren = Boolean(item.children?.length);
+        const itemPath = normalizeHref(item.href);
+        const linkClass = [
+          'inline-flex items-center gap-1 rounded-button px-3 py-2 text-small font-medium transition-colors',
+          isActive ? 'nav-active-gold text-accent' : 'text-fg-muted hover:text-fg',
+        ];
+
+        if (!hasChildren) {
+          return (
+            <li>
+              <a
+                href={item.href}
+                class:list={linkClass}
+                aria-current={currentPath === itemPath ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          );
+        }
+
+        return (
+          <li class="site-nav__item--dd relative">
+            <a
+              href={item.href}
+              class:list={[...linkClass, 'site-nav__link--dd']}
+              aria-current={currentPath === itemPath ? 'page' : undefined}
+              aria-haspopup="true"
+            >
+              <span>{item.label}</span>
+              <svg class="site-nav__chevron h-3.5 w-3.5 opacity-65" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path
+                  fill-rule="evenodd"
+                  d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </a>
+            <div class="site-nav__dd" role="menu">
+              <div class="surface-card rounded-button border border-[var(--color-border)] p-1 shadow-[0_18px_40px_-24px_rgb(11_11_10_/_0.55)]">
+                {item.children!.map((child) => {
+                  const childPath = normalizeHref(child.href);
+                  const childActive =
+                    currentPath === childPath ||
+                    (childPath !== '/' && currentPath.startsWith(`${childPath}/`));
+                  return (
+                    <a
+                      href={child.href}
+                      class:list={[
+                        'block rounded-button px-3 py-2.5 text-small font-medium text-fg transition-colors hover:bg-accent/10 hover:text-accent',
+                        childActive && 'bg-accent/15 font-semibold text-accent',
+                      ]}
+                      role="menuitem"
+                      aria-current={childActive ? 'page' : undefined}
+                    >
+                      {child.label}
+                    </a>
+                  );
+                })}
+              </div>
+            </div>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<style>
+  .site-nav__dd {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    z-index: 60;
+    min-width: 15.5rem;
+    padding-top: 0.55rem;
+    transform: translateX(-50%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.12s ease,
+      visibility 0.12s ease;
+  }
+
+  .site-nav__item--dd:hover .site-nav__dd,
+  .site-nav__item--dd:focus-within .site-nav__dd {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .site-nav__item--dd:hover .site-nav__chevron,
+  .site-nav__item--dd:focus-within .site-nav__chevron {
+    transform: rotate(180deg);
+  }
+
+  .site-nav__chevron {
+    transition: transform 0.15s ease;
+  }
+</style>

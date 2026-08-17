@@ -1,0 +1,15 @@
+---
+description: Design tokens and semantic styling pipeline
+globs:
+  - src/styles/**
+  - src/config/design.ts
+  - src/config/site.ts
+alwaysApply: false
+---
+
+# Styles / tokens
+
+- Pipeline: `site.ts` branding → optional `design.ts` (`enabled: true` for dark/premium) → `branding.ts` CSS vars → `global.css`.
+- Components use semantic classes / CSS variables — never palette neutrals that assume light theme.
+- Contrast: body/muted text vs background must meet WCAG AA (4.5:1). During branding, compute with `src/utils/contrast.ts` — **do not run Lighthouse**. If a pair fails, stop and ask “Are you sure?” before writing. Details: `.cursor/rules/brand-contrast.mdc`.
+- Self-host fonts; avoid Google Fonts CDN. Details: `docs/PLATFORM.md`.

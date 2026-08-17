@@ -1,0 +1,156 @@
+---
+import { getImage } from 'astro:assets';
+import { siteConfig } from '@/config/site';
+import { companyConfig } from '@/config/company';
+import { seoConfig } from '@/config/seo';
+import { getRasterByKey } from '@/assets/raster';
+import { getSiteUrl } from '@/utils/site-url';
+import { clipForShareCard, resolveCanonicalUrl } from '@/utils/seo';
+
+interface Props {
+  title: string;
+  description: string;
+  pathname?: string;
+  /** Share-card title (~40–60 chars). Falls back to clipped `title`. */
+  ogTitle?: string;
+  /** Share-card description (~120–150 chars). Falls back to clipped `description`. */
+  ogDescription?: string;
+  /** Absolute or site-relative OG image URL override (e.g. product cards). */
+  ogImage?: string;
+  ogImageAlt?: string;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  ogImageType?: string;
+  /** Open Graph type — use `product` on shop product pages. */
+  ogType?: 'website' | 'product';
+  /** Optional product price tags for Facebook/Open Graph product type. */
+  productPrice?: { amount: string; currency: string };
+  /** Extra JSON-LD nodes (e.g. Product). Merged into @graph with Organization. */
+  jsonLd?: Record<string, unknown>[];
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  pathname = '/',
+  ogTitle: ogTitleOverride,
+  ogDescription: ogDescriptionOverride,
+  ogImage: ogImageOverride,
+  ogImageAlt: ogImageAltOverride,
+  ogImageWidth: ogImageWidthOverride,
+  ogImageHeight: ogImageHeightOverride,
+  ogImageType: ogImageTypeOverride,
+  ogType = 'website',
+  productPrice,
+  jsonLd = [],
+  noindex = false,
+} = Astro.props;
+
+const fullTitle = title.includes(seoConfig.titleSuffix)
+  ? title
+  : `${title} | ${seoConfig.titleSuffix}`;
+
+const ogTitle = ogTitleOverride ?? clipForShareCard(fullTitle, 60);
+const ogDescription = ogDescriptionOverride ?? clipForShareCard(description, 150);
+
+const siteUrl = getSiteUrl(Astro.site);
+const canonical = resolveCanonicalUrl(siteUrl, pathname);
+
+/** Prefer branded raster (`raster.og.default`) cover-cropped to 1200×630 over public SVG placeholders. */
+const rasterOg = getRasterByKey('og.default');
+const optimizedDefaultOg = rasterOg
+  ? await getImage({
+      src: rasterOg,
+      width: 1200,
+      height: 630,
+      format: 'webp',
+      fit: 'cover',
+      position: 'centre',
+    })
+  : null;
+
+const image = ogImageOverride
+  ? ogImageOverride.startsWith('http')
+    ? ogImageOverride
+    : resolveCanonicalUrl(siteUrl, ogImageOverride)
+  : optimizedDefaultOg
+    ? resolveCanonicalUrl(siteUrl, optimizedDefaultOg.src)
+    : resolveCanonicalUrl(siteUrl, siteConfig.defaultOgImage);
+
+const inferOgImageType = (url: string) =>
+  url.endsWith('.webp')
+    ? 'image/webp'
+    : url.endsWith('.svg')
+      ? 'image/svg+xml'
+      : url.endsWith('.png')
+        ? 'image/png'
+        : 'image/jpeg';
+
+const ogImageType =
+  ogImageTypeOverride ?? (optimizedDefaultOg && !ogImageOverride ? 'image/webp' : inferOgImageType(image));
+const ogImageWidth = ogImageWidthOverride ?? 1200;
+const ogImageHeight = ogImageHeightOverride ?? 630;
+const ogImageAlt = ogImageAltOverride ?? siteConfig.defaultOgImageAlt ?? siteConfig.name;
+const twitterHandle = seoConfig.twitterHandle.trim();
+
+/** Real social profile URLs only — omit empty config slots (go-live §1.7). */
+const sameAs = Object.values(companyConfig.social)
+  .map((url) => url.trim())
+  .filter(Boolean);
+
+const organizationJsonLd = {
+  '@type': 'Organization',
+  name: siteConfig.name,
+  url: siteUrl,
+  description: siteConfig.shortDescription,
+  logo: resolveCanonicalUrl(siteUrl, '/favicon.svg'),
+  ...(sameAs.length > 0 ? { sameAs } : {}),
+};
+
+const structuredData =
+  jsonLd.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@graph': [organizationJsonLd, ...jsonLd],
+      }
+    : {
+        '@context': 'https://schema.org',
+        ...organizationJsonLd,
+      };
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+{noindex && <meta name="robots" content="noindex, nofollow" />}
+
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonical} />
+<meta property="og:title" content={ogTitle} />
+<meta property="og:description" content={ogDescription} />
+<meta property="og:image" content={image} />
+<meta property="og:image:secure_url" content={image} />
+<meta property="og:image:type" content={ogImageType} />
+<meta property="og:image:width" content={String(ogImageWidth)} />
+<meta property="og:image:height" content={String(ogImageHeight)} />
+<meta property="og:image:alt" content={ogImageAlt} />
+<meta property="og:site_name" content={siteConfig.name} />
+<meta property="og:locale" content={siteConfig.locale.replace('-', '_')} />
+{
+  productPrice && (
+    <>
+      <meta property="product:price:amount" content={productPrice.amount} />
+      <meta property="product:price:currency" content={productPrice.currency} />
+    </>
+  )
+}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={ogTitle} />
+<meta name="twitter:description" content={ogDescription} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={ogImageAlt} />
+{twitterHandle && <meta name="twitter:site" content={`@${twitterHandle.replace(/^@/, '')}`} />}
+
+<script is:inline type="application/ld+json" set:html={JSON.stringify(structuredData)} />

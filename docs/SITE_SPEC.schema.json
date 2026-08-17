@@ -1,0 +1,475 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://astro-business-template.local/SITE_SPEC.schema.json",
+  "title": "SITE_SPEC",
+  "description": "Machine-oriented website content pack. Maps 1:1 to src/config/*. Omit or null optional blocks when unused.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["site", "company", "navigation", "services", "pages", "content", "seo", "form", "faq", "assets", "tone"],
+  "properties": {
+    "archetype": {
+      "type": "string",
+      "enum": ["agency", "consultant", "local-service", "saas-marketing", "custom"],
+      "description": "Preset hint for default pages/sections. custom = follow pages explicitly."
+    },
+    "site": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "url", "industry", "positioning", "tagline", "shortDescription", "longDescription", "language", "locale", "branding"],
+      "properties": {
+        "name": { "type": "string" },
+        "url": { "type": "string" },
+        "industry": { "type": "string" },
+        "positioning": { "type": "string" },
+        "tagline": { "type": "string" },
+        "supportingTaglines": { "type": "array", "items": { "type": "string" }, "maxItems": 5 },
+        "shortDescription": { "type": "string", "maxLength": 320 },
+        "longDescription": { "type": "string" },
+        "language": { "type": "string", "default": "en" },
+        "locale": { "type": "string", "default": "en-US" },
+        "author": { "type": "string" },
+        "defaultOgImage": { "type": "string" },
+        "defaultOgImageAlt": { "type": "string" },
+        "branding": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["primary", "secondary", "accent", "preferredStyle", "themeMode", "neutrals"],
+          "properties": {
+            "primary": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+            "secondary": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+            "accent": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+            "additionalAccent": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+            "preferredStyle": { "type": "string" },
+            "themeMode": { "type": "string", "enum": ["light", "dark", "auto"] },
+            "neutrals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["text", "textMuted", "background", "backgroundDeep", "border"],
+              "properties": {
+                "text": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+                "textMuted": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+                "background": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+                "backgroundDeep": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" },
+                "border": { "type": "string", "pattern": "^#([0-9A-Fa-f]{6})$" }
+              }
+            }
+          }
+        },
+        "designRules": { "type": "array", "items": { "type": "string" }, "maxItems": 6 }
+      }
+    },
+    "company": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["email", "address", "differentiators"],
+      "properties": {
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "officeHours": { "type": "string" },
+        "footerBrandStatement": { "type": "string" },
+        "messaging": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "properties": {
+            "provider": { "type": ["string", "null"], "enum": ["whatsapp", "telegram", null] },
+            "link": { "type": "string" },
+            "label": { "type": "string" },
+            "ariaLabel": { "type": "string" }
+          }
+        },
+        "address": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["street", "city", "region", "country", "postalCode"],
+          "properties": {
+            "street": { "type": "string" },
+            "city": { "type": "string" },
+            "region": { "type": "string" },
+            "country": { "type": "string" },
+            "postalCode": { "type": "string" }
+          }
+        },
+        "social": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "linkedin": { "type": "string" },
+            "facebook": { "type": "string" },
+            "instagram": { "type": "string" },
+            "twitter": { "type": "string" },
+            "youtube": { "type": "string" },
+            "tiktok": { "type": "string" }
+          }
+        },
+        "targetAudience": { "type": "string" },
+        "differentiators": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 6 }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headerCta"],
+      "properties": {
+        "headerLabels": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Optional label overrides keyed by pageKey (home, about, services, ...)."
+        },
+        "headerCta": {
+          "type": "object",
+          "required": ["label", "href"],
+          "properties": {
+            "label": { "type": "string" },
+            "href": { "type": "string" }
+          }
+        }
+      }
+    },
+    "services": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "slug", "name", "shortDescription", "benefits"],
+        "properties": {
+          "id": { "type": "string" },
+          "slug": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "name": { "type": "string" },
+          "shortDescription": { "type": "string" },
+          "description": { "type": "string" },
+          "benefits": { "type": "array", "items": { "type": "string" }, "minItems": 2, "maxItems": 6 },
+          "icon": { "type": "string", "enum": ["strategy", "design", "development", "marketing", "support"] },
+          "imageRole": { "type": "string", "description": "Match assets[].role e.g. service:business-strategy" }
+        }
+      }
+    },
+    "packages": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "tierNames": {
+          "type": "object",
+          "properties": {
+            "tier1": { "type": "string" },
+            "tier2": { "type": "string" },
+            "tier3": { "type": "string" }
+          }
+        },
+        "tierSummaries": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["tierId", "name", "label", "tagline"],
+            "properties": {
+              "tierId": { "type": "string" },
+              "name": { "type": "string" },
+              "label": { "type": "string" },
+              "tagline": { "type": "string" }
+            }
+          }
+        },
+        "pricingSelectorNote": { "type": "string" },
+        "servicePackages": { "type": "array", "items": { "type": "object" } },
+        "bundles": { "type": "array", "items": { "type": "object" } },
+        "alaCarte": { "type": "array", "items": { "type": "object" } },
+        "terminology": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["term", "definition"],
+            "properties": {
+              "term": { "type": "string" },
+              "definition": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "portfolio": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "pageTitle": { "type": "string" },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "label"],
+            "properties": {
+              "id": { "type": "string" },
+              "label": { "type": "string" }
+            }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "slug", "title", "category", "description", "imageRole", "imageAlt"],
+            "properties": {
+              "id": { "type": "string" },
+              "slug": { "type": "string" },
+              "title": { "type": "string" },
+              "category": { "type": "string" },
+              "description": { "type": "string" },
+              "imageRole": { "type": "string" },
+              "imageAlt": { "type": "string" },
+              "isVideo": { "type": "boolean" },
+              "detail": { "type": "object" }
+            }
+          }
+        },
+        "featuredIds": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "shop": {
+      "type": ["object", "null"],
+      "description": "Optional Shopify headless shop copy/labels. Catalog comes from Storefront API env — never put Admin secrets or storefront tokens in the YAML.",
+      "additionalProperties": false,
+      "properties": {
+        "moneyLocale": { "type": "string", "description": "Intl locale for money (defaults to site.locale)" },
+        "cartStorageKey": { "type": "string" },
+        "availability": {
+          "type": "object",
+          "properties": {
+            "available": { "type": "string" },
+            "unavailable": { "type": "string" },
+            "unavailableCombination": { "type": "string" },
+            "currentlyUnavailable": { "type": "string" }
+          }
+        },
+        "labels": { "type": "object", "additionalProperties": { "type": "string" } },
+        "addonPricing": {
+          "type": ["object", "null"],
+          "description": "Optional variant add-on breakdown (e.g. supply vs supply+install). Match Shopify option names.",
+          "properties": {
+            "optionName": { "type": "string" },
+            "baseValue": { "type": "string" },
+            "note": { "type": "string" },
+            "breakdownLabels": {
+              "type": "object",
+              "required": ["unit", "addon"],
+              "properties": {
+                "unit": { "type": "string" },
+                "addon": { "type": "string" }
+              }
+            }
+          }
+        },
+        "preview": { "type": "object", "additionalProperties": true },
+        "live": { "type": "object", "additionalProperties": true },
+        "comingSoon": { "type": "object", "additionalProperties": true },
+        "cart": { "type": "object", "additionalProperties": true },
+        "product": { "type": "object", "additionalProperties": true },
+        "emptyCatalog": { "type": "object", "additionalProperties": true }
+      }
+    },
+    "pages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["home", "about", "services", "contact", "sections"],
+      "properties": {
+        "home": { "type": "boolean" },
+        "about": { "type": "boolean" },
+        "services": { "type": "boolean" },
+        "contact": { "type": "boolean" },
+        "privacy": { "type": "boolean" },
+        "terms": { "type": "boolean" },
+        "faq": { "type": "boolean" },
+        "pricing": { "type": "boolean" },
+        "portfolio": { "type": "boolean" },
+        "shop": { "type": "boolean", "description": "Headless Shopify catalog + cart routes" },
+        "blog": { "type": "boolean" },
+        "team": { "type": "boolean" },
+        "testimonials": { "type": "boolean" },
+        "header": {
+          "type": "object",
+          "properties": {
+            "sticky": { "type": "boolean" },
+            "logoVariant": { "type": "string", "enum": ["standard", "white", "dark"] },
+            "ctaEnabled": { "type": "boolean" }
+          }
+        },
+        "messagingBubble": {
+          "type": "object",
+          "properties": { "enabled": { "type": "boolean" } }
+        },
+        "sections": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["home", "about", "contact", "services"],
+          "properties": {
+            "home": { "type": "object", "additionalProperties": { "type": "boolean" } },
+            "about": { "type": "object", "additionalProperties": { "type": "boolean" } },
+            "portfolio": { "type": "object", "additionalProperties": { "type": "boolean" } },
+            "contact": { "type": "object", "additionalProperties": { "type": "boolean" } },
+            "services": { "type": "object", "additionalProperties": { "type": "boolean" } }
+          }
+        }
+      }
+    },
+    "content": {
+      "type": "object",
+      "description": "Maps to content.ts — shared blocks + per-page heroes/CTAs. Only include copy for enabled sections.",
+      "additionalProperties": true
+    },
+    "design": {
+      "type": ["object", "null"],
+      "description": "Optional extended tokens for design.ts. Set enabled true for dark/premium.",
+      "properties": {
+        "enabled": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "faq": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["question", "answer"],
+        "properties": {
+          "question": { "type": "string" },
+          "answer": { "type": "string" }
+        }
+      }
+    },
+    "testimonials": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": ["quote", "author", "role"],
+        "properties": {
+          "quote": { "type": "string" },
+          "author": { "type": "string" },
+          "role": { "type": "string" },
+          "company": { "type": "string" },
+          "avatarRole": { "type": "string" },
+          "avatarAlt": { "type": "string" }
+        }
+      }
+    },
+    "seo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primaryKeywords", "pages"],
+      "properties": {
+        "city": { "type": "string" },
+        "region": { "type": "string" },
+        "country": { "type": "string" },
+        "primaryKeywords": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+        "secondaryKeywords": { "type": "array", "items": { "type": "string" } },
+        "titleSuffix": { "type": "string" },
+        "twitterHandle": {
+          "type": "string",
+          "description": "X/Twitter handle without @. Empty string when the brand has no account — never invent one."
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "required": ["title", "description"],
+            "properties": {
+              "title": { "type": "string", "maxLength": 90, "description": "Browser tab / SEO title — may be longer than share cards." },
+              "description": { "type": "string", "maxLength": 200, "description": "Meta description for search — may be longer than share cards." },
+              "ogTitle": { "type": "string", "maxLength": 70, "description": "Optional Open Graph / Twitter title (~40–60 chars)." },
+              "ogDescription": { "type": "string", "maxLength": 180, "description": "Optional Open Graph / Twitter description (~120–150 chars)." }
+            }
+          }
+        }
+      }
+    },
+    "form": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "title", "successMessage", "errorMessage", "fields"],
+      "properties": {
+        "provider": { "type": "string", "enum": ["formsubmit", "formspree", "web3forms", "custom"] },
+        "endpoint": { "type": "string", "description": "Email for FormSubmit, or provider ID/URL. May be TBD." },
+        "subject": { "type": "string" },
+        "title": { "type": "string" },
+        "successMessage": { "type": "string" },
+        "errorMessage": { "type": "string" },
+        "fields": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "object",
+            "required": ["name", "label", "type"],
+            "properties": {
+              "name": { "type": "string" },
+              "label": { "type": "string" },
+              "type": { "type": "string", "enum": ["text", "email", "tel", "select", "textarea", "date", "file"] },
+              "required": { "type": "boolean" },
+              "placeholder": { "type": "string" },
+              "halfWidth": { "type": "boolean" },
+              "section": { "type": "string", "description": "Section heading rendered before this field when it changes." },
+              "hint": { "type": "string", "description": "Helper text under the label (e.g. file size limits)." },
+              "emptyOptionLabel": { "type": "string", "description": "Placeholder option label for selects." },
+              "accept": { "type": "string", "description": "File input accept attribute, e.g. image/*,.pdf" },
+              "maxSizeMb": { "type": "number", "description": "Client-side max upload size in MB for file fields." },
+              "multiple": { "type": "boolean", "description": "Allow more than one file on file fields." },
+              "optionsFrom": {
+                "type": "string",
+                "enum": ["services", "packages", "alaCarte", "consultationTimes", "custom"],
+                "description": "Prefer derived options over hardcoding service lists."
+              },
+              "options": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["value", "label"],
+                  "properties": {
+                    "value": { "type": "string" },
+                    "label": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "assets": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "path", "alt", "prompt"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "Stable id: logo, logo-white, favicon, og, hero, about-hero, service:<slug>, portfolio:<slug>, cta, etc."
+          },
+          "path": {
+            "type": "string",
+            "description": "Target path e.g. src/assets/images/hero.webp or public/logo.svg"
+          },
+          "alt": { "type": "string" },
+          "aspect": { "type": "string", "description": "e.g. 16:9, 1:1, 1200x630" },
+          "prompt": { "type": "string", "description": "Image generation prompt" },
+          "negativePrompt": { "type": "string" }
+        }
+      }
+    },
+    "tone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["voice"],
+      "properties": {
+        "voice": { "type": "string" },
+        "goals": { "type": "array", "items": { "type": "string" } },
+        "prefer": { "type": "array", "items": { "type": "string" } },
+        "avoid": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "tbd": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Unknown facts — do not invent phone, address, prices, or clients."
+    },
+    "additionalNotes": { "type": "string" }
+  }
+}

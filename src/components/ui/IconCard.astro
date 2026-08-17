@@ -1,0 +1,28 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  icon?: string;
+  class?: string;
+  /**
+   * Outline level for the title. Use `'p'` when the card sits after an `h1`
+   * with no section `h2` (e.g. home impact strip) to avoid skipped heading ranks.
+   */
+  titleTag?: 'h2' | 'h3' | 'h4' | 'p';
+}
+
+const { title, description, icon = '✦', class: className = '', titleTag = 'h3' } = Astro.props;
+const TitleTag = titleTag;
+---
+
+<div class={`surface-card p-6 ${className}`}>
+  <div class="flex items-start gap-3">
+    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-accent" aria-hidden="true">
+      {icon}
+    </span>
+    <div>
+      <TitleTag class="text-h4 font-semibold text-fg">{title}</TitleTag>
+      {description && <p class="mt-2 text-fg-soft">{description}</p>}
+    </div>
+  </div>
+</div>

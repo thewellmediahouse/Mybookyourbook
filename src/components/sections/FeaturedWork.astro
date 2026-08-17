@@ -1,0 +1,23 @@
+---
+import SectionHeading from '@/components/ui/SectionHeading.astro';
+import PortfolioCard from '@/components/media/PortfolioCard.astro';
+import type { PortfolioItem } from '@/config/portfolio';
+
+interface Props {
+  heading?: string;
+  items: PortfolioItem[];
+}
+
+const { heading = 'Featured work', items } = Astro.props;
+---
+
+<section class="section-surface py-section">
+  <div class="container">
+    <SectionHeading heading={heading} class="mb-10" />
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {items.map((item) => (
+        <PortfolioCard item={item} />
+      ))}
+    </div>
+  </div>
+</section>

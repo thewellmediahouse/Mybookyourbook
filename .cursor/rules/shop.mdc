@@ -1,0 +1,20 @@
+---
+description: Optional Shopify headless shop — enable via pages.shop + shop config; never commit Admin secrets
+globs:
+  - src/lib/shopify/**
+  - src/components/shop/**
+  - src/pages/shop/**
+  - src/pages/cart.astro
+  - src/config/shop.ts
+  - src/config/shopify-public.ts
+alwaysApply: false
+---
+
+# Shop / Shopify
+
+- Lookup: `docs/SHOP.md`. Contract: `docs/AGENT.md`.
+- Enable with `pages.shop` + SITE_SPEC/`shop.ts` copy; home teaser via `sections.home.shopPreview`.
+- Credentials: `PUBLIC_SHOPIFY_*` env (or empty `shopify-public.ts` stubs). Never Admin `shpat_`/`shpss_` in repo.
+- Catalog is Storefront API at build time; cart/checkout in the browser; no React/SSR/Hydrogen unless explicitly requested.
+- Site-specific install pricing / WhatsApp CTAs → config (`addonPricing`, `product.secondaryCtas`) or `components/site/*` — not hardcoded in platform components.
+- Semantic classes only (`text-fg*`, `surface-card`, `btn-accent`).

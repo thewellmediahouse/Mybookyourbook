@@ -1,0 +1,80 @@
+---
+import { siteConfig } from '@/config/site';
+import { mainNavigation, headerCta } from '@/config/navigation';
+import { pagesConfig } from '@/config/pages';
+import Navigation from '@/components/layout/Navigation.astro';
+import MobileNavigation from '@/components/layout/MobileNavigation.astro';
+import Button from '@/components/ui/Button.astro';
+import CartLink from '@/components/shop/CartLink.astro';
+import BrandLogo from '@/components/ui/BrandLogo.astro';
+import { getRasterByKey } from '@/assets/raster';
+
+const stickyClass = pagesConfig.header.sticky ? 'sticky top-0' : '';
+const logoRaster =
+  pagesConfig.header.logoVariant === 'white'
+    ? (getRasterByKey('brand.logoWhite') ?? getRasterByKey('brand.logo-white'))
+    : getRasterByKey('brand.logo');
+const logoSrc = pagesConfig.header.logoVariant === 'white' ? '/logo-white.svg' : '/logo.svg';
+---
+
+<header class={`header-glass ${stickyClass} z-40 border-b`}>
+  <div class="container flex h-16 items-center justify-between gap-4 lg:h-18">
+    <a href="/" class="flex shrink-0 items-center gap-2">
+      {
+        logoRaster ? (
+          <BrandLogo
+            src={logoRaster}
+            alt={`${siteConfig.name} logo`}
+            width={160}
+            sizes="160px"
+            class="h-10 w-auto"
+            loading="eager"
+          />
+        ) : (
+          <img
+            src={logoSrc}
+            alt={`${siteConfig.name} logo`}
+            width="160"
+            height="48"
+            class="h-10 w-auto"
+          />
+        )
+      }
+    </a>
+
+    <Navigation items={mainNavigation} class="hidden lg:block" />
+
+    <div class="flex items-center gap-2">
+      {pagesConfig.shop && <CartLink />}
+      {
+        pagesConfig.header.ctaEnabled && (
+          <Button href={headerCta.href} variant="accent" size="sm" class="hidden sm:inline-flex">
+            {headerCta.label}
+          </Button>
+        )
+      }
+      <MobileNavigation items={mainNavigation} />
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector('header');
+  if (header) {
+    const toggle = header.querySelector<HTMLButtonElement>('[data-mobile-nav-toggle]');
+    const panel = header.querySelector<HTMLElement>('[data-mobile-nav-panel]');
+
+    toggle?.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!expanded));
+      panel?.classList.toggle('hidden', expanded);
+    });
+
+    panel?.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => {
+        toggle?.setAttribute('aria-expanded', 'false');
+        panel?.classList.add('hidden');
+      });
+    });
+  }
+</script>

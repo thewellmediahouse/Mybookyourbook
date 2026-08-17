@@ -1,0 +1,54 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import { siteConfig } from '@/config/site';
+
+const title = 'Privacy Policy';
+const description = `Privacy policy for ${siteConfig.name}.`;
+const lastUpdated = 'June 1, 2026';
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  heading="Privacy Policy"
+  subheading={`Last updated: ${lastUpdated}`}
+  pathname="/privacy/"
+>
+  <Container size="narrow">
+    <div class="space-y-8 text-fg-soft">
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Overview</h2>
+        <p class="mt-3">
+          {siteConfig.name} (&ldquo;we&rdquo;, &ldquo;us&rdquo;, or &ldquo;our&rdquo;) respects your privacy.
+          This policy explains what information we collect, how we use it, and your choices.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Information we collect</h2>
+        <p class="mt-3">
+          When you contact us through our website, we may collect your name, email address, phone
+          number, and any message you submit. We may also collect standard analytics data such as
+          pages visited and browser type.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">How we use information</h2>
+        <ul class="mt-3 list-disc space-y-2 pl-5">
+          <li>Respond to inquiries and provide requested services</li>
+          <li>Improve our website and communications</li>
+          <li>Comply with legal obligations</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Contact</h2>
+        <p class="mt-3">
+          Questions about this policy? Visit our <a href="/contact/" class="text-accent hover:underline">contact page</a>.
+        </p>
+      </section>
+    </div>
+  </Container>
+</PageLayout>

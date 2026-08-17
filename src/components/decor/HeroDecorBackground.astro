@@ -1,0 +1,46 @@
+---
+import ConfigImage from '@/components/ui/ConfigImage.astro';
+
+interface Props {
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  poster?: string;
+  opacity?: number;
+  class?: string;
+}
+
+const { type, src, alt = '', poster, opacity = 1, class: className = '' } = Astro.props;
+---
+
+<div
+  class={`hero-decor-bg ${className}`}
+  style={`--hero-decor-opacity: ${opacity}`}
+  aria-hidden="true"
+>
+  {
+    type === 'video' ? (
+      <video
+        src={src}
+        poster={poster}
+        class="hero-decor-media"
+        autoplay
+        muted
+        playsinline
+        preload="auto"
+      />
+    ) : (
+      <ConfigImage
+        src={src}
+        alt={alt}
+        width={1920}
+        height={1080}
+        widths={[960, 1280, 1600, 1920]}
+        sizes="100vw"
+        mobileWidths={[640, 828, 1080]}
+        class="hero-decor-media"
+        loading="eager"
+      />
+    )
+  }
+</div>

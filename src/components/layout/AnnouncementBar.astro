@@ -1,0 +1,15 @@
+---
+import { pagesConfig } from '@/config/pages';
+
+const announcement = pagesConfig.announcement;
+const message = announcement.message.trim();
+const enabled = announcement.enabled && Boolean(message);
+---
+
+{
+  enabled && (
+    <div class="border-b border-[var(--color-border)] bg-[var(--brand-accent)] py-2 text-center">
+      <p class="px-4 text-small font-semibold text-fg">{message}</p>
+    </div>
+  )
+}

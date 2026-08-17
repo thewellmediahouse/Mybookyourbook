@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+
+# build
+dist/
+
+# astro
+.astro/
+
+# Build-generated product Open Graph cards (recreated on each build)
+public/og/products/*
+!public/og/products/.gitkeep
+
+# scratch
+_scratch/
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# testing / audits
+.lighthouse/
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Cloudflare Wrangler local state
+.wrangler/
+.dev.vars

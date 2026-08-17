@@ -1,0 +1,16 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CartPage from '@/components/shop/CartPage.astro';
+import { seoConfig } from '@/config/seo';
+import { pagesConfig } from '@/config/pages';
+
+if (!pagesConfig.shop) {
+  return Astro.redirect('/');
+}
+
+const seo = seoConfig.pages.cart;
+---
+
+<BaseLayout title={seo.title} description={seo.description} pathname="/cart/" noindex={true}>
+  <CartPage />
+</BaseLayout>

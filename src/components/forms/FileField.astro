@@ -1,0 +1,82 @@
+---
+interface Props {
+  name: string;
+  label: string;
+  required?: boolean;
+  hint?: string;
+  accept?: string;
+  maxSizeMb?: number;
+  multiple?: boolean;
+  id?: string;
+  buttonLabel?: string;
+}
+
+const {
+  name,
+  label,
+  required = false,
+  hint,
+  accept,
+  maxSizeMb,
+  multiple = false,
+  id = name,
+  buttonLabel = multiple ? 'Attach files' : 'Attach a file',
+} = Astro.props;
+---
+
+<div data-file-field>
+  <label for={id} class="block text-small text-fg-label">
+    {label}
+    {required && <span class="text-accent"> *</span>}
+    {
+      hint && (
+        <span class="font-normal text-fg-subtle"> ({hint})</span>
+      )
+    }
+  </label>
+  <div class="mt-2">
+    <input
+      type="file"
+      id={id}
+      name={name}
+      required={required}
+      accept={accept}
+      multiple={multiple}
+      data-max-size-mb={maxSizeMb != null ? String(maxSizeMb) : undefined}
+      data-file-input
+      class="sr-only"
+    />
+    <label
+      for={id}
+      class="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-button border-2 border-[var(--color-border)] bg-transparent px-6 py-3 text-small font-semibold text-fg transition hover:border-accent hover:text-accent"
+    >
+      {buttonLabel}
+    </label>
+    <p class="mt-2 text-xs text-fg-subtle" data-file-name hidden></p>
+  </div>
+</div>
+
+<script>
+  function bindFileFields() {
+    document.querySelectorAll<HTMLElement>('[data-file-field]').forEach((root) => {
+      if (root.dataset.bound === 'true') return;
+      root.dataset.bound = 'true';
+      const input = root.querySelector<HTMLInputElement>('[data-file-input]');
+      const nameEl = root.querySelector<HTMLElement>('[data-file-name]');
+      if (!input || !nameEl) return;
+      input.addEventListener('change', () => {
+        const files = [...(input.files ?? [])];
+        nameEl.hidden = files.length === 0;
+        nameEl.textContent =
+          files.length === 0
+            ? ''
+            : files.length === 1
+              ? files[0]!.name
+              : files.map((file) => file.name).join(', ');
+      });
+    });
+  }
+
+  bindFileFields();
+  document.addEventListener('astro:page-load', bindFileFields);
+</script>

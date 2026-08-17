@@ -1,0 +1,67 @@
+---
+import { shopConfig } from '@/config/shop';
+
+interface Props {
+  variantId: string;
+  available: boolean;
+  label?: string;
+}
+
+const { variantId, available, label = shopConfig.labels.buyNow } = Astro.props;
+const soldOut = shopConfig.labels.soldOut;
+---
+
+<button
+  type="button"
+  class="inline-flex items-center justify-center rounded-button bg-secondary px-5 py-2.5 text-body font-medium text-white transition-colors hover:bg-secondary-dark disabled:cursor-not-allowed disabled:opacity-50"
+  data-buy-button
+  data-variant-id={variantId}
+  data-label-buy={label}
+  data-label-sold-out={soldOut}
+  disabled={!available || !variantId}
+>
+  {available ? label : soldOut}
+</button>
+<p class="mt-2 hidden text-small text-red-600" data-buy-error role="alert"></p>
+
+<script>
+  import { createCheckoutCart } from '@/lib/shopify/cart-client';
+
+  function bindBuyButtons() {
+    document.querySelectorAll<HTMLButtonElement>('[data-buy-button]').forEach((button) => {
+      if (button.dataset.bound === 'true') return;
+      button.dataset.bound = 'true';
+
+      button.addEventListener('click', async () => {
+        const variantId = button.dataset.variantId;
+        const errorEl = button.parentElement?.querySelector<HTMLElement>('[data-buy-error]');
+        const buyLabel = button.dataset.labelBuy ?? 'Buy now';
+        const soldOutLabel = button.dataset.labelSoldOut ?? 'Sold out';
+        if (errorEl) {
+          errorEl.classList.add('hidden');
+          errorEl.textContent = '';
+        }
+        if (!variantId) return;
+
+        const original = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Redirecting…';
+
+        try {
+          const checkoutUrl = await createCheckoutCart(variantId, 1);
+          window.location.assign(checkoutUrl);
+        } catch (error) {
+          button.disabled = false;
+          button.textContent = original === soldOutLabel ? soldOutLabel : buyLabel;
+          if (errorEl) {
+            errorEl.textContent = error instanceof Error ? error.message : 'Checkout failed.';
+            errorEl.classList.remove('hidden');
+          }
+        }
+      });
+    });
+  }
+
+  bindBuyButtons();
+  document.addEventListener('astro:page-load', bindBuyButtons);
+</script>

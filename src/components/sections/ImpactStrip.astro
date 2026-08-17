@@ -1,0 +1,20 @@
+---
+import IconCard from '@/components/ui/IconCard.astro';
+import type { OutcomeCard } from '@/config/content';
+
+interface Props {
+  items: OutcomeCard[];
+}
+
+const { items } = Astro.props;
+---
+
+<section class="border-y border-section surface-panel py-section-sm">
+  <div class="container">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4" data-motion-stagger>
+      {items.map((item) => (
+        <IconCard title={item.title} description={item.description} titleTag="p" />
+      ))}
+    </div>
+  </div>
+</section>

@@ -1,0 +1,296 @@
+---
+import { shopConfig } from '@/config/shop';
+import type { ProductVariant } from '@/lib/shopify';
+
+interface Props {
+  variants: ProductVariant[];
+  initialVariantId: string;
+}
+
+const { variants, initialVariantId } = Astro.props;
+const addon = shopConfig.addonPricing;
+const availability = shopConfig.availability;
+const labels = shopConfig.labels;
+
+const optionNames = Array.from(
+  new Set(variants.flatMap((variant) => variant.selectedOptions.map((option) => option.name))),
+);
+
+const options = optionNames.map((name) => ({
+  name,
+  values: Array.from(
+    new Set(
+      variants
+        .map((variant) => variant.selectedOptions.find((option) => option.name === name)?.value)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ),
+}));
+
+const showOptions =
+  variants.length > 1 &&
+  !(
+    options.length === 1 &&
+    options[0]?.name === 'Title' &&
+    options[0]?.values.length === 1 &&
+    options[0]?.values[0] === 'Default Title'
+  );
+
+const initial =
+  variants.find((variant) => variant.id === initialVariantId) ??
+  variants.find((variant) => variant.availableForSale) ??
+  variants[0];
+
+const payload = {
+  variants: variants.map((variant) => ({
+    id: variant.id,
+    availableForSale: variant.availableForSale,
+    price: variant.price,
+    image: variant.image,
+    selectedOptions: variant.selectedOptions,
+  })),
+  addon: addon
+    ? {
+        optionName: addon.optionName,
+        baseValue: addon.baseValue,
+        unitLabel: addon.breakdownLabels.unit,
+        addonLabel: addon.breakdownLabels.addon,
+      }
+    : null,
+  labels: {
+    available: availability.available,
+    currentlyUnavailable: availability.currentlyUnavailable,
+    unavailableCombination: availability.unavailableCombination,
+    addToCart: labels.addToCart,
+    buyNow: labels.buyNow,
+    soldOut: labels.soldOut,
+  },
+};
+---
+
+{
+  showOptions && (
+    <div class="space-y-4" data-variant-picker>
+      {options.map((option) => (
+        <fieldset class="space-y-2">
+          <legend class="text-small font-semibold text-fg">{option.name}</legend>
+          <div class="flex flex-wrap gap-2" role="radiogroup" aria-label={option.name}>
+            {option.values.map((value) => {
+              const selected = initial?.selectedOptions.some(
+                (opt) => opt.name === option.name && opt.value === value,
+              );
+              return (
+                <label class="cursor-pointer">
+                  <input
+                    type="radio"
+                    class="peer sr-only"
+                    name={`option-${option.name}`}
+                    value={value}
+                    data-option-name={option.name}
+                    data-option-value={value}
+                    checked={selected}
+                  />
+                  <span class="inline-flex rounded-button border border-primary/20 px-3 py-2 text-small font-medium text-fg transition peer-checked:border-primary peer-checked:bg-primary/10 peer-checked:text-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/40 peer-disabled:cursor-not-allowed peer-disabled:opacity-40">
+                    {value}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+          {
+            addon && option.name === addon.optionName && addon.note && (
+              <p class="text-xs text-fg-subtle" data-addon-note>
+                {addon.note}
+              </p>
+            )
+          }
+        </fieldset>
+      ))}
+    </div>
+  )
+}
+
+<script
+  is:inline
+  type="application/json"
+  data-variant-payload
+  set:html={JSON.stringify(payload).replace(/</g, '\\u003c')}
+/>
+
+<script>
+  import { formatMoney } from '@/lib/shopify/format';
+  import { getAddonBreakdown } from '@/lib/shopify/addon-pricing';
+  import { parseShopifyWidthsAttr, shopifyImageSrcset, shopifyImageUrl } from '@/lib/shopify/image-url';
+  import type { Money } from '@/lib/shopify/types';
+
+  type VariantPayload = {
+    id: string;
+    availableForSale: boolean;
+    price: Money;
+    image: { url: string; altText: string | null } | null;
+    selectedOptions: { name: string; value: string }[];
+  };
+
+  type PickerPayload = {
+    variants: VariantPayload[];
+    labels: {
+      available: string;
+      currentlyUnavailable: string;
+      unavailableCombination: string;
+      addToCart: string;
+      buyNow: string;
+      soldOut: string;
+    };
+  };
+
+  function initVariantPickers() {
+    document.querySelectorAll('[data-product-form]').forEach((form) => {
+      if (!(form instanceof HTMLElement) || form.dataset.bound === 'true') return;
+      form.dataset.bound = 'true';
+
+      const payloadEl = form.querySelector('[data-variant-payload]');
+      if (!payloadEl?.textContent) return;
+
+      let parsed: PickerPayload;
+      try {
+        parsed = JSON.parse(payloadEl.textContent) as PickerPayload;
+      } catch {
+        return;
+      }
+
+      let variants = parsed.variants;
+      const L = parsed.labels;
+
+      const priceEl = form.querySelector('[data-product-price]');
+      const breakdownEl = form.querySelector<HTMLElement>('[data-price-breakdown]');
+      const breakdownUnitEl = form.querySelector('[data-breakdown-unit]');
+      const breakdownAddonEl = form.querySelector('[data-breakdown-addon]');
+      const availabilityEl = form.querySelector('[data-product-availability]');
+      const imageEl = form.querySelector<HTMLImageElement>('[data-product-image]');
+      const addBtn = form.querySelector<HTMLButtonElement>('[data-add-to-cart]');
+      const buyBtn = form.querySelector<HTMLButtonElement>('[data-buy-button]');
+      const radios = form.querySelectorAll<HTMLInputElement>('[data-option-name]');
+
+      if (radios.length === 0) return;
+
+      function selectedMap() {
+        const map = new Map<string, string>();
+        radios.forEach((radio) => {
+          if (radio.checked && radio.dataset.optionName && radio.dataset.optionValue) {
+            map.set(radio.dataset.optionName, radio.dataset.optionValue);
+          }
+        });
+        return map;
+      }
+
+      function findVariant(map: Map<string, string>) {
+        if (map.size === 0) {
+          return variants.find((variant) => variant.availableForSale) ?? variants[0] ?? null;
+        }
+
+        return (
+          variants.find((variant) =>
+            variant.selectedOptions.every((option) => map.get(option.name) === option.value),
+          ) ?? null
+        );
+      }
+
+      function updateOptionAvailability(map: Map<string, string>) {
+        radios.forEach((radio) => {
+          const name = radio.dataset.optionName;
+          const value = radio.dataset.optionValue;
+          if (!name || !value) return;
+
+          const trial = new Map(map);
+          trial.set(name, value);
+          const match = variants.find((variant) =>
+            variant.selectedOptions.every((option) => trial.get(option.name) === option.value),
+          );
+          radio.disabled = !match;
+        });
+      }
+
+      function applyPriceBreakdown(variant: VariantPayload | null) {
+        if (!breakdownEl) return;
+
+        const breakdown = variant ? getAddonBreakdown(variants, variant) : null;
+        breakdownEl.hidden = !breakdown;
+
+        if (breakdown && breakdownUnitEl && breakdownAddonEl) {
+          breakdownUnitEl.textContent = formatMoney(breakdown.unit);
+          breakdownAddonEl.textContent = formatMoney(breakdown.addon);
+        }
+      }
+
+      function applyVariant(variant: VariantPayload | null) {
+        const available = Boolean(variant?.availableForSale);
+
+        if (priceEl && variant) {
+          priceEl.textContent = formatMoney(variant.price);
+        }
+
+        applyPriceBreakdown(variant);
+
+        if (availabilityEl) {
+          availabilityEl.textContent = !variant
+            ? L.unavailableCombination
+            : available
+              ? L.available
+              : L.currentlyUnavailable;
+          availabilityEl.classList.toggle('text-primary', available);
+          availabilityEl.classList.toggle('text-fg-muted', !available);
+        }
+
+        if (imageEl && variant?.image?.url) {
+          const widths = parseShopifyWidthsAttr(imageEl.dataset.shopifyWidths);
+          const fallback = widths[widths.length - 1] ?? 1000;
+          imageEl.src = shopifyImageUrl(variant.image.url, fallback);
+          if (widths.length) imageEl.srcset = shopifyImageSrcset(variant.image.url, widths);
+          imageEl.alt = variant.image.altText ?? imageEl.alt;
+          form.dispatchEvent(
+            new CustomEvent('shop:product-image-updated', {
+              detail: { url: variant.image.url },
+            }),
+          );
+        }
+
+        [addBtn, buyBtn].forEach((button) => {
+          if (!button) return;
+          const label = button.hasAttribute('data-add-to-cart') ? L.addToCart : L.buyNow;
+          button.dataset.variantId = variant?.id ?? '';
+          button.disabled = !variant || !available;
+          button.textContent = !variant || !available ? L.soldOut : label;
+        });
+      }
+
+      function sync() {
+        const map = selectedMap();
+        updateOptionAvailability(map);
+        applyVariant(findVariant(map));
+      }
+
+      function reloadVariantsFromPayload() {
+        if (!payloadEl?.textContent) return;
+        try {
+          const next = JSON.parse(payloadEl.textContent) as PickerPayload;
+          variants = next.variants;
+          sync();
+        } catch {
+          // Ignore malformed refresh payloads.
+        }
+      }
+
+      radios.forEach((radio) => radio.addEventListener('change', sync));
+      form.addEventListener('shop:variants-updated', reloadVariantsFromPayload);
+      sync();
+    });
+  }
+
+  initVariantPickers();
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll('[data-product-form]').forEach((form) => {
+      if (form instanceof HTMLElement) delete form.dataset.bound;
+    });
+    initVariantPickers();
+  });
+</script>

@@ -1,0 +1,77 @@
+---
+import { shopConfig } from '@/config/shop';
+
+interface Props {
+  variantId: string;
+  available: boolean;
+  label?: string;
+}
+
+const { variantId, available, label = shopConfig.labels.addToCart } = Astro.props;
+const soldOut = shopConfig.labels.soldOut;
+const viewCart = shopConfig.labels.viewCart;
+---
+
+<button
+  type="button"
+  class="inline-flex items-center justify-center rounded-button bg-primary px-5 py-2.5 text-body font-medium text-white transition-colors hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-50"
+  data-add-to-cart
+  data-variant-id={variantId}
+  data-label-add={label}
+  data-label-sold-out={soldOut}
+  data-label-view-cart={viewCart}
+  disabled={!available || !variantId}
+>
+  {available ? label : soldOut}
+</button>
+<p class="mt-2 hidden text-small text-primary" data-add-success role="status"></p>
+<p class="mt-2 hidden text-small text-red-600" data-add-error role="alert"></p>
+
+<script>
+  import { addToCart } from '@/lib/shopify/cart-client';
+
+  function bindAddButtons() {
+    document.querySelectorAll<HTMLButtonElement>('[data-add-to-cart]').forEach((button) => {
+      if (button.dataset.bound === 'true') return;
+      button.dataset.bound = 'true';
+
+      button.addEventListener('click', async () => {
+        const variantId = button.dataset.variantId;
+        const parent = button.parentElement;
+        const errorEl = parent?.querySelector<HTMLElement>('[data-add-error]');
+        const successEl = parent?.querySelector<HTMLElement>('[data-add-success]');
+        const addLabel = button.dataset.labelAdd ?? 'Add to cart';
+        const soldOutLabel = button.dataset.labelSoldOut ?? 'Sold out';
+        const viewCartLabel = button.dataset.labelViewCart ?? 'View cart';
+        errorEl?.classList.add('hidden');
+        successEl?.classList.add('hidden');
+        if (errorEl) errorEl.textContent = '';
+        if (successEl) successEl.textContent = '';
+        if (!variantId) return;
+
+        button.disabled = true;
+        button.textContent = 'Adding…';
+
+        try {
+          await addToCart(variantId, 1);
+          if (successEl) {
+            successEl.innerHTML = `Added to cart. <a class="font-semibold underline" href="/cart/">${viewCartLabel}</a>`;
+            successEl.classList.remove('hidden');
+          }
+        } catch (error) {
+          if (errorEl) {
+            errorEl.textContent = error instanceof Error ? error.message : 'Could not add to cart.';
+            errorEl.classList.remove('hidden');
+          }
+        } finally {
+          const soldOut = button.dataset.variantId === '' || button.textContent === soldOutLabel;
+          button.disabled = soldOut;
+          button.textContent = soldOut ? soldOutLabel : addLabel;
+        }
+      });
+    });
+  }
+
+  bindAddButtons();
+  document.addEventListener('astro:page-load', bindAddButtons);
+</script>

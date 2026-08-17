@@ -1,0 +1,69 @@
+---
+import PortfolioCard from '@/components/media/PortfolioCard.astro';
+import type { PortfolioCategory, PortfolioItem } from '@/config/portfolio';
+
+interface Props {
+  categories: PortfolioCategory[];
+  items: PortfolioItem[];
+}
+
+const { categories, items } = Astro.props;
+---
+
+<section id="portfolio-gallery" class="py-section">
+  <div class="container">
+    <div class="mb-8 flex flex-wrap gap-2" role="tablist" aria-label="Portfolio categories">
+      {categories.map((category, index) => (
+        <button
+          type="button"
+          class="filter-pill rounded-full px-4 py-2 text-small font-medium transition"
+          data-filter={category.id}
+          data-active={index === 0 ? 'true' : 'false'}
+          role="tab"
+          aria-selected={index === 0 ? 'true' : 'false'}
+        >
+          {category.label}
+        </button>
+      ))}
+    </div>
+
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-portfolio-grid>
+      {items.map((item) => (
+        <div data-category={item.category} data-portfolio-item>
+          <PortfolioCard item={item} />
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  function initPortfolioGalleryFilters() {
+    const section = document.getElementById('portfolio-gallery');
+    if (!section) return;
+
+    const buttons = section.querySelectorAll<HTMLButtonElement>('[data-filter]');
+    const items = section.querySelectorAll<HTMLElement>('[data-portfolio-item]');
+
+    buttons.forEach((button) => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+
+        buttons.forEach((btn) => {
+          const active = btn === button;
+          btn.dataset.active = String(active);
+          btn.setAttribute('aria-selected', String(active));
+        });
+
+        items.forEach((item) => {
+          const category = item.dataset.category;
+          const show = filter === 'all' || category === filter;
+          item.hidden = !show;
+        });
+      });
+    });
+  }
+
+  initPortfolioGalleryFilters();
+  document.addEventListener('astro:page-load', initPortfolioGalleryFilters);
+</script>

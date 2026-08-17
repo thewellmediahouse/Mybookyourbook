@@ -1,0 +1,208 @@
+---
+import { shopConfig } from '@/config/shop';
+
+const cart = shopConfig.cart;
+const labels = shopConfig.labels;
+---
+
+<section
+  class="py-section"
+  data-cart-page
+  data-label-remove={labels.remove}
+  data-label-quantity={labels.quantity}
+  data-label-no-image={labels.noImage}
+>
+  <div class="container space-y-8">
+    <div class="space-y-2">
+      <h1 class="text-h1 font-semibold text-fg">{cart.heading}</h1>
+      <p class="text-fg-muted">{cart.paragraph}</p>
+    </div>
+
+    <div data-cart-loading class="surface-card p-8 text-center text-fg-muted">Loading cart…</div>
+
+    <div data-cart-empty class="surface-card hidden space-y-4 p-8 text-center">
+      <h2 class="text-h3 font-semibold text-fg">{cart.emptyHeading}</h2>
+      <p class="text-fg-muted">{cart.emptyParagraph}</p>
+      <a
+        href="/shop/"
+        class="btn-accent inline-flex items-center justify-center rounded-button px-5 py-2.5 font-medium"
+      >
+        {cart.browseLabel}
+      </a>
+    </div>
+
+    <div data-cart-content class="hidden space-y-6">
+      <div data-cart-lines class="space-y-4"></div>
+
+      <div class="surface-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="text-small text-fg-muted">{labels.subtotal}</p>
+          <p data-cart-total class="text-2xl font-bold text-fg">—</p>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a
+            href="/shop/"
+            class="inline-flex items-center justify-center rounded-button border-2 border-accent px-5 py-2.5 text-body font-medium text-fg-soft transition-colors hover:bg-accent/10 hover:text-fg"
+          >
+            {labels.continueShopping}
+          </a>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center rounded-button bg-primary px-5 py-2.5 text-body font-medium text-white transition-colors hover:bg-primary-dark"
+            data-cart-checkout
+          >
+            {labels.secureCheckout}
+          </button>
+        </div>
+      </div>
+      <p class="text-xs text-fg-subtle">{cart.checkoutNote}</p>
+      <p class="hidden text-small text-red-600" data-cart-error role="alert"></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { getSafeCheckoutUrl } from '@/lib/shopify/checkout-url';
+  import { escapeHtml, safeHttpUrl, shopProductPath } from '@/lib/html-safe';
+  import { formatMoney } from '@/lib/shopify/format';
+  import { fetchCart, removeCartLine, updateCartLine } from '@/lib/shopify/cart-client';
+  import { shopifyImageUrl } from '@/lib/shopify/image-url';
+  import type { ShopifyCart } from '@/lib/shopify/cart-types';
+
+  const page = document.querySelector('[data-cart-page]');
+  if (page) {
+    const loading = page.querySelector<HTMLElement>('[data-cart-loading]');
+    const empty = page.querySelector<HTMLElement>('[data-cart-empty]');
+    const content = page.querySelector<HTMLElement>('[data-cart-content]');
+    const linesEl = page.querySelector<HTMLElement>('[data-cart-lines]');
+    const totalEl = page.querySelector<HTMLElement>('[data-cart-total]');
+    const errorEl = page.querySelector<HTMLElement>('[data-cart-error]');
+    const checkoutBtn = page.querySelector<HTMLButtonElement>('[data-cart-checkout]');
+    const removeLabel = page.getAttribute('data-label-remove') ?? 'Remove';
+    const quantityLabel = page.getAttribute('data-label-quantity') ?? 'Quantity';
+    const noImageLabel = page.getAttribute('data-label-no-image') ?? 'No image';
+
+    let checkoutUrl = '';
+
+    function showError(message: string) {
+      if (!errorEl) return;
+      errorEl.textContent = message;
+      errorEl.classList.toggle('hidden', !message);
+    }
+
+    function render(cart: ShopifyCart | null) {
+      loading?.classList.add('hidden');
+      showError('');
+
+      if (!cart || cart.totalQuantity === 0) {
+        empty?.classList.remove('hidden');
+        content?.classList.add('hidden');
+        checkoutUrl = '';
+        return;
+      }
+
+      empty?.classList.add('hidden');
+      content?.classList.remove('hidden');
+      checkoutUrl = getSafeCheckoutUrl(cart.checkoutUrl) ?? '';
+      if (totalEl) totalEl.textContent = formatMoney(cart.cost.totalAmount);
+
+      if (!checkoutUrl) {
+        showError('Checkout is unavailable for this cart. Please try again or contact us.');
+      }
+
+      if (!linesEl) return;
+      linesEl.innerHTML = cart.lines.nodes
+        .map((line) => {
+          const merch = line.merchandise;
+          const title = escapeHtml(merch.product.title);
+          const variant =
+            merch.title && merch.title !== 'Default Title' ? escapeHtml(merch.title) : '';
+          const href = escapeHtml(shopProductPath(merch.product.handle));
+          const lineId = escapeHtml(line.id);
+          const imageUrl = safeHttpUrl(merch.image?.url);
+          const imageAlt = escapeHtml(merch.image?.altText ?? merch.product.title);
+          const img = imageUrl
+            ? `<img src="${escapeHtml(shopifyImageUrl(imageUrl, 192))}" alt="${imageAlt}" class="h-24 w-24 rounded-card object-cover" width="96" height="96" />`
+            : `<div class="flex h-24 w-24 items-center justify-center rounded-card bg-black/10 text-xs text-fg-muted">${escapeHtml(noImageLabel)}</div>`;
+          const price = escapeHtml(formatMoney(merch.price));
+          const quantity = Number.isFinite(line.quantity) ? Math.max(1, Math.floor(line.quantity)) : 1;
+
+          return `
+            <article class="surface-card flex flex-col gap-4 p-4 sm:flex-row sm:items-center" data-line-id="${lineId}">
+              <a href="${href}" class="shrink-0">${img}</a>
+              <div class="min-w-0 flex-1 space-y-1">
+                <a href="${href}" class="font-semibold text-fg hover:text-primary">${title}</a>
+                ${variant ? `<p class="text-small text-fg-muted">${variant}</p>` : ''}
+                <p class="font-medium text-fg">${price}</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <label class="sr-only" for="qty-${lineId}">${escapeHtml(quantityLabel)}</label>
+                <input id="qty-${lineId}" data-qty-input type="number" min="1" value="${quantity}" class="w-16 rounded-button border border-primary/20 px-2 py-1.5 text-center text-small" />
+                <button type="button" class="text-small font-medium text-fg-muted hover:text-primary" data-remove-line>${escapeHtml(removeLabel)}</button>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+      linesEl.querySelectorAll<HTMLInputElement>('[data-qty-input]').forEach((input) => {
+        input.addEventListener('change', async () => {
+          const article = input.closest<HTMLElement>('[data-line-id]');
+          const lineId = article?.dataset.lineId;
+          if (!lineId) return;
+          const qty = Number.parseInt(input.value, 10);
+          try {
+            const next = await updateCartLine(lineId, Number.isFinite(qty) ? qty : 1);
+            render(next);
+          } catch (error) {
+            showError(error instanceof Error ? error.message : 'Could not update quantity.');
+            await refresh();
+          }
+        });
+      });
+
+      linesEl.querySelectorAll<HTMLButtonElement>('[data-remove-line]').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const article = button.closest<HTMLElement>('[data-line-id]');
+          const lineId = article?.dataset.lineId;
+          if (!lineId) return;
+          try {
+            const next = await removeCartLine(lineId);
+            render(next);
+          } catch (error) {
+            showError(error instanceof Error ? error.message : 'Could not remove item.');
+          }
+        });
+      });
+    }
+
+    async function refresh() {
+      loading?.classList.remove('hidden');
+      empty?.classList.add('hidden');
+      content?.classList.add('hidden');
+      try {
+        const cartData = await fetchCart();
+        render(cartData);
+      } catch (error) {
+        loading?.classList.add('hidden');
+        showError(error instanceof Error ? error.message : 'Could not load cart.');
+        empty?.classList.remove('hidden');
+      }
+    }
+
+    checkoutBtn?.addEventListener('click', () => {
+      const safeUrl = getSafeCheckoutUrl(checkoutUrl);
+      if (!safeUrl) {
+        showError(
+          checkoutUrl
+            ? 'Checkout link was rejected. Please try again or contact us.'
+            : 'Your cart is empty.',
+        );
+        return;
+      }
+      window.location.assign(safeUrl);
+    });
+
+    refresh();
+  }
+</script>

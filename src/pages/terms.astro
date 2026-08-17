@@ -1,0 +1,60 @@
+---
+import PageLayout from '@/layouts/PageLayout.astro';
+import Container from '@/components/ui/Container.astro';
+import { siteConfig } from '@/config/site';
+
+const title = 'Terms of Service';
+const description = `Terms of service for ${siteConfig.name}.`;
+const lastUpdated = 'June 1, 2026';
+---
+
+<PageLayout
+  title={title}
+  description={description}
+  heading="Terms of Service"
+  subheading={`Last updated: ${lastUpdated}`}
+  pathname="/terms/"
+>
+  <Container size="narrow">
+    <div class="space-y-8 text-fg-soft">
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Agreement</h2>
+        <p class="mt-3">
+          By accessing {siteConfig.name}&rsquo;s website, you agree to these terms. If you do not agree,
+          please do not use this site.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Use of the website</h2>
+        <p class="mt-3">
+          You may use this website for lawful purposes only. You may not attempt to disrupt the site,
+          scrape content without permission, or use the site in a way that infringes the rights of others.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Services and proposals</h2>
+        <p class="mt-3">
+          Information on this website is for general purposes and does not constitute a binding offer.
+          Specific services, deliverables, and fees are defined in separate agreements.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Limitation of liability</h2>
+        <p class="mt-3">
+          To the fullest extent permitted by law, {siteConfig.name} is not liable for indirect or
+          consequential damages arising from use of this website.
+        </p>
+      </section>
+
+      <section>
+        <h2 class="text-h4 font-semibold text-fg">Contact</h2>
+        <p class="mt-3">
+          Questions about these terms? Visit our <a href="/contact/" class="text-accent hover:underline">contact page</a>.
+        </p>
+      </section>
+    </div>
+  </Container>
+</PageLayout>
