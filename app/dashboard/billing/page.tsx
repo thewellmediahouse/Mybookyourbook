@@ -9,7 +9,9 @@ import {
   CHECKOUT_CUSTOM_PLAN,
   CHECKOUT_MONTHLY_UNAVAILABLE,
   CHECKOUT_NO_SUBSCRIPTION,
+  payfastUsdChargeNote,
 } from "@/lib/billing/copy";
+import { parseUsdZarRate, usdToZarMinor } from "@/lib/billing/fx";
 import { getPaymentsEnv, getPaymentsSetup } from "@/lib/billing/provider";
 import { inspectCheckoutRedirect } from "@/lib/billing/redirect";
 import { getBillingOverview } from "@/lib/billing/queries";
@@ -39,6 +41,7 @@ export default async function BillingPage({
     getPaymentsEnv(),
   ]);
   const setup = getPaymentsSetup(env);
+  const usdZarRate = parseUsdZarRate(env.PAYFAST_USD_ZAR_RATE);
   const currentCredits = overview.subscription?.planCredits ?? null;
   const oneTime = overview.catalog.filter((plan) => plan.interval === "one_time");
   const monthly = overview.catalog.filter((plan) => plan.interval === "month");
@@ -95,6 +98,11 @@ export default async function BillingPage({
                 <p className="font-display text-xl text-foreground">{plan.name}</p>
                 <p className="mt-2 text-foreground">{plan.priceLabel}</p>
                 <p className="mt-1 text-sm text-muted">{plan.creditLabel}</p>
+                {setup.adapter === "payfast" && plan.currency === "USD" && plan.amountMinor != null ? (
+                  <p className="mt-2 text-sm text-muted">
+                    {payfastUsdChargeNote(formatMoney(usdToZarMinor(plan.amountMinor, usdZarRate), "ZAR"))}
+                  </p>
+                ) : null}
                 <div className="mt-4">
                   {isPurchasablePlan({ ...plan, active: true }) ? (
                     <CheckoutButton planId={plan.id} label={`Buy ${plan.name}`} />

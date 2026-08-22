@@ -14,7 +14,11 @@ export const REDIRECT_SUCCESS = "Payment successful. Your credits are available.
 export const REDIRECT_REJECTED = "That payment could not be confirmed. No credits were added.";
 export const REDIRECT_CANCELLED = "Payment was cancelled. No credits were added.";
 export const CHECKOUT_CURRENCY_UNSUPPORTED =
-  "Card payment is available for South African rand (ZAR) plans. International billing is not connected yet.";
+  "Card payment can take South African rand or US dollar plans. That currency is not available yet.";
+
+export function payfastUsdChargeNote(zarLabel: string): string {
+  return `You'll pay ${zarLabel}. Card payment is taken in South African rand, converted from this dollar price at our locked rate.`;
+}
 export const PAYMENT_SUCCESS_TITLE = "Payment successful";
 export const SUBSCRIPTION_UPDATED_TITLE = "Subscription updated";
 export const NO_PAID_PLAN = "No paid plan is attached yet.";

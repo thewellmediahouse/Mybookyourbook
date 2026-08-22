@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { fromCaught, jsonError } from "@/lib/api/http";
 import { requireBillingOwner } from "@/lib/api/billing";
 import { startCheckout } from "@/lib/billing/checkout";
+import { parseUsdZarRate } from "@/lib/billing/fx";
 import { checkoutCallbackUrl, getConnectedPaymentProvider, getPaymentsEnv } from "@/lib/billing/provider";
 import { PaymentError } from "@/lib/providers/payments";
 import { assertRateLimit } from "@/lib/security/rate-limit";
@@ -26,6 +27,7 @@ export async function POST(request: Request) {
       provider: connected.provider,
       providerName: connected.adapter,
       requireProviderPlanCode: connected.requireProviderPlanCode,
+      usdZarRate: parseUsdZarRate(env.PAYFAST_USD_ZAR_RATE),
     });
     return NextResponse.json({
       authorizationUrl: result.authorizationUrl,

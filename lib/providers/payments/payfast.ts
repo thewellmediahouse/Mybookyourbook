@@ -60,7 +60,7 @@ export const PAYFAST_MIN_AMOUNT_MINOR = 500;
 export const PAYFAST_CURRENCY = "ZAR";
 
 const CHECKOUT_CURRENCY =
-  "Card payment is available for South African rand (ZAR) plans. International billing is not connected yet.";
+  "PayFast checkout expects a rand amount. Dollar plans must be converted before this step.";
 const CHECKOUT_AMOUNT = "That amount is below the minimum PayFast charge.";
 const MONTHLY_UNAVAILABLE = "Monthly plans open after recurring billing is connected.";
 

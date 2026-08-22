@@ -66,7 +66,7 @@ flowchart TD
 | Creative | OpenAI behind `CreativeDirectorProvider` |
 | Video gen | Seedance 2.5 via reAPI, 480p |
 | Upscale | Topaz Labs Video API, default `prob-4` |
-| Payments | PayFast first (ZAR); Paystack adapter unused |
+| Payments | PayFast first (ZAR settlement; USD list prices converted at a locked rate); Paystack adapter unused |
 | Email | Resend behind provider abstraction |
 
 Forbidden: Supabase, Postgres-only SQL, public R2 URLs, video bytes in D1, customer-facing provider names.

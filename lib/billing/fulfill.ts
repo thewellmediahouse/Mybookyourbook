@@ -193,14 +193,6 @@ export async function fulfillVerifiedCharge(db: Db, snapshot: ChargeSnapshot): P
     return rejectPayment(db, snapshot, payment?.id, "plan");
   }
 
-  if (snapshot.amountMinor !== plan.amountMinor) {
-    return rejectPayment(db, snapshot, payment?.id, "amount");
-  }
-
-  if (snapshot.currency !== plan.currency) {
-    return rejectPayment(db, snapshot, payment?.id, "currency");
-  }
-
   const workspaceId = payment?.workspaceId ?? snapshot.metadata.workspaceId;
   if (!workspaceId) {
     return rejectPayment(db, snapshot, payment?.id, "workspace");
@@ -213,12 +205,24 @@ export async function fulfillVerifiedCharge(db: Db, snapshot: ChargeSnapshot): P
   if (!workspace) {
     return rejectPayment(db, snapshot, payment?.id, "workspace");
   }
-  if (workspace.billingCurrency !== snapshot.currency || workspace.billingCurrency !== plan.currency) {
+  if (workspace.billingCurrency !== plan.currency) {
     return rejectPayment(db, snapshot, payment?.id, "currency");
   }
 
-  if (payment && payment.amountMinor !== snapshot.amountMinor) {
-    return rejectPayment(db, snapshot, payment.id, "amount");
+  if (payment) {
+    if (snapshot.amountMinor !== payment.amountMinor) {
+      return rejectPayment(db, snapshot, payment.id, "amount");
+    }
+    if (snapshot.currency !== payment.currency) {
+      return rejectPayment(db, snapshot, payment.id, "currency");
+    }
+  } else if (snapshot.amountMinor !== plan.amountMinor || snapshot.currency !== plan.currency) {
+    return rejectPayment(
+      db,
+      snapshot,
+      undefined,
+      snapshot.currency !== plan.currency ? "currency" : "amount",
+    );
   }
 
   const now = new Date();

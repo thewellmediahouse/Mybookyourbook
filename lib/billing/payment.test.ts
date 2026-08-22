@@ -497,3 +497,73 @@ test("PayFast ITN grants once after signature and server confirmation; redirect 
   );
 });
 
+test("PayFast charges dollar plans in rand and grants the catalog credits", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+  const db = createDb(proxy.env.DB as D1Database);
+  const stamp = Date.now() + 23;
+  const owner = await insertPerson(db, `phase14.usd.${stamp}@cineyou.test`, "Owner International");
+  const studio = await createWorkspaceForOwner(db, {
+    ownerUserId: owner,
+    name: `Phase Fourteen USD ${stamp}`,
+    type: "BUSINESS",
+    country: "US",
+    business: { name: `Billing Brand USD ${stamp}` },
+  });
+  const plan = await insertTestPlan(db, {
+    id: `plan_int_payfast_${stamp}`,
+    code: `int_single_${stamp}`,
+    name: "Single Commercial",
+    region: "INT",
+    currency: "USD",
+    amountMinor: 4900,
+    credits: 1,
+    interval: "one_time",
+    metadataJson: null,
+  });
+  const passphrase = `pf_usd_${stamp}`;
+  const merchantId = "10000100";
+  const provider = createPayfastProvider({
+    merchantId,
+    merchantKey: "46f0cd694581a",
+    passphrase,
+    mode: "sandbox",
+    appUrl: "http://localhost:3000",
+  });
+  const checkout = await startCheckout(db, {
+    workspaceId: studio.workspaceId,
+    email: `phase14.usd.${stamp}@cineyou.test`,
+    planId: plan.id,
+    callbackUrl: "http://localhost:3000/dashboard/billing",
+    provider,
+    providerName: "payfast",
+    usdZarRate: 18.5,
+  });
+  assert.match(checkout.authorizationUrl, /\/api\/billing\/payfast\/start/);
+  const rawBody = signedPayfastBody(
+    {
+      m_payment_id: checkout.reference,
+      pf_payment_id: String(stamp),
+      payment_status: "COMPLETE",
+      amount_gross: "906.50",
+      merchant_id: merchantId,
+      custom_str1: studio.workspaceId,
+      custom_str2: plan.id,
+    },
+    passphrase,
+  );
+  const granted = await processSignedPayfastItn(db, {
+    rawBody,
+    provider,
+    merchantId,
+    postedMerchantId: merchantId,
+    confirm: async () => true,
+  });
+  assert.equal(granted.granted, true);
+  assert.equal(granted.credits, 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+});
+

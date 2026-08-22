@@ -15,6 +15,7 @@
     "CONCEPT_AI_MODE": "live",
     "OPENAI_MODEL": "gpt-5.6",
     "PAYMENTS_MODE": "test",
+    "PAYFAST_USD_ZAR_RATE": "18.5",
     "BETTER_AUTH_URL": "https://cineyou.schalk-966.workers.dev",
     "NEXT_PUBLIC_APP_URL": "https://cineyou.schalk-966.workers.dev",
     "NEXT_PUBLIC_APP_NAME": "Production30",

@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-22 (logo site live on cineyou.schalk-966.workers.dev)
+Last updated: 2026-08-22 (PayFast USD checkout converts to ZAR at locked rate)
 
 ## Foundation
 - [x] Next.js
@@ -479,4 +479,8 @@ Resend rejected verify-email sends with `409 invalid_idempotent_request`. Better
 ### 2026-08-22 — New site on workers.dev
 
 Worker `cineyou` version `1254d250-a629-40c5-a4e2-7cf74f6947a0` is live at https://cineyou.schalk-966.workers.dev with the logo, navy/blue theme, loading wheel, example clips, and the verify-email key fix. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt (`--containers-rollout none`). `production30.com` is not attached to the Worker yet.
+
+### 2026-08-22 — PayFast dollar checkout
+
+Official PayFast Custom Integration `amount` is ZAR only. USD catalog plans now convert at locked `PAYFAST_USD_ZAR_RATE` (default 18.5), charge rand, and grant the dollar-plan credits when ITN `amount_gross` matches the stored rand snapshot. Monthly plans stay closed. Not a live FX quote.
 

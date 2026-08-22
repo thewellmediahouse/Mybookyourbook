@@ -9,6 +9,7 @@ import {
   CHECKOUT_MONTHLY_UNAVAILABLE,
   CHECKOUT_REGION_MISMATCH,
 } from "./copy";
+import { DEFAULT_PAYFAST_USD_ZAR_RATE, settlePayfastCharge } from "./fx";
 import { getPlanById, isPurchasablePlan, paystackPlanCode, regionForWorkspace } from "./plans";
 
 export type StartCheckoutInput = {
@@ -19,6 +20,7 @@ export type StartCheckoutInput = {
   provider: PaymentProvider;
   providerName?: string;
   requireProviderPlanCode?: boolean;
+  usdZarRate?: number;
 };
 
 function checkoutReference(): string {
@@ -52,6 +54,16 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
   }
 
   const providerName = input.providerName ?? "paystack";
+  const settlement =
+    providerName === "payfast"
+      ? settlePayfastCharge(plan, input.usdZarRate ?? DEFAULT_PAYFAST_USD_ZAR_RATE)
+      : {
+          currency: plan.currency,
+          amountMinor: plan.amountMinor,
+          catalogCurrency: plan.currency,
+          catalogAmountMinor: plan.amountMinor,
+          rate: null as number | null,
+        };
   const reference = checkoutReference();
   const now = new Date();
   const paymentId = newId();
@@ -60,8 +72,8 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
     workspaceId: workspace.id,
     provider: providerName,
     providerReference: reference,
-    currency: plan.currency,
-    amountMinor: plan.amountMinor,
+    currency: settlement.currency,
+    amountMinor: settlement.amountMinor,
     status: "pending",
     metadataJson: JSON.stringify({
       planId: plan.id,
@@ -70,6 +82,9 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
       credits: plan.credits,
       interval: plan.interval,
       workspaceId: workspace.id,
+      catalogCurrency: settlement.catalogCurrency,
+      catalogAmountMinor: settlement.catalogAmountMinor,
+      usdZarRate: settlement.rate,
     }),
     createdAt: now,
     updatedAt: now,
@@ -77,8 +92,8 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
 
   const checkout = await input.provider.createCheckout({
     email: input.email,
-    amountMinor: plan.amountMinor,
-    currency: plan.currency,
+    amountMinor: settlement.amountMinor,
+    currency: settlement.currency,
     reference,
     callbackUrl: input.callbackUrl,
     metadata: {

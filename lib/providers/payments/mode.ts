@@ -4,6 +4,7 @@ export type PaymentsEnv = {
   PAYFAST_MERCHANT_ID?: string;
   PAYFAST_MERCHANT_KEY?: string;
   PAYFAST_PASSPHRASE?: string;
+  PAYFAST_USD_ZAR_RATE?: string;
   PAYSTACK_SECRET_KEY?: string;
   PAYSTACK_PUBLIC_KEY?: string;
 };
