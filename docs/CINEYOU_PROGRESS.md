@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-22 (logo + navy/blue theme; loading wheel; Artlist-style example rails)
+Last updated: 2026-08-22 (logo site live on cineyou.schalk-966.workers.dev)
 
 ## Foundation
 - [x] Next.js
@@ -474,5 +474,9 @@ Verification: `npm run check`, `npm run lint`, `npm test`. Not deployed in this 
 
 ### 2026-08-22 — Signup confirmation 409
 
-Resend rejected verify-email sends with `409 invalid_idempotent_request`. Better Auth tokens are JWTs; we used the first 80 characters as the idempotency key, so later signups reused a key with a different recipient. Keys now use the unique token tail. Local signup can resend from `/verify-email`. Live Worker not redeployed in this pass.
+Resend rejected verify-email sends with `409 invalid_idempotent_request`. Better Auth tokens are JWTs; we used the first 80 characters as the idempotency key, so later signups reused a key with a different recipient. Keys now use the unique token tail. Local signup can resend from `/verify-email`.
+
+### 2026-08-22 — New site on workers.dev
+
+Worker `cineyou` version `1254d250-a629-40c5-a4e2-7cf74f6947a0` is live at https://cineyou.schalk-966.workers.dev with the logo, navy/blue theme, loading wheel, example clips, and the verify-email key fix. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt (`--containers-rollout none`). `production30.com` is not attached to the Worker yet.
 
