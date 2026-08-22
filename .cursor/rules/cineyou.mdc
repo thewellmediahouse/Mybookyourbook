@@ -1,0 +1,37 @@
+---
+description: Production30 SaaS agent contract — canonical docs, customer language, mock vs live
+alwaysApply: true
+---
+
+# Production30 agent contract
+
+**Canonical:** `docs/CINEYOU_MASTER_SPEC.md`
+**Plan / phases:** `docs/CINEYOU_IMPLEMENTATION_PLAN.md`
+**Progress:** `docs/CINEYOU_PROGRESS.md` (update after every meaningful phase)
+**Architecture:** `docs/CINEYOU_ARCHITECTURE.md`
+**API decisions:** `docs/CINEYOU_API_NOTES.md`
+
+On a new session or when context is large, reread those five files. They are authoritative over chat memory.
+
+## Stack (do not substitute)
+
+Next.js App Router + TypeScript strict + Tailwind + shadcn/ui. Cloudflare Workers via `@opennextjs/cloudflare`. D1 + Drizzle. Better Auth. Private R2. Workflows for production jobs. Containers + FFmpeg for branding. PayFast first (ZAR). No Supabase. No PostgreSQL-specific SQL. No video blobs in D1.
+
+## Customer language
+
+Never expose Seedance, Topaz, fal.ai, FFmpeg, inference, models, codecs, or Cloudflare internals to ordinary customers.
+
+Say: Produce Commercial, Commercial Concept, Filming Your Commercial, Enhancing Your Footage, Adding Your Brand. Could a 55-year-old business owner understand it without phoning us?
+
+## Non-negotiables
+
+- No fake numbers, testimonials, payments, or generation results
+- Buttons work, are disabled with explanation, or do not exist
+- Server-side authorization on every mutation; workspace-scope every query
+- Private R2; store object keys only; short-lived signed URLs
+- 1 Ad Credit = 1 production; concept generation is free
+- Seedance source is 480p / 30s; branding text is applied in post, never generated
+- `AI_PROVIDER_MODE=mock` must not call paid filming / enhancement / branding APIs; real adapters still exist
+- Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` + `OPENAI_API_KEY`. That must not silently mock when the key is missing. Default `CONCEPT_AI_MODE` follows `AI_PROVIDER_MODE`.
+- Consult latest official provider docs before implementing external APIs; log decisions in `CINEYOU_API_NOTES.md`
+- After each phase: typecheck, lint, relevant tests, build/preview, fix, update progress

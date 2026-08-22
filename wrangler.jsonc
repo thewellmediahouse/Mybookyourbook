@@ -1,10 +1,110 @@
 {
-  "$schema": "./node_modules/wrangler/config-schema.json",
-  // Rename per site before deploy — must match Cloudflare Pages project name (docs/DEPLOY.md).
-  "name": "astro-business-template",
-  "compatibility_date": "2026-07-04",
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cineyou",
+  "main": "worker.ts",
+  "compatibility_date": "2026-08-20",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  "vars": {
+    // Filming/enhancement/branding stay mock. Concept may be live via CONCEPT_AI_MODE + OPENAI_API_KEY.
+    // PayFast live charges stay off until PAYMENTS_MODE=live is approved.
+    "AI_PROVIDER_MODE": "mock",
+    "CONCEPT_AI_MODE": "live",
+    "OPENAI_MODEL": "gpt-5.6",
+    "PAYMENTS_MODE": "test",
+    "BETTER_AUTH_URL": "https://cineyou.schalk-966.workers.dev",
+    "NEXT_PUBLIC_APP_URL": "https://cineyou.schalk-966.workers.dev",
+    "NEXT_PUBLIC_APP_NAME": "Production30",
+    "EMAIL_FROM": "Production30 <Accounts@production30.com>",
+    "ADMIN_EMAILS": "schalk@thewellmedia.com"
+  },
+  "dev": {
+    // Local next/tests use mock branding and do not build the media image. Deploy still does.
+    "enable_containers": false,
+    "port": 8787
+  },
   "assets": {
-    "directory": "./dist",
-    "not_found_handling": "404-page"
-  }
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "cineyou"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "cineyou-production",
+      "database_id": "a0dff7a4-9637-4b25-9941-b1b35e336e06",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "cineyou-production"
+    }
+  ],
+  "workflows": [
+    {
+      "name": "commercial-production",
+      "binding": "COMMERCIAL_PRODUCTION_WORKFLOW",
+      "class_name": "CommercialProductionWorkflow"
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "MediaProcessingService",
+      "image": "./containers/media-processing/Dockerfile",
+      "instance_type": "standard-1",
+      "max_instances": 5
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "MEDIA_PROCESSING",
+        "class_name": "MediaProcessingService"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["MediaProcessingService"]
+    }
+  ],
+  "queues": {
+    "producers": [
+      { "binding": "NOTIFICATION_QUEUE", "queue": "cineyou-notifications" },
+      { "binding": "CLEANUP_QUEUE", "queue": "cineyou-cleanup" }
+    ],
+    "consumers": [
+      { "queue": "cineyou-notifications", "max_batch_size": 10, "max_retries": 5 },
+      { "queue": "cineyou-cleanup", "max_batch_size": 10, "max_retries": 3 }
+    ]
+  },
+  "ratelimits": [
+    {
+      "name": "AUTH_RATE_LIMIT",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 10,
+        "period": 60
+      }
+    },
+    {
+      "name": "PRODUCTION_RATE_LIMIT",
+      "namespace_id": "1002",
+      "simple": {
+        "limit": 5,
+        "period": 60
+      }
+    }
+  ]
 }

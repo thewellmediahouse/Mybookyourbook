@@ -1,0 +1,1 @@
+export { softwareStrategy } from "./catalog";

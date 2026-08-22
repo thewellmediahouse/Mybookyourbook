@@ -1,19 +1,28 @@
 ---
-description: Warn before applying brand colors that fail WCAG AA (Lighthouse contrast) — simple hex math, never run Lighthouse for this
-globs: src/config/site.ts,src/config/design.ts,src/utils/branding.ts,docs/SITE_SPEC*
+description: Warn before applying brand colors that fail WCAG AA — hex math only, never Lighthouse for this
+globs: app/globals.css,src/styles/**,lib/theme/**,lib/utils/contrast.ts
 alwaysApply: true
 ---
 
 # Brand contrast (design phase)
 
-When the user requests or you are about to write **text-on-background brand colors** (`site.branding`, `design.colors`, SITE_SPEC branding, gold-on-cream, muted grey body, light text on tinted bands):
+When writing **text-on-background brand colors** (Production30 navy/blue palette, muted body, button labels):
 
-1. **Do not run Lighthouse.** Use `src/utils/contrast.ts` (`contrastRatio` / `checkContrastPairs`) — WCAG 2.1 relative luminance.
-2. Check at least: `text` vs `background` (**4.5:1**), `textMuted` / `textSoft` vs `background` (**4.5:1** — Lighthouse flags this often), `text` vs `backgroundDeep` if used as copy on dark bands, accent/button label vs button fill (**4.5:1** if the label is body-sized; **3:1** only for large/bold).
+1. **Do not run Lighthouse.** Use `lib/utils/contrast.ts` (`contrastRatio` / `checkContrastPairs`) — WCAG 2.1 relative luminance.
+2. Check at least: `text` vs `background` (**4.5:1**), `textMuted` vs `background` (**4.5:1**), `text` vs `surface` / `surfaceSecondary`, accent/button label vs button fill (**4.5:1** if the label is body-sized; **3:1** only for large/bold).
 3. Skip non-hex (gradients, rgba). Skip SVG/icons.
-4. If any pair **fails**: **stop writing those colors.** Tell the user the pair, ratio (1 decimal), and the floor. Ask **“Are you sure?”** — this will likely fail a Lighthouse a11y contrast audit. Proceed only if they confirm; then note the risk. Do not silently restyle their brand to “fix” it.
-5. If they confirm a fail, still use semantic tokens (`text-fg*`) — never `text-neutral-*` to dodge contrast.
+4. If any pair **fails**: **stop writing those colors.** Tell the user the pair, ratio (1 decimal), and the floor. Ask **“Are you sure?”** Proceed only if they confirm; then note the risk. Do not silently restyle the brand to “fix” it.
+5. If they confirm a fail, still use semantic tokens — never raw `text-neutral-*` to dodge contrast.
+
+Production30 locked pairs (2026-08-22, all pass 4.5:1):
+
+- `#F4F6FB` on `#05070F` ~18.6:1
+- `#9AA3B8` on `#05070F` ~8.0:1
+- `#F4F6FB` on `#0C1224` ~17.2:1
+- Button labels on blue: `#001038` on `#1678FF` ~4.6:1
+- Button labels on hover: `#001038` on `#2D8CFF` ~5.6:1
+- Do **not** use `#FFFFFF` on `#1678FF` (~4.1:1 — fails)
 
 ```
-text #94a3b8 on bg #f8fafc → ~2.5:1 (need 4.5:1). Are you sure? Lighthouse will likely flag this.
+text #FFFFFF on blue #1678FF → ~4.1:1 (need 4.5:1). Do not use.
 ```

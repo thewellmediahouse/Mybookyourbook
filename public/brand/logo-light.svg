@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 248 36" role="img" aria-label="Production30">
+  <title>Production30</title>
+  <defs>
+    <linearGradient id="p30-accent-light" x1="8" y1="4" x2="34" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1678FF"/>
+      <stop offset="1" stop-color="#5A45FC"/>
+    </linearGradient>
+  </defs>
+  <g fill="url(#p30-accent-light)">
+    <rect x="0" y="10" width="7" height="2.1" rx="1"/>
+    <rect x="0" y="17" width="9" height="2.1" rx="1"/>
+    <rect x="0" y="24" width="7" height="2.1" rx="1"/>
+    <path d="M11.2 8.2c2.4-1.6 5.7-2 8.4-.6 1.8.9 2.9 2.5 3.1 4.4h-4.2c-.2-.8-.8-1.5-1.9-1.8-1.5-.4-3.1.2-3.7 1.5-.5 1.1.1 2.1 1.8 2.6l3.4 1c3.5 1 5.5 3.2 5.1 6.3-.5 3.6-4 5.9-8.3 5.6-3.2-.2-5.9-1.8-7.1-4.5l3.7-1.8c.6 1.5 2.1 2.4 4 2.5 1.6.1 3.1-.6 3.4-1.8.3-1.1-.4-1.9-2.1-2.4l-3.3-1c-3.6-1.1-5.4-3.5-4.8-7 0.4-2.4 2-4.3 5.5-5z"/>
+  </g>
+  <circle cx="36.2" cy="18" r="10.4" fill="#001038"/>
+  <polygon points="33.2,13.6 33.2,22.4 41.2,18" fill="url(#p30-accent-light)"/>
+  <path d="M46.4 14.2 49.8 12.6v10.8L46.4 21.8z" fill="#001038"/>
+  <text x="56" y="23" fill="#001038" font-family="ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="600" letter-spacing="-0.03em">production30</text>
+</svg>

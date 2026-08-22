@@ -1,0 +1,1 @@
+export { medicalStrategy } from "./catalog";

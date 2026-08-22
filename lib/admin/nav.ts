@@ -1,0 +1,18 @@
+export const ADMIN_NAV = [
+  { href: "/admin", label: "Overview", exact: true },
+  { href: "/admin/users", label: "Users" },
+  { href: "/admin/workspaces", label: "Workspaces" },
+  { href: "/admin/commercials", label: "Commercials" },
+  { href: "/admin/jobs", label: "Production Jobs" },
+  { href: "/admin/jobs?status=FAILED", label: "Failed Jobs" },
+  { href: "/admin/payments", label: "Payments" },
+  { href: "/admin/subscriptions", label: "Subscriptions" },
+  { href: "/admin/credits", label: "Credits" },
+  { href: "/admin/pricing", label: "Pricing" },
+  { href: "/admin/prompts", label: "Prompt Frameworks" },
+  { href: "/admin/ai", label: "AI Settings" },
+  { href: "/admin/storage", label: "Storage" },
+  { href: "/admin/support", label: "Support" },
+  { href: "/admin/system", label: "System" },
+  { href: "/admin/audit", label: "Audit Log" },
+] as const;

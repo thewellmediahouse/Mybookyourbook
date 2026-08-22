@@ -1,0 +1,1 @@
+export { retailStrategy } from "./catalog";

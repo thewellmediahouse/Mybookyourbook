@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --background: #05070f;
+  --surface: #0c1224;
+  --surface-secondary: #121a30;
+  --foreground: #f4f6fb;
+  --muted: #9aa3b8;
+  --accent: #1678ff;
+  --accent-hover: #2d8cff;
+  --accent-foreground: #001038;
+  --accent-2: #5a45fc;
+  --success: #4dba7a;
+  --danger: #e06565;
+  --border: #1a2340;
+  --radius: 0.75rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-2: var(--accent-2);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-border: var(--border);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-inter);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+html {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+@keyframes p30-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.p30-spinner {
+  animation: p30-spin 0.75s linear infinite;
+}

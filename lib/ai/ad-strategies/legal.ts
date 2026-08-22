@@ -1,0 +1,1 @@
+export { legalStrategy } from "./catalog";

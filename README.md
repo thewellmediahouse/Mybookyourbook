@@ -1,181 +1,176 @@
-# Astro Business Template
+# Production30
 
-A reusable Astro starter for small business, agency, and professional services websites. Content, branding, navigation, services, pricing, forms, and SEO are driven from typed config files — not hardcoded in components.
+**Your business, starring you.**
 
-Built for **AI-agent site generation**, static deployment (Cloudflare Pages), and near-perfect Lighthouse scores.
+Production30 is an automated advertising-production platform. Customers brief their business, show who they are, approve a commercial concept, and receive a polished 1080p advert. They never configure AI models, prompts, or infrastructure.
 
-## Tech stack
+This repository previously held an Astro marketing template. It is now the Production30 SaaS codebase.
 
-- [Astro](https://astro.build) (static output)
-- TypeScript
-- Tailwind CSS v4
-- MDX (optional blog/content)
+Canonical product docs:
 
-## Quick start
+- [`docs/CINEYOU_MASTER_SPEC.md`](docs/CINEYOU_MASTER_SPEC.md)
+- [`docs/CINEYOU_IMPLEMENTATION_PLAN.md`](docs/CINEYOU_IMPLEMENTATION_PLAN.md)
+- [`docs/CINEYOU_PROGRESS.md`](docs/CINEYOU_PROGRESS.md)
+- [`docs/CINEYOU_ARCHITECTURE.md`](docs/CINEYOU_ARCHITECTURE.md)
+- [`docs/CINEYOU_API_NOTES.md`](docs/CINEYOU_API_NOTES.md)
+
+## Technology stack
+
+| Layer | Choice |
+| --- | --- |
+| App | Next.js App Router, React, TypeScript strict |
+| UI | Tailwind CSS v4, shadcn/ui |
+| Hosting | Cloudflare Workers via `@opennextjs/cloudflare` |
+| Database | Cloudflare D1 + Drizzle |
+| Auth | Better Auth 1.7 (D1 / Drizzle, `transaction: false`) |
+| Media | Private Cloudflare R2 |
+| Jobs | Cloudflare Workflows |
+| Branding encode | Cloudflare Containers + FFmpeg |
+| Video generation | Seedance 2.5 via reAPI (480p source) |
+| Enhancement | Topaz Labs Video API (1080p) |
+| Payments | PayFast first (ZAR). Paystack adapter remains unused. |
+| Email | Resend |
+
+Do not use Supabase or PostgreSQL-specific SQL. Do not store videos in D1.
+
+## Local setup
+
+Requirements: Node 24 (see `.nvmrc`), npm 10.9.x-compatible lockfile.
 
 ```bash
+cp .env.example .env
+cp .dev.vars.example .dev.vars
+# Put a long random BETTER_AUTH_SECRET in both .env and .dev.vars
 npm install
+npm run db:migrate:local
+npm run db:seed:local
 npm run dev
 ```
 
-Open [http://localhost:4321](http://localhost:4321).
+Open [http://localhost:3000](http://localhost:3000).
+
+Copy `.dev.vars` is already present for OpenNext local bindings (`NEXTJS_ENV=development`). Secrets go in `.dev.vars` and `.env` — never commit them.
+
+## Mock mode
+
+```env
+AI_PROVIDER_MODE=mock
+CONCEPT_AI_MODE=live
+PAYMENTS_MODE=test
+```
+
+`AI_PROVIDER_MODE=mock` is pinned in `wrangler.jsonc` and must never call paid filming, enhancement, or branding APIs. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` and `OPENAI_API_KEY`. Missing that key must not silently mock. `PAYMENTS_MODE=test` stays on until live PayFast charges are explicitly approved.
+
+## Scripts
+
+| Script | Purpose |
+| --- | --- |
+| `npm run dev` | Next.js local dev (Node). Bindings via `initOpenNextCloudflareForDev`. |
+| `npm run check` | TypeScript (`tsc --noEmit`) |
+| `npm run lint` | ESLint |
+| `npm run build` | Next.js production build |
+| `npm run preview` | OpenNext build + Cloudflare Workers preview runtime (`http://127.0.0.1:8787`) |
+| `npm run preview:smoke` | Hit public pages, login redirect, and unauthenticated produce against a running preview |
+| `npm run deploy` | OpenNext build + deploy to Workers (do not run unless asked) |
+| `npm run cf-typegen` | Generate `cloudflare-env.d.ts` from Wrangler bindings |
+| `npm run db:generate` | Generate SQL from Drizzle schema |
+| `npm run db:migrate:local` | Apply migrations to local D1 |
+| `npm run db:migrate:remote` | Apply migrations to the remote `cineyou-production` D1 |
+| `npm run db:seed:local` | Seed ZA/INT list prices (idempotent) |
+| `npm run db:seed:remote` | Seed list prices on the remote D1 |
+| `npm run db:verify` | Assert all spec tables are exported |
+| `npm test` | Auth, workspace isolation, pipeline, billing, and security tests (serial local D1) |
+| `npm run test:bundle` | Scan client source and, after a build, `.next/static` for leaked secrets |
+| `npm run ci` | Typecheck, lint, schema verify, tests, production build, bundle scan |
+
+## Database / migrations
+
+Schema: [`lib/db/schema/`](lib/db/schema/). SQL: [`drizzle/`](drizzle/). Client: [`lib/db/client.ts`](lib/db/client.ts) (`createDb` / `getDb` via OpenNext `getCloudflareContext`).
 
 ```bash
-npm run build    # static output in dist/
-npm run preview  # preview production build locally
-npm run check    # Astro + TypeScript checks
+npm run db:generate
+npm run db:migrate:local
+npm run db:seed:local
 ```
 
-## Repository strategy
+Local D1 lives under `.wrangler/` (gitignored). Remote D1 `cineyou-production` (`a0dff7a4-9637-4b25-9941-b1b35e336e06`) is provisioned; apply with `npm run db:migrate:remote` after new SQL.
 
-| Branch | Purpose |
-| ------ | ------- |
-| `main` | Template only — generic placeholder content and reusable platform code |
-| `wellmedia` | The Well Media House — the **only** client site maintained in this repo |
+Do not store video blobs or signed URLs in D1. SQLite types only.
 
-**New client sites:** clone into a **dedicated repo per site**. Do not add further client branches here.
+## Cloudflare
 
-**At scale (~30 sites):** plan a **monorepo** — shared platform plus one subfolder per website. Until then, each clone maps cleanly to a future subfolder.
+Worker name: `cineyou`. Config: [`wrangler.jsonc`](wrangler.jsonc). Local Workers preview listens on port **8787** so it does not collide with `next dev` on 3000.
 
-## Creating a new website (AI-first)
+Bindings:
 
-### Content person (ChatGPT, external)
+- `DB` → D1 `cineyou-production`
+- `MEDIA_BUCKET` → private R2 `cineyou-production`
+- `NOTIFICATION_QUEUE` / `CLEANUP_QUEUE` → `cineyou-notifications` / `cineyou-cleanup`
+- `ASSETS`, `WORKER_SELF_REFERENCE` (OpenNext)
+- `COMMERCIAL_PRODUCTION_WORKFLOW` / `MediaProcessingService` exported from `worker.ts`
+- `AUTH_RATE_LIMIT`, `PRODUCTION_RATE_LIMIT`
 
-1. Open a ChatGPT Project and upload the pack listed in [`docs/prompts/README.md`](docs/prompts/README.md).
-2. Use [`docs/prompts/01-fill-spec.md`](docs/prompts/01-fill-spec.md) as instructions.
-3. Paste company context; download **`SITE_SPEC.yaml` + images**.
+Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`.
 
-### Developer (Cursor)
-
-1. Provision infra: private GitHub repo → invite [thewellmediahouse](https://github.com/thewellmediahouse) → Cloudflare Pages preview at `<repo>.thewellmedia.com` — see [`docs/DEPLOY.md`](docs/DEPLOY.md) (script: `scripts/provision-site.sh`; skill: `.cursor/skills/site-provision`).
-2. Drop `SITE_SPEC.yaml` + images into the repo.
-3. Apply with Cursor using [`docs/prompts/02-apply-spec.md`](docs/prompts/02-apply-spec.md) (updates `src/config/*`).
-4. Wire assets via [`docs/prompts/03-assets.md`](docs/prompts/03-assets.md).
-5. `npm run check && npm run build`.
-6. Lighthouse loop: [`docs/prompts/04-lighthouse.md`](docs/prompts/04-lighthouse.md) (target ≥90, aim 100).
-
-Most sites should launch by changing config and assets only — no component rewrites.
-
-## Configuration
-
-Business-specific content lives in `src/config/`:
-
-| File | Contents |
-| ---- | -------- |
-| `site.ts` | Site name, URL, taglines, branding colors, design rules |
-| `company.ts` | Email, phone, address, social links, differentiators |
-| `navigation.ts` | Header/footer nav and CTA labels |
-| `services.ts` | Service list and descriptions |
-| `packages.ts` | Tiered pricing, bundles, à la carte (optional) |
-| `portfolio.ts` | Portfolio items, Featured Work Preview |
-| `faq.ts` | FAQ entries |
-| `testimonials.ts` | Testimonials (optional) |
-| `seo.ts` | Per-page SEO titles and descriptions |
-| `form.ts` | Contact form provider, fields, and messages |
-| `pages.ts` | Page visibility and section enable/disable |
-| `content.ts` | Long-form page copy blocks |
-| `design.ts` | Extended design tokens (optional) |
-
-### Environment variables
-
-Copy `.env.example` to `.env` for local overrides:
+Secrets stay out of git. For a future deploy, set them with Wrangler **after** you explicitly decide to ship — `wrangler secret put` publishes a new Worker version:
 
 ```bash
-PUBLIC_SITE_URL=https://yourdomain.com
-PUBLIC_SITE_ENV=preview          # Well Media staging Pages builds; omit in production
-PUBLIC_FORMSUBMIT_EMAIL=hello@yourdomain.com
-PUBLIC_WEB3FORMS_KEY=your-web3forms-access-key
+npx wrangler secret put BETTER_AUTH_SECRET
+npx wrangler secret put INTERNAL_SERVICE_SECRET
+# Only when live providers are approved:
+# npx wrangler secret put REAPI_API_KEY
+# npx wrangler secret put TOPAZ_API_KEY
+# npx wrangler secret put OPENAI_API_KEY
+# npx wrangler secret put PAYFAST_MERCHANT_KEY
+# npx wrangler secret put PAYFAST_PASSPHRASE
+# npx wrangler secret put PAYSTACK_SECRET_KEY
+# npx wrangler secret put GOOGLE_CLIENT_SECRET
+# npx wrangler secret put RESEND_API_KEY
+# npx wrangler secret put R2_ACCESS_KEY_ID
+# npx wrangler secret put R2_SECRET_ACCESS_KEY
 ```
 
-## Contact forms
+Generate types after changing bindings:
 
-Forms are provider-agnostic. Configure in `src/config/form.ts`.
-
-**FormSubmit (default)** — no signup, emails go to your inbox:
-
-```ts
-provider: 'formsubmit',
-endpoint: import.meta.env.PUBLIC_FORMSUBMIT_EMAIL ?? companyConfig.email,
+```bash
+npm run cf-typegen
 ```
 
-After deploying, submit the form once on the live site and confirm via [FormSubmit](https://formsubmit.co/)'s activation email.
+Workers preview (same `workerd` runtime as production, local D1/R2):
 
-| Provider | `endpoint` value |
-| -------- | ---------------- |
-| `formsubmit` | Recipient email address |
-| `formspree` | Form ID or full Formspree URL |
-| `web3forms` | Web3Forms access key |
-| `custom` | Any POST URL (native submit, no AJAX) |
-
-## Project structure
-
-```
-src/
-  components/     layout, sections, marketing, ui, forms, media, utility
-  config/         Typed business configuration
-  content/        MDX blog posts (optional)
-  layouts/        BaseLayout, PageLayout
-  pages/          Route files
-  assets/         Rasters + raster.ts
-  styles/         Global CSS and design tokens
-docs/
-  AGENT.md                    Always-on agent contract
-  PLATFORM.md                 Component/token/SEO lookup
-  DEPLOY.md                   Repo + Cloudflare Pages preview provision
-  SITE_SPEC.schema.json       Content pack schema
-  SITE_SPEC.example.yaml      Few-shot example (Acme)
-  prompts/                    ChatGPT + Cursor prompt pack
-  _legacy/                    Archived human-oriented docs
-scripts/
-  provision-site.sh           Private repo + wrangler rename helper
-public/                       SVG, favicon, video
+```bash
+npm run preview
+# in another terminal:
+npm run preview:smoke
 ```
 
-## Pages
+## Tests
 
-- `/` — Home
-- `/about` — About
-- `/services` — Services
-- `/contact` — Contact form
-- `/faq` — FAQ
-- `/portfolio` — Portfolio listing (when enabled)
-- `/portfolio/[slug]` — Portfolio detail (from `portfolio.ts`)
-- `/privacy`, `/terms` — Legal
-- `/404` — Not found
+`npm test` discovers every `lib/**/*.test.ts` file (auth, isolation, pipeline, billing, security, bundle scan). D1-backed tests use the local Wrangler persist DB and run one at a time. After `npm run build`, `CINEYOU_REQUIRE_BUNDLE=1 npm run test:bundle` fails if `.next/static` is missing or contains known secret values. `npm run ci` is the local CI-equivalent: typecheck, lint, schema verify, tests, production build, then the required bundle scan.
 
-Enable or disable pages and sections via `src/config/pages.ts`.
+## Production checklist
 
-## Deployment
+- [x] Wrangler secret `BETTER_AUTH_SECRET` set
+- [x] Real D1 `database_id` in `wrangler.jsonc`
+- [x] R2 bucket `cineyou-production` created and private (no public access / custom domain)
+- [x] `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test` explicit in Wrangler `vars`. Concept may be live via `CONCEPT_AI_MODE`.
+- [ ] Legal pages reviewed by counsel before launch
+- [ ] Do not enable live AI or live payments without an explicit decision
+- [x] Worker deployed (`https://cineyou.schalk-966.workers.dev`)
+- [x] Public marketing redesign deployed
+- [x] Wrangler var `ADMIN_EMAILS` set (`schalk@thewellmedia.com`)
+- [x] Wrangler secret `INTERNAL_SERVICE_SECRET` set
+- [x] Verify `production30.com` in Resend and upload `RESEND_API_KEY`
+- [ ] Publish the branding container (Docker must be running)
+- [ ] Custom domain `production30.com` on the Worker
 
-Build to static HTML in `dist/`. Target: **Cloudflare Pages**.
+## Common issues
 
-**Well Media preview sites** (private repo, `<repo>.thewellmedia.com`, `PUBLIC_SITE_ENV=preview`, non-prod branch builds off): follow [`docs/DEPLOY.md`](docs/DEPLOY.md).
+- **Signup confirmation mail:** Authentication is live. Create an account, confirm the Production30 email from `Accounts@production30.com`, then finish `/onboarding`.
+- **Local tests say `no such table: user`:** Wrangler stores local D1 per `database_id`. After that id changes, run `npm run db:migrate:local` and `npm run db:seed:local`.
+- **Preview uses local D1:** `npm run preview` does not use `--remote`. It keeps local persist even with a real remote `database_id`.
+- **Workflow classes missing from the Worker:** OpenNext generates `.open-next/worker.js`. Production30 wraps it in `worker.ts` so `CommercialProductionWorkflow` and `MediaProcessingService` stay exported.
 
-Quick Pages settings for any site:
+## Brand
 
-1. Connect the GitHub repository.
-2. Build command: `npm run build` → output `dist`
-3. Set env vars in the Cloudflare dashboard (see `.env.example`).
-4. Match `wrangler.jsonc` `"name"` to the Pages project name.
-
-**Lockfile / npm:** Pages v3 runs `npm ci` with **npm 10.9.2** even if `.nvmrc` selects Node 24. After dependency changes, regenerate `package-lock.json` with npm 10 and confirm `npx npm@10.9.2 ci` succeeds. Details: [`docs/PLATFORM.md`](docs/PLATFORM.md).
-
-Update `siteConfig.url` in `src/config/site.ts` (and `PUBLIC_SITE_URL`) to the live domain for sitemap and canonical URLs.
-
-## Documentation
-
-| Doc | Audience |
-| --- | -------- |
-| [`docs/AGENT.md`](docs/AGENT.md) | Every agent session |
-| [`docs/PLATFORM.md`](docs/PLATFORM.md) | Build/debug lookup |
-| [`docs/DEPLOY.md`](docs/DEPLOY.md) | Clone → GitHub → Pages preview provision |
-| [`docs/SITE_SPEC.schema.json`](docs/SITE_SPEC.schema.json) | ChatGPT + validation |
-| [`docs/SITE_SPEC.example.yaml`](docs/SITE_SPEC.example.yaml) | Few-shot filled spec |
-| [`docs/prompts/`](docs/prompts/) | Fill / apply / assets / Lighthouse |
-| [`docs/_legacy/`](docs/_legacy/) | Archived predecessors |
-
-Cursor loads the agent contract via `.cursor/rules/template-platform.mdc` (plus scoped rules for config, components, and styles).
-
-## License
-
-Private template — adjust licensing as needed for your use.
+Navy / blue palette from the Production30 logo. Buttons use dark labels (`#001038` on `#1678FF`). Wordmark lives in `public/brand/`.

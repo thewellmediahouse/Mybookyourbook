@@ -1,18 +1,15 @@
 # dependencies
 node_modules/
 
-# build
-dist/
+# Next.js
+.next/
+out/
 
-# astro
-.astro/
-
-# Build-generated product Open Graph cards (recreated on each build)
-public/og/products/*
-!public/og/products/.gitkeep
-
-# scratch
-_scratch/
+# OpenNext / Cloudflare
+.open-next/
+.wrangler/
+.dev.vars
+.mf/
 
 # env
 .env
@@ -23,9 +20,9 @@ _scratch/
 *.log
 npm-debug.log*
 
-# testing / audits
-.lighthouse/
+# testing
 coverage/
+.lighthouse/
 
 # OS
 .DS_Store
@@ -37,6 +34,8 @@ Thumbs.db
 *.swp
 *.swo
 
-# Cloudflare Wrangler local state
-.wrangler/
-.dev.vars
+# Typegen
+# Keep committed cloudflare-env.d.ts once generated; ignore local wrangler state only.
+
+# scratch
+_scratch/

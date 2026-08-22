@@ -1,0 +1,1 @@
+export { automotiveStrategy } from "./catalog";

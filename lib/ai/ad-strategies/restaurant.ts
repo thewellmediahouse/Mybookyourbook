@@ -1,0 +1,1 @@
+export { restaurantStrategy } from "./catalog";

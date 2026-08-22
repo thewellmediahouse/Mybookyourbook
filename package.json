@@ -1,43 +1,55 @@
 {
-  "name": "astro-business-template",
-  "type": "module",
-  "version": "1.0.0",
+  "name": "cineyou",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check",
-    "deploy": "npm run build && wrangler deploy"
-  },
-  "devDependencies": {
-    "@types/sanitize-html": "^2.16.1",
-    "wrangler": "^4.118.0"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "check": "tsc --noEmit",
+    "test": "tsx --test --test-concurrency=1 $(find lib -name '*.test.ts' | sort)",
+    "test:bundle": "tsx --test --test-concurrency=1 lib/hardening/bundle.test.ts",
+    "ci": "npm run check && npm run lint && npm run db:verify && npm test && npm run build && CINEYOU_REQUIRE_BUNDLE=1 npm run test:bundle",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate:local": "wrangler d1 migrations apply cineyou-production --local",
+    "db:migrate:remote": "wrangler d1 migrations apply cineyou-production --remote",
+    "db:seed:local": "wrangler d1 execute cineyou-production --local --file=scripts/seed-plans.sql",
+    "db:seed:remote": "wrangler d1 execute cineyou-production --remote --file=scripts/seed-plans.sql",
+    "db:verify": "npx tsx scripts/verify-schema.ts",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "preview:smoke": "tsx scripts/preview-smoke.ts",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
-    "@astrojs/check": "^0.9.10",
-    "@astrojs/mdx": "^7.0.5",
-    "@astrojs/sitemap": "^3.7.3",
-    "@fontsource/inter": "^5.2.8",
-    "@fontsource/playfair-display": "^5.2.8",
-    "@tailwindcss/vite": "^4.1.8",
-    "astro": "^7.1.6",
-    "sanitize-html": "^2.17.6",
-    "tailwindcss": "^4.1.8",
-    "typescript": "^5.8.3"
+    "@better-auth/drizzle-adapter": "^1.7.1",
+    "@cloudflare/containers": "^0.3.7",
+    "@opennextjs/cloudflare": "^1.20.2",
+    "@radix-ui/react-slot": "^1.3.3",
+    "aws4fetch": "^1.0.20",
+    "better-auth": "^1.7.1",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.33.0",
+    "next": "16.3.1",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.4.3"
   },
-  "overrides": {
-    "esbuild": "^0.28.1",
-    "vite": "^8",
-    "yaml": "^2.8.3",
-    "postcss": "^8.5.18",
-    "fast-uri": "^3.1.5",
-    "svgo": "^4.0.2",
-    "sharp": "^0.35.3"
-  },
-  "allowScripts": {
-    "esbuild@0.28.1": true,
-    "fsevents@2.3.3": true,
-    "sharp@0.35.3": true
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "drizzle-kit": "^0.31.10",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.12",
+    "typescript": "^5",
+    "wrangler": "^4.124.0"
   }
 }

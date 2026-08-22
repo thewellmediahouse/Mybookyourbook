@@ -1,0 +1,21 @@
+function fromHex(hex: string): Uint8Array {
+  const clean = hex.replace(/\s+/g, "");
+  const bytes = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < bytes.length; i += 1) {
+    bytes[i] = Number.parseInt(clean.slice(i * 2, i * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+/** Tiny fixture MP4 used by mock filming / enhancement / branding. Not a customer commercial. */
+export const FIXTURE_MP4 = fromHex(
+  "00000018667479706d703432000000006d70343269736F6D000000086D646174",
+);
+
+/** 1×1 JPEG used as a mock thumbnail. */
+export const FIXTURE_JPEG = fromHex(
+  "ffd8ffe000104a46494600010100000100010000ffdb004300100b0c0e0c0a100e0d0e12121013180f14181716161a1d301f1a1c2c2320262e2b30323434341f27393d38323c2e333432ffc0000b080001000101011100ffc4001f0000010501010101010100000000000000000102030405060708090a0bffc400b5100002010303020403050504040000017d01020300041105122131410613516107227114328191a1082342b1c11552d1f02433627282090a161718191a25262728292a3435363738393a434445464748494a535455565758595a636465666768696a737475767778797a838485868788898a92939495969798999aa2a3a4a5a6a7a8a9aab2b3b4b5b6b7b8b9bac2c3c4c5c6c7c8c9cad2d3d4d5d6d7d8d9dae1e2e3e4e5e6e7e8e9eaf1f2f3f4f5f6f7f8f9faffda00080001000100003f00fb94a28a0028a28a0028a28a0028a28a00ffd9",
+);
+
+export const FIXTURE_VIDEO_MIME = "video/mp4";
+export const FIXTURE_IMAGE_MIME = "image/jpeg";

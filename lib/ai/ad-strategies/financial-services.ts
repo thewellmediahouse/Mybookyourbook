@@ -1,0 +1,1 @@
+export { financialServicesStrategy } from "./catalog";

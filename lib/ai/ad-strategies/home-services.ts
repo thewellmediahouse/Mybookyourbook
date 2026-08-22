@@ -1,0 +1,1 @@
+export { homeServicesStrategy } from "./catalog";

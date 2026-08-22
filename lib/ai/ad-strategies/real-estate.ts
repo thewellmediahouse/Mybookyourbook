@@ -1,0 +1,1 @@
+export { realEstateStrategy } from "./catalog";

@@ -1,0 +1,1 @@
+export { ecommerceStrategy } from "./catalog";

@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1787235246144,
+      "tag": "0000_fair_radioactive_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1787237417172,
+      "tag": "0001_daffy_clea",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1787237476594,
+      "tag": "0002_misty_johnny_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1787249453308,
+      "tag": "0003_majestic_silver_fox",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1787250994272,
+      "tag": "0004_tearful_argent",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1787254772990,
+      "tag": "0005_shocking_warbird",
+      "breakpoints": true
+    }
+  ]
+}
