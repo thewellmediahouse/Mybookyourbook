@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-22 (PayFast USD checkout converts to ZAR at locked rate)
+Last updated: 2026-08-22 (USD PayFast checkout + media preview stream fix)
 
 ## Foundation
 - [x] Next.js
@@ -483,4 +483,10 @@ Worker `cineyou` version `1254d250-a629-40c5-a4e2-7cf74f6947a0` is live at https
 ### 2026-08-22 — PayFast dollar checkout
 
 Official PayFast Custom Integration `amount` is ZAR only. USD catalog plans now convert at locked `PAYFAST_USD_ZAR_RATE` (default 18.5), charge rand, and grant the dollar-plan credits when ITN `amount_gross` matches the stored rand snapshot. Monthly plans stay closed. Not a live FX quote.
+
+### 2026-08-22 — Media preview stream
+
+Private file previews now read the R2 object into bytes before responding. Streaming `object.body` through OpenNext/Next could return an empty file, so the studio showed a saved upload with no picture. Remote D1 `cineyou-production` is connected (live has users and at least one stored asset). Local `npm run dev` uses a separate local D1.
+
+Worker `cineyou` version `5c693a30-3d17-4e7c-9b40-9d1b6e31623d` is live at https://cineyou.schalk-966.workers.dev with dollar-to-rand checkout and the preview fix. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt.
 

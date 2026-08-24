@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { uploadSignedFile } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
 import { formatStudioDate } from "@/lib/dashboard/format";
@@ -83,7 +84,7 @@ function LibraryUploader({
     setPending(true);
     setProgress(0);
     try {
-      await uploadSignedFile({
+      const uploaded = await uploadSignedFile({
         signUrl: "/api/media/uploads",
         completeUrl: "/api/media/complete",
         file,
@@ -92,6 +93,9 @@ function LibraryUploader({
         extraComplete: { role },
         onProgress: setProgress,
       });
+      if (uploaded.assetId) {
+        setPreview(privateAssetSrc(uploaded.assetId));
+      }
       setMessage("Saved.");
       setProgress(100);
       if (fileRef.current) {
@@ -147,7 +151,7 @@ function LibraryCard({ item, canWrite }: { item: LibraryItemView; canWrite: bool
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const preview = `/api/media/assets/${item.id}/play`;
+  const preview = `/api/media/assets/${item.id}/play?v=${encodeURIComponent(item.createdAt)}`;
   const isBrandLogo = item.source === "brand-logo";
 
   async function onRemove() {
@@ -172,10 +176,9 @@ function LibraryCard({ item, canWrite }: { item: LibraryItemView; canWrite: bool
 
   return (
     <article className="rounded-lg border border-border bg-surface p-4">
-      {/* Private library file; cookies must be sent. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <MediaPreview
         src={preview}
+        mimeType={item.mimeType}
         alt={isBrandLogo ? BRAND_LOGO_CAPTION : libraryRoleLabel(item.role)}
         className="max-h-40 w-full rounded-md bg-surface-secondary object-contain"
       />

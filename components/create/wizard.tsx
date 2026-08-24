@@ -10,6 +10,7 @@ import {
 } from "@/app/dashboard/create/actions";
 import { ConceptPanel } from "@/components/create/concept-panel";
 import { uploadSignedFile } from "@/components/media/upload";
+import { MediaPreview } from "@/components/media/preview";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -586,8 +587,7 @@ function ReferencesStep({
         <ul className="grid gap-3 sm:grid-cols-3">
           {brief.references.map((item) => (
             <li key={item.id} className="rounded-lg border border-border bg-surface p-3">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <MediaPreview
                 src={`/api/media/assets/${item.assetId}/play`}
                 alt=""
                 className="max-h-32 w-full rounded-md bg-surface-secondary object-contain"
@@ -613,8 +613,7 @@ function ReferencesStep({
           <ul className="mt-3 grid gap-3 sm:grid-cols-3">
             {available.map((item) => (
               <li key={item.id} className="rounded-lg border border-border bg-surface p-3">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <MediaPreview
                   src={`/api/media/assets/${item.id}/play`}
                   alt=""
                   className="max-h-24 w-full rounded-md bg-surface-secondary object-contain"

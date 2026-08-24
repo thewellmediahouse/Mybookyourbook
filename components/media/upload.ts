@@ -11,6 +11,7 @@ export function putWithProgress(
   return new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", url);
+    xhr.withCredentials = true;
     for (const [key, value] of Object.entries(headers)) {
       xhr.setRequestHeader(key, value);
     }
@@ -73,8 +74,9 @@ export async function uploadSignedFile(input: {
       ...input.extraComplete,
     }),
   });
-  const completeBody = (await complete.json()) as { error?: string };
+  const completeBody = (await complete.json()) as { error?: string; assetId?: string };
   if (!complete.ok) {
     throw new Error(completeBody.error ?? "We couldn't finish that upload.");
   }
+  return { assetId: typeof completeBody.assetId === "string" ? completeBody.assetId : null };
 }

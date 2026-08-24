@@ -20,11 +20,16 @@ export async function streamPrivateAsset(assetId: string, request?: Request) {
   if (!object) {
     return jsonError("Not found.", 404);
   }
+  const bytes = await object.arrayBuffer();
+  if (bytes.byteLength === 0) {
+    return jsonError("Not found.", 404);
+  }
   const download = Boolean(request && new URL(request.url).searchParams.get("download") === "1");
-  return new NextResponse(object.body, {
+  const mimeType = object.httpMetadata?.contentType || access.asset.mimeType;
+  return new NextResponse(bytes, {
     headers: assetStreamHeaders({
-      mimeType: access.asset.mimeType,
-      sizeBytes: access.asset.sizeBytes,
+      mimeType,
+      sizeBytes: bytes.byteLength,
       download,
       filename: download ? await downloadFilenameForAsset(access.asset) : undefined,
     }),

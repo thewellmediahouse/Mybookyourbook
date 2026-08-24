@@ -22,11 +22,15 @@ export async function GET(request: Request, context: { params: Promise<{ assetId
     if (!object) {
       return jsonError("Not found.", 404);
     }
+    const bytes = await object.arrayBuffer();
+    if (bytes.byteLength === 0) {
+      return jsonError("Not found.", 404);
+    }
     const download = new URL(request.url).searchParams.get("download") === "1";
-    return new NextResponse(object.body, {
+    return new NextResponse(bytes, {
       headers: assetStreamHeaders({
-        mimeType: asset.mimeType,
-        sizeBytes: asset.sizeBytes,
+        mimeType: object.httpMetadata?.contentType || asset.mimeType,
+        sizeBytes: bytes.byteLength,
         download,
         filename: download ? "production30-staff-download.mp4" : undefined,
       }),

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { uploadSignedFile } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
 import {
@@ -69,13 +70,16 @@ function PhotoCapture({
     setProgress(0);
     try {
       const slot = slotPath(role);
-      await uploadSignedFile({
+      const uploaded = await uploadSignedFile({
         signUrl: `/api/identity/${slot}/uploads`,
         completeUrl: `/api/identity/${slot}/complete`,
         file,
         mimeType: file.type,
         onProgress: setProgress,
       });
+      if (uploaded.assetId) {
+        setPreview(privateAssetSrc(uploaded.assetId));
+      }
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Upload failed. You can retry.");
@@ -84,7 +88,7 @@ function PhotoCapture({
     }
   }
 
-  const shown = preview ?? (asset ? `/api/assets/${asset.assetId}` : null);
+  const shown = preview ?? (asset ? privateAssetSrc(asset.assetId) : null);
 
   return (
     <section className="rounded-lg border border-border bg-surface p-6">
@@ -95,9 +99,12 @@ function PhotoCapture({
         sunglasses.
       </p>
       {shown ? (
-        // Private identity still; cookies must be sent.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={shown} alt={guide.title} className="mt-4 max-h-56 max-w-full rounded-md bg-surface-secondary" />
+        <MediaPreview
+          src={shown}
+          mimeType={asset?.mimeType}
+          alt={guide.title}
+          className="mt-4 max-h-56 max-w-full rounded-md bg-surface-secondary"
+        />
       ) : null}
       <div className="mt-4 flex flex-wrap gap-3">
         <Button type="button" variant="outline" disabled={pending} onClick={() => cameraRef.current?.click()}>
@@ -241,7 +248,7 @@ function VideoCapture({
     setPending(true);
     setProgress(0);
     try {
-      await uploadSignedFile({
+      const uploaded = await uploadSignedFile({
         signUrl: "/api/identity/video/uploads",
         completeUrl: "/api/identity/video/complete",
         file,
@@ -251,6 +258,9 @@ function VideoCapture({
         },
         onProgress: setProgress,
       });
+      if (uploaded.assetId) {
+        setPreviewUrl(privateAssetSrc(uploaded.assetId));
+      }
       router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Upload failed. You can retry.");
@@ -271,7 +281,7 @@ function VideoCapture({
     }
   }
 
-  const shown = previewUrl ?? (asset ? `/api/assets/${asset.assetId}` : null);
+  const shown = previewUrl ?? (asset ? privateAssetSrc(asset.assetId) : null);
 
   return (
     <section className="rounded-lg border border-border bg-surface p-6">
@@ -288,7 +298,12 @@ function VideoCapture({
         playsInline
       />
       {!recording && shown ? (
-        <video src={shown} className="mt-4 w-full max-w-md rounded-md bg-black" controls playsInline />
+        <MediaPreview
+          src={shown}
+          mimeType={asset?.mimeType ?? "video/webm"}
+          alt="Reference video"
+          className="mt-4 w-full max-w-md rounded-md bg-black"
+        />
       ) : null}
       <p className="mt-3 text-sm text-muted">
         {recording ? `Recording ${Math.min(VIDEO_MAX_SECONDS, Math.floor(seconds))}s` : null}

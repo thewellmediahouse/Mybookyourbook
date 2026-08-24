@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { putWithProgress, type UploadPlan } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
 import { LOGO_MAX_BYTES, logoAcceptAttribute } from "@/lib/r2/mime";
@@ -65,9 +66,12 @@ export function LogoUploader({
           sizeBytes: file.size,
         }),
       });
-      const completeBody = (await complete.json()) as { error?: string };
+      const completeBody = (await complete.json()) as { error?: string; assetId?: string };
       if (!complete.ok) {
         throw new Error(completeBody.error ?? "We couldn't finish that upload.");
+      }
+      if (completeBody.assetId) {
+        setPreview(privateAssetSrc(completeBody.assetId));
       }
       setMessage("Logo saved.");
       setProgress(100);
@@ -99,15 +103,13 @@ export function LogoUploader({
     }
   }
 
-  const shown = preview ?? (logoAssetId ? `/api/assets/${logoAssetId}` : null);
+  const shown = preview ?? (logoAssetId ? privateAssetSrc(logoAssetId) : null);
 
   return (
     <div className="rounded-lg border border-border bg-surface p-5">
       <p className="text-sm text-muted">Logo</p>
       {shown ? (
-        // User-uploaded private file; cookies must be sent, so a plain img is required.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={shown} alt="Brand logo" className="mt-4 max-h-32 max-w-full bg-surface-secondary p-2" />
+        <MediaPreview src={shown} alt="Brand logo" className="mt-4 max-h-32 max-w-full bg-surface-secondary p-2" />
       ) : (
         <p className="mt-4 text-sm text-muted">No logo uploaded yet.</p>
       )}
