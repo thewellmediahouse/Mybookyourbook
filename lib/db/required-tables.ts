@@ -27,6 +27,7 @@ export const REQUIRED_TABLES = [
   "payment_events",
   "notifications",
   "support_tickets",
+  "support_replies",
   "consents",
   "audit_logs",
   "app_settings",

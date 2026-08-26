@@ -43,7 +43,7 @@ export function VideoCard({
   return (
     <article
       className={cn(
-        "group relative overflow-hidden rounded-2xl bg-surface",
+        "group relative overflow-hidden rounded-2xl bg-overlay",
         className ?? "aspect-video min-w-[16rem] sm:min-w-[22rem]",
       )}
     >
@@ -56,11 +56,11 @@ export function VideoCard({
         playsInline
         preload="metadata"
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-overlay via-overlay/25 to-transparent" />
       {title ? (
         <div className="relative mt-auto flex h-full flex-col justify-end p-4 sm:p-5">
-          <h3 className="text-base font-semibold tracking-tight text-foreground sm:text-lg">{title}</h3>
-          {subtitle ? <p className="mt-1 text-sm text-muted">{subtitle}</p> : null}
+          <h3 className="text-base font-semibold tracking-tight text-overlay-text sm:text-lg">{title}</h3>
+          {subtitle ? <p className="mt-1 text-sm text-overlay-muted">{subtitle}</p> : null}
         </div>
       ) : null}
     </article>

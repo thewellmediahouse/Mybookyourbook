@@ -34,13 +34,11 @@ export const supportTickets = sqliteTable(
   "support_tickets",
   {
     id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
-    workspaceId: text("workspace_id")
-      .notNull()
-      .references(() => workspaces.id),
+    userId: text("user_id").references(() => user.id),
+    workspaceId: text("workspace_id").references(() => workspaces.id),
     projectId: text("project_id").references(() => projects.id),
+    contactEmail: text("contact_email"),
+    contactName: text("contact_name"),
     category: text("category").notNull(),
     subject: text("subject").notNull(),
     message: text("message").notNull(),
@@ -50,7 +48,25 @@ export const supportTickets = sqliteTable(
     createdAt,
     updatedAt,
   },
-  (table) => [index("support_tickets_workspace_idx").on(table.workspaceId)],
+  (table) => [
+    index("support_tickets_workspace_idx").on(table.workspaceId),
+    index("support_tickets_status_idx").on(table.status),
+  ],
+);
+
+export const supportReplies = sqliteTable(
+  "support_replies",
+  {
+    id: text("id").primaryKey(),
+    ticketId: text("ticket_id")
+      .notNull()
+      .references(() => supportTickets.id, { onDelete: "cascade" }),
+    authorUserId: text("author_user_id").references(() => user.id),
+    authorRole: text("author_role", { enum: ["customer", "staff"] }).notNull(),
+    body: text("body").notNull(),
+    createdAt,
+  },
+  (table) => [index("support_replies_ticket_idx").on(table.ticketId)],
 );
 
 export const consents = sqliteTable(

@@ -3,6 +3,7 @@ import { PaymentError } from "./errors";
 import { createMockPaymentProvider } from "./mock";
 import { getPaymentsSetup, type PaymentsEnv } from "./mode";
 import { createPayfastProvider } from "./payfast";
+import { createPayoneerProvider } from "./payoneer";
 import type { PaymentProvider } from "./types";
 
 export { PaymentError } from "./errors";
@@ -10,6 +11,22 @@ export type { PaymentErrorCode } from "./errors";
 export { getPaymentsSetup, isLivePayments } from "./mode";
 export type { PaymentsEnv, PaymentsSetup, PaymentsAdapter } from "./mode";
 export { createMockPaymentProvider } from "./mock";
+export {
+  buildPayoneerListRequest,
+  confirmPayoneerCharge,
+  createPayoneerProvider,
+  parsePayoneerCharge,
+  parsePayoneerNotification,
+  payoneerAmountFromMinor,
+  payoneerAmountToMinor,
+  payoneerChargeToWebhookEvent,
+  payoneerChargeUrl,
+  payoneerHostedPageUrl,
+  payoneerListCountry,
+  payoneerListsUrl,
+  payoneerNotificationToWebhookEvent,
+} from "./payoneer";
+export type { PayoneerChargeView, PayoneerMode } from "./payoneer";
 export { createPaystackProvider } from "./paystack";
 export {
   confirmPayfastServerValidation,
@@ -45,6 +62,17 @@ export function getPaymentProvider(
     return createMockPaymentProvider({
       appUrl,
       webhookSecret: setup.webhookSecret ?? undefined,
+    });
+  }
+  if (setup.adapter === "payoneer") {
+    if (!setup.checkoutAvailable || !setup.payoneerUsername || !setup.payoneerToken || !setup.payoneerMode) {
+      throw new PaymentError("NOT_CONNECTED", "Payment is not connected.");
+    }
+    return createPayoneerProvider({
+      username: setup.payoneerUsername,
+      token: setup.payoneerToken,
+      mode: setup.payoneerMode,
+      appUrl,
     });
   }
   if (!setup.checkoutAvailable || !setup.merchantId || !setup.merchantKey || !setup.payfastMode) {

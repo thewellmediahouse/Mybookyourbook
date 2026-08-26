@@ -35,6 +35,41 @@ async function insertPerson(db: ReturnType<typeof createDb>, email: string, name
   return id;
 }
 
+test("support emails tell staff and the customer what happened", () => {
+  const staff = renderEmail({
+    kind: "email",
+    template: "support-staff",
+    to: "schalk@thewellmedia.com",
+    idempotencyKey: "support-staff/ticket/staff",
+    appUrl: "https://cineyou.test",
+    actionUrl: "/admin/support/ticket-1",
+    body: "Pat sent a Refund message. Subject: I want my money back.",
+  });
+  assert.equal(staff.subject, "New Production30 support message");
+  assert.match(staff.html, /Open Admin Support/);
+  const received = renderEmail({
+    kind: "email",
+    template: "support-received",
+    to: "pat@cineyou.test",
+    idempotencyKey: "support-received/ticket",
+    appUrl: "https://cineyou.test",
+    actionUrl: "/dashboard/help",
+    body: "Thanks. We received your message. We'll email you back.",
+  });
+  assert.equal(received.subject, "We received your Production30 message");
+  const reply = renderEmail({
+    kind: "email",
+    template: "support-reply",
+    to: "pat@cineyou.test",
+    idempotencyKey: "support-reply/reply/pat",
+    appUrl: "https://cineyou.test",
+    actionUrl: "/dashboard/help",
+    body: "We added your Ad Credit back.",
+  });
+  assert.equal(reply.subject, "A reply from Production30");
+  assert.match(reply.html, /We added your Ad Credit back/);
+});
+
 test("ready email uses the spec subject and button, with no video attached", () => {
   const rendered = renderEmail({
     kind: "email",

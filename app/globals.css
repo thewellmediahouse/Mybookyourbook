@@ -9,11 +9,28 @@
   --accent: #1678ff;
   --accent-hover: #2d8cff;
   --accent-foreground: #001038;
+  --accent-ink: #1678ff;
   --accent-2: #5a45fc;
   --success: #4dba7a;
   --danger: #e06565;
   --border: #1a2340;
+  --overlay: #001038;
+  --overlay-text: #f4f6fb;
+  --overlay-muted: #9aa3b8;
   --radius: 0.75rem;
+}
+
+[data-theme="public"] {
+  --background: #1a2033;
+  --surface: #1e2538;
+  --surface-secondary: #1a2033;
+  --foreground: #f4f6fb;
+  --muted: #9aa3b8;
+  --accent-ink: #5aa3ff;
+  --success: #4dba7a;
+  --danger: #e06565;
+  --border: #323a52;
+  background-image: radial-gradient(ellipse 90% 50% at 50% -12%, rgba(90, 163, 255, 0.2), transparent 58%);
 }
 
 @theme inline {
@@ -25,10 +42,14 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-2: var(--accent-2);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-border: var(--border);
+  --color-overlay: var(--overlay);
+  --color-overlay-text: var(--overlay-text);
+  --color-overlay-muted: var(--overlay-muted);
   --font-sans: var(--font-inter);
   --font-display: var(--font-inter);
   --radius-sm: calc(var(--radius) - 4px);
@@ -39,6 +60,12 @@
 html {
   background: var(--background);
   color: var(--foreground);
+}
+
+html:has([data-theme="public"]),
+html:has([data-theme="public"]) body {
+  background: #1a2033;
+  color: #f4f6fb;
 }
 
 body {

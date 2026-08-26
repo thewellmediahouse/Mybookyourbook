@@ -10,6 +10,10 @@ import {
   creditRefundedEventKey,
   paymentReceiptEventKey,
   READY_EMAIL_BUTTON,
+  SUPPORT_REPLY_SUBJECT,
+  supportReceivedEventKey,
+  supportReplyEventKey,
+  supportStaffEventKey,
 } from "./copy";
 import { insertNotification } from "./in-app";
 import type { EmailQueueMessage } from "./messages";
@@ -220,4 +224,147 @@ export async function notifyPaymentReceipt(
     actionUrl: "/dashboard/billing",
     body: input.body,
   });
+}
+
+export type SupportTicketMail = {
+  id: string;
+  category: string;
+  subject: string;
+  message: string;
+  userId: string | null;
+  workspaceId: string | null;
+  contactEmail: string | null;
+  contactName: string | null;
+};
+
+export type SupportMailSink = SideEffectSink & {
+  staffEmails: string[];
+};
+
+async function loadSupportContact(db: Db, ticket: SupportTicketMail) {
+  let email = ticket.contactEmail;
+  let name = ticket.contactName;
+  let studioName: string | null = null;
+  if (ticket.userId) {
+    const [person] = await db
+      .select({ email: user.email, name: user.name, firstName: user.firstName })
+      .from(user)
+      .where(eq(user.id, ticket.userId))
+      .limit(1);
+    email = email || person?.email || null;
+    name = name || person?.firstName || person?.name || null;
+  }
+  if (ticket.workspaceId) {
+    const [studio] = await db
+      .select({ name: workspaces.name })
+      .from(workspaces)
+      .where(eq(workspaces.id, ticket.workspaceId))
+      .limit(1);
+    studioName = studio?.name ?? null;
+  }
+  return { email, name, studioName };
+}
+
+function flattenBody(value: string) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+export async function notifySupportTicketCreated(
+  db: Db,
+  ticket: SupportTicketMail,
+  sink: SupportMailSink,
+): Promise<void> {
+  try {
+    const contact = await loadSupportContact(db, ticket);
+    const fromName = contact.name?.trim() || "Someone";
+    const fromEmail = contact.email?.trim() || "no email on file";
+    const studio = contact.studioName ? ` Studio: ${contact.studioName}.` : "";
+    const staffBody = `${fromName} (${fromEmail}) sent a ${ticket.category} message.${studio} Subject: ${ticket.subject}. ${flattenBody(ticket.message)}`;
+    const customerAction = ticket.workspaceId ? "/dashboard/help" : "/contact";
+    for (const staffEmail of sink.staffEmails) {
+      await sendEmailSafe(sink, {
+        kind: "email",
+        template: "support-staff",
+        to: staffEmail,
+        idempotencyKey: supportStaffEventKey(ticket.id, staffEmail),
+        appUrl: sink.appUrl,
+        actionUrl: `/admin/support/${ticket.id}`,
+        body: staffBody,
+      });
+    }
+    if (contact.email) {
+      await sendEmailSafe(sink, {
+        kind: "email",
+        template: "support-received",
+        to: contact.email,
+        firstName: contact.name ?? undefined,
+        idempotencyKey: supportReceivedEventKey(ticket.id),
+        appUrl: sink.appUrl,
+        actionUrl: customerAction,
+        body: "Thanks. We received your message. We'll email you back.",
+        buttonLabel: ticket.workspaceId ? "Open Help" : "Contact us",
+      });
+    }
+  } catch {
+    // Ticket is already saved. Mail is a side effect.
+  }
+}
+
+export async function notifySupportReply(
+  db: Db,
+  input: {
+    ticket: SupportTicketMail;
+    replyId: string;
+    authorRole: "customer" | "staff";
+    body: string;
+  },
+  sink: SupportMailSink,
+): Promise<void> {
+  try {
+    const contact = await loadSupportContact(db, input.ticket);
+    const replyText = flattenBody(input.body);
+    if (input.authorRole === "staff") {
+      if (!contact.email) {
+        return;
+      }
+      if (input.ticket.userId && input.ticket.workspaceId) {
+        await insertNotification(db, {
+          userId: input.ticket.userId,
+          workspaceId: input.ticket.workspaceId,
+          type: "support_reply",
+          title: SUPPORT_REPLY_SUBJECT,
+          body: replyText,
+          actionUrl: "/dashboard/help",
+          eventKey: supportReplyEventKey(input.replyId, input.ticket.userId),
+        });
+      }
+      await sendEmailSafe(sink, {
+        kind: "email",
+        template: "support-reply",
+        to: contact.email,
+        firstName: contact.name ?? undefined,
+        idempotencyKey: supportReplyEventKey(input.replyId, contact.email),
+        appUrl: sink.appUrl,
+        actionUrl: input.ticket.workspaceId ? "/dashboard/help" : "/contact",
+        body: replyText,
+      });
+      return;
+    }
+    const fromName = contact.name?.trim() || "Customer";
+    const fromEmail = contact.email?.trim() || "no email on file";
+    const staffBody = `${fromName} (${fromEmail}) added to ${input.ticket.subject}. ${replyText}`;
+    for (const staffEmail of sink.staffEmails) {
+      await sendEmailSafe(sink, {
+        kind: "email",
+        template: "support-staff",
+        to: staffEmail,
+        idempotencyKey: supportReplyEventKey(input.replyId, staffEmail),
+        appUrl: sink.appUrl,
+        actionUrl: `/admin/support/${input.ticket.id}`,
+        body: staffBody,
+      });
+    }
+  } catch {
+    // Reply is already saved. Mail is a side effect.
+  }
 }

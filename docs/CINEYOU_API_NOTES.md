@@ -29,7 +29,8 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 | Cloudflare Containers | Phase 18 | https://developers.cloudflare.com/containers/ |
 | Cloudflare Queues | Phase 20 | https://developers.cloudflare.com/queues/ |
 | Paystack | Phase 14 (unused leftover) | https://paystack.com/docs |
-| PayFast | Payments (primary) | https://developers.payfast.co.za/docs |
+| Payoneer Checkout | Payments (primary) | https://checkoutdocs.payoneer.com/ / https://www.npmjs.com/package/@payoneer/op-payment-widget-v3 |
+| PayFast | Payments (unused leftover) | https://developers.payfast.co.za/docs |
 | Resend | Phase 20 | https://resend.com/docs |
 
 ## Decision log
@@ -47,6 +48,7 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 
 - Spec palette locked 2026-08-22. Button labels use `#001038` on `#1678FF` (~4.6:1).
 - `#FFFFFF` on `#1678FF` is ~4.1:1 and must not be used for button text.
+- Public marketing/auth (2026-08-24) is a lifted navy cinema surface `#1A2033`, not white and not pure black. Do not use `#1678FF` as small text there (~4.0:1). Public accent ink is `#5AA3FF`.
 
 ### 2026-08-20 — Phase 2 D1 / Drizzle
 
@@ -210,6 +212,23 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - USD catalog plans are converted at a locked commercial rate (`PAYFAST_USD_ZAR_RATE`, default `18.5`) and charged in ZAR. The payment row stores the rand amount; ITN `amount_gross` must match that snapshot. Credits come from the dollar plan. This is not a live FX quote. EUR and other catalog currencies stay closed. Monthly / recurring fields (`subscription_type`, `frequency`, `cycles`, passphrase required) are not wired; monthly buttons stay closed.
 - `PAYMENTS_MODE=test` without sandbox credentials: mock adapter, no HTTP. Live PayFast (`PAYFAST_MODE=live`) in test mode is refused. `PAYMENTS_MODE=live` requires `PAYFAST_MODE=live` plus merchant id/key and does not fall back to mock. Sandbox credentials are refused in live payments mode.
 - Grant idempotency: `purchase:payfast:{m_payment_id}`. Event idempotency: `payfast` + `pf_payment_id`. Paystack adapter and `/api/webhooks/paystack` remain in the repo unused.
+
+### 2026-08-25 — Payoneer Checkout is the payment provider
+
+- Official widget / LIST (fetched 2026-08-25): [@payoneer/op-payment-widget-v3](https://www.npmjs.com/package/@payoneer/op-payment-widget-v3), hosted page assets at `checkout.payoneer.com/paymentpage/v3`. Authenticated merchant call is **POST `/lists`**. Hosts: `https://api.sandbox.oscato.com/api/lists` and `https://api.live.oscato.com/api/lists`. Auth: HTTP Basic (merchant code as username, payment token as password). `Content-Type` / `Accept`: `application/vnd.optile.payment.enterprise-v1-extensible+json`.
+- LIST body uses documented fields only: `transactionId`, `country` (ISO 3166-1 alpha-2), `customer.number`, `customer.email`, `payment.amount` (major units), `payment.currency`, `payment.reference`, `callback.returnUrl`, `callback.cancelUrl`, `callback.notificationUrl`, `style.hostedVersion: "v3"`. Hosted redirect: `https://resources.{sandbox|live}.oscato.com/paymentpage/v3/responsive.html?listUrl=`.
+- The public cards demo also posts `https://api.{env}.oscato.com/checkout/session` with a `division` id. That is a playground helper, not the merchant LIST we call.
+- Notifications POST JSON to `/api/webhooks/payoneer` (`longId`, `transactionId`, interaction fields). We do **not** grant from that body or from `returnUrl`. Confirm with `GET /api/charges/{longId}` (same Basic auth) and require `status.code === "charged"`. Amount is converted to minor units by rounding. Match stored payment amount/currency/plan. Invalid JSON → 400. GET failure other than 404 → 500 so Payoneer can retry. Pending/non-charged → 200, no credits.
+- Catalog ZAR and USD are charged in that currency. No USD→ZAR conversion. EUR stays closed. Monthly / recurring is not wired; monthly buttons stay closed.
+- `PAYMENTS_MODE=test` without sandbox credentials: mock adapter, no HTTP. Live Payoneer (`PAYONEER_MODE=live`) in test mode is refused. `PAYMENTS_MODE=live` requires `PAYONEER_MODE=live` plus username/token and does not fall back to mock. Sandbox credentials are refused in live payments mode.
+- Grant idempotency: `purchase:payoneer:{transactionId}`. Event idempotency: `payoneer` + charge `longId`. A personal Payoneer wallet is not Checkout merchant credentials; Checkout onboarding is required. PayFast and Paystack adapters remain unused.
+- Payoneer Checkout merchant eligibility is decided by Payoneer (their public Checkout page has previously mentioned entity and volume requirements). We do not invent a connected account.
+
+### 2026-08-25 — Support mail and money returns (no Payoneer refund API)
+
+- New Help / Contact tickets email `ADMIN_EMAILS` (`support-staff`) and the customer (`support-received`). Staff replies email the customer (`support-reply`) through the existing Resend adapter. No Intercom/Crisp.
+- Money returns are recorded in D1 after staff refund in the **Payoneer Checkout dashboard**. Official Checkout list/charge docs used for payments do not document a merchant refund HTTP we can call; do not invent `POST /refunds`. Payment status becomes `refunded`. Ad Credits are not granted from that action.
+- Monthly cancel still cannot self-serve. Staff sets `cancelAtPeriodEnd` in D1 after stopping the plan in Payoneer.
 
 ## Open questions (do not guess in code)
 

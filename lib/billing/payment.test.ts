@@ -9,12 +9,13 @@ import { eq } from "drizzle-orm";
 import { startCheckout } from "./checkout";
 import { insertTestPlan } from "./plans";
 import { inspectCheckoutRedirect } from "./redirect";
-import { processSignedPayfastItn, processSignedPaystackWebhook } from "./webhook";
+import { processPayoneerNotification, processSignedPayfastItn, processSignedPaystackWebhook } from "./webhook";
 import { fulfillVerifiedCharge } from "./fulfill";
 import { getActiveSubscription } from "./queries";
 import {
   createMockPaymentProvider,
   createPayfastProvider,
+  createPayoneerProvider,
   getPaymentsSetup,
   md5Hex,
   payfastUrlEncode,
@@ -89,25 +90,34 @@ test("Paystack webhook signature is HMAC-SHA512 of the raw body", () => {
   assert.equal(verifyPaystackSignature(body, "deadbeef", secret), false);
 });
 
-test("payment mode never uses live PayFast in test, and live does not silently mock", () => {
+test("payment mode never uses live Payoneer in test, and live does not silently mock", () => {
   assert.deepEqual(getPaymentsSetup({ PAYMENTS_MODE: "test" }).adapter, "mock");
   assert.equal(getPaymentsSetup({ PAYMENTS_MODE: "test" }).checkoutAvailable, true);
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "test",
-      PAYFAST_MODE: "live",
-      PAYFAST_MERCHANT_ID: "20000001",
-      PAYFAST_MERCHANT_KEY: "live-key-must-not-run",
+      PAYONEER_MODE: "live",
+      PAYONEER_USERNAME: "merchant",
+      PAYONEER_TOKEN: "live-token-must-not-run",
     }).checkoutAvailable,
     false,
   );
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "test",
-      PAYFAST_MERCHANT_ID: "10000100",
-      PAYFAST_MERCHANT_KEY: "46f0cd694581a",
+      PAYONEER_USERNAME: "merchant",
+      PAYONEER_TOKEN: "sandbox-token",
     }).checkoutAvailable,
     false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
+      PAYONEER_MODE: "sandbox",
+      PAYONEER_USERNAME: "merchant",
+      PAYONEER_TOKEN: "sandbox-token",
+    }).adapter,
+    "payoneer",
   );
   assert.equal(
     getPaymentsSetup({
@@ -116,24 +126,24 @@ test("payment mode never uses live PayFast in test, and live does not silently m
       PAYFAST_MERCHANT_ID: "10000100",
       PAYFAST_MERCHANT_KEY: "46f0cd694581a",
     }).adapter,
-    "payfast",
+    "mock",
   );
   assert.equal(getPaymentsSetup({ PAYMENTS_MODE: "live" }).checkoutAvailable, false);
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "live",
-      PAYFAST_MODE: "sandbox",
-      PAYFAST_MERCHANT_ID: "10000100",
-      PAYFAST_MERCHANT_KEY: "46f0cd694581a",
+      PAYONEER_MODE: "sandbox",
+      PAYONEER_USERNAME: "merchant",
+      PAYONEER_TOKEN: "sandbox-token",
     }).checkoutAvailable,
     false,
   );
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "live",
-      PAYFAST_MODE: "live",
-      PAYFAST_MERCHANT_ID: "20000001",
-      PAYFAST_MERCHANT_KEY: "live-key-must-not-run",
+      PAYONEER_MODE: "live",
+      PAYONEER_USERNAME: "merchant",
+      PAYONEER_TOKEN: "live-token-must-not-run",
     }).checkoutAvailable,
     true,
   );
@@ -561,6 +571,186 @@ test("PayFast charges dollar plans in rand and grants the catalog credits", asyn
     merchantId,
     postedMerchantId: merchantId,
     confirm: async () => true,
+  });
+  assert.equal(granted.granted, true);
+  assert.equal(granted.credits, 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+});
+
+test("Payoneer grants once after GET charge is charged; redirect does not", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+  const db = createDb(proxy.env.DB as D1Database);
+  const stamp = Date.now() + 31;
+  const { studio } = await openStudio(db, stamp);
+  const plan = await insertTestPlan(db, {
+    id: `plan_za_payoneer_${stamp}`,
+    code: `payoneer_${stamp}`,
+    name: "Single Commercial",
+    region: "ZA",
+    currency: "ZAR",
+    amountMinor: 79900,
+    credits: 1,
+    interval: "one_time",
+    metadataJson: null,
+  });
+  const longId = `chg_${stamp}za01`;
+  const provider = createPayoneerProvider({
+    username: "merchant",
+    token: "token",
+    mode: "sandbox",
+    appUrl: "http://localhost:3000",
+    fetchImpl: (async () =>
+      new Response(
+        JSON.stringify({
+          links: { self: "https://api.sandbox.oscato.com/api/lists/list_abcdefgh" },
+        }),
+        { status: 201 },
+      )) as typeof fetch,
+  });
+  const checkout = await startCheckout(db, {
+    workspaceId: studio.workspaceId,
+    email: `phase14.${stamp}@cineyou.test`,
+    planId: plan.id,
+    callbackUrl: "http://localhost:3000/dashboard/billing",
+    provider,
+    providerName: "payoneer",
+  });
+  assert.match(checkout.authorizationUrl, /resources\.sandbox\.oscato\.com\/paymentpage\/v3/);
+  const redirect = await inspectCheckoutRedirect(db, {
+    reference: checkout.reference,
+    success: "true",
+  });
+  assert.equal(redirect.granted, false);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
+
+  const pending = await processPayoneerNotification(db, {
+    rawBody: JSON.stringify({
+      longId,
+      transactionId: checkout.reference,
+      interactionCode: "PROCEED",
+      interactionReason: "PENDING",
+    }),
+    provider,
+    confirm: async () => ({
+      longId,
+      transactionId: checkout.reference,
+      statusCode: "pending",
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(pending.granted, false);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
+
+  const first = await processPayoneerNotification(db, {
+    rawBody: JSON.stringify({
+      longId,
+      transactionId: checkout.reference,
+      interactionCode: "PROCEED",
+      interactionReason: "OK",
+    }),
+    provider,
+    confirm: async () => ({
+      longId,
+      transactionId: checkout.reference,
+      statusCode: "charged",
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(first.granted, true);
+  assert.equal(first.credits, 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+
+  const duplicate = await processPayoneerNotification(db, {
+    rawBody: JSON.stringify({
+      longId,
+      transactionId: checkout.reference,
+      interactionCode: "PROCEED",
+      interactionReason: "OK",
+    }),
+    provider,
+    confirm: async () => ({
+      longId,
+      transactionId: checkout.reference,
+      statusCode: "charged",
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(duplicate.granted, false);
+  assert.equal(duplicate.alreadyProcessed, true);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+});
+
+test("Payoneer charges dollar plans in dollars", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+  const db = createDb(proxy.env.DB as D1Database);
+  const stamp = Date.now() + 37;
+  const owner = await insertPerson(db, `phase14.usd.po.${stamp}@cineyou.test`, "Owner International");
+  const studio = await createWorkspaceForOwner(db, {
+    ownerUserId: owner,
+    name: `Phase Fourteen USD Payoneer ${stamp}`,
+    type: "BUSINESS",
+    country: "US",
+    business: { name: `Billing Brand USD PO ${stamp}` },
+  });
+  const plan = await insertTestPlan(db, {
+    id: `plan_int_payoneer_${stamp}`,
+    code: `int_po_${stamp}`,
+    name: "Single Commercial",
+    region: "INT",
+    currency: "USD",
+    amountMinor: 4900,
+    credits: 1,
+    interval: "one_time",
+    metadataJson: null,
+  });
+  const longId = `chg_${stamp}usd1`;
+  const provider = createPayoneerProvider({
+    username: "merchant",
+    token: "token",
+    mode: "sandbox",
+    appUrl: "http://localhost:3000",
+    fetchImpl: (async () =>
+      new Response(
+        JSON.stringify({
+          links: { self: "https://api.sandbox.oscato.com/api/lists/list_usdabcde" },
+        }),
+        { status: 201 },
+      )) as typeof fetch,
+  });
+  const checkout = await startCheckout(db, {
+    workspaceId: studio.workspaceId,
+    email: `phase14.usd.po.${stamp}@cineyou.test`,
+    planId: plan.id,
+    callbackUrl: "http://localhost:3000/dashboard/billing",
+    provider,
+    providerName: "payoneer",
+  });
+  const granted = await processPayoneerNotification(db, {
+    rawBody: JSON.stringify({
+      longId,
+      transactionId: checkout.reference,
+      interactionCode: "PROCEED",
+      interactionReason: "OK",
+    }),
+    provider,
+    confirm: async () => ({
+      longId,
+      transactionId: checkout.reference,
+      statusCode: "charged",
+      amountMinor: 4900,
+      currency: "USD",
+    }),
   });
   assert.equal(granted.granted, true);
   assert.equal(granted.credits, 1);

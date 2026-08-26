@@ -1,6 +1,6 @@
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { PaymentError, getPaymentsSetup, tryGetPaymentProvider } from "@/lib/providers/payments";
-import type { PaymentProvider, PaymentsEnv } from "@/lib/providers/payments";
+import type { PaymentProvider, PaymentsAdapter, PaymentsEnv } from "@/lib/providers/payments";
 
 export async function getPaymentsEnv(): Promise<
   PaymentsEnv & { BETTER_AUTH_URL?: string; NEXT_PUBLIC_APP_URL?: string }
@@ -11,7 +11,7 @@ export async function getPaymentsEnv(): Promise<
 
 export async function getConnectedPaymentProvider(): Promise<{
   provider: PaymentProvider;
-  adapter: "mock" | "payfast";
+  adapter: PaymentsAdapter;
   requireProviderPlanCode: boolean;
 }> {
   const env = await getPaymentsEnv();

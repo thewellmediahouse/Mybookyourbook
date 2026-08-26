@@ -103,6 +103,10 @@ export function SignupForm({
           <Link href="/terms" className="text-foreground underline">
             Terms
           </Link>
+          , including{" "}
+          <Link href="/acceptable-use" className="text-foreground underline">
+            Acceptable use
+          </Link>
           .
         </span>
       </label>

@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-22 (USD PayFast checkout + media preview stream fix)
+Last updated: 2026-08-25 (Legal pages expanded from platform practice; still marked for counsel)
 
 ## Foundation
 - [x] Next.js
@@ -489,4 +489,38 @@ Official PayFast Custom Integration `amount` is ZAR only. USD catalog plans now 
 Private file previews now read the R2 object into bytes before responding. Streaming `object.body` through OpenNext/Next could return an empty file, so the studio showed a saved upload with no picture. Remote D1 `cineyou-production` is connected (live has users and at least one stored asset). Local `npm run dev` uses a separate local D1.
 
 Worker `cineyou` version `5c693a30-3d17-4e7c-9b40-9d1b6e31623d` is live at https://cineyou.schalk-966.workers.dev with dollar-to-rand checkout and the preview fix. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt.
+
+### 2026-08-24 — Zoom-like public site
+
+Removed the full-bleed homepage cover video. Public marketing and auth use a light layout in the Zoom style: centred headline, two buttons, then a rounded before/after comparison (same royalty-free clip, left side softened as an unfinished look). Studio/dashboard stays on the cinema dark tokens. No customer testimonials.
+
+Verification: `npm run check`, `npm run lint`, `npm test`. Not deployed in this pass.
+
+### 2026-08-24 — People examples + cinema public theme
+
+Artlist / OpenArt / ImagineArt catalog clips are not free to rehost. Public examples now include Mixkit Stock Video Free License product ads with people talking on camera, plus the existing Pexels place clips, labelled as style references. Public marketing/auth uses a lifted navy (`#1A2033`) with looping video rails — darker than the Zoom white pass, not as dark as the studio `#05070F`.
+
+Verification: `npm run check`, `npm run lint`, `npm test`. Not deployed in this pass.
+
+### 2026-08-25 — Payoneer Checkout adapter
+
+Payoneer Checkout replaces PayFast as the payment adapter. Real charges stay off until `PAYMENTS_MODE=live` and live Checkout merchant credentials are set.
+
+- Checkout: authenticated `POST /api/lists` on `api.{sandbox|live}.oscato.com`, then redirect to the v3 hosted payment page. Credits only after `GET /api/charges/{longId}` returns `status.code=charged`, with amount, currency, and plan checks. Browser return URL is display-only. Live merchant credentials are refused while `PAYMENTS_MODE=test`. Monthly plans stay closed. ZAR and USD catalog amounts are charged in that currency (no locked rand conversion).
+- A personal Payoneer balance cannot run Checkout. Merchant code + payment token from Payoneer Checkout onboarding must be set as `PAYONEER_USERNAME` / `PAYONEER_TOKEN` (never `NEXT_PUBLIC_*`). Secrets were not uploaded. PayFast and Paystack code remains unused.
+
+Verification: `npm run check`, `npm run lint`, `npm test`. Not deployed. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-25 — Customer ops (support, refunds, cancel, email)
+
+Closed the support loop without live chat. Help tickets email `ADMIN_EMAILS` and the customer. Admin Support shows customer, email, studio, full message, and the thread. Staff replies email the customer. Categories include Refund and Cancel plan. Public `/contact` writes the same tickets for people who are not signed in.
+
+Money returns are recorded on a confirmed payment after staff refunds in Payoneer Checkout — no invented refund API, no extra Ad Credits. Billing cancel for Payoneer/PayFast points to Help. Staff can mark `cancelAtPeriodEnd` after they stop the plan in Payoneer. Help articles explain when an Ad Credit comes back vs when money comes back.
+
+Verification: `npm run check`, `npm run lint`, `npm test`, `npm run db:verify`. Remote D1 `0006_support_ops` applied. Worker `cineyou` version `743376d1-85a8-4db4-90e1-201e7828a012` is live at https://cineyou.schalk-966.workers.dev with Contact, ticket mail, and Admin reply. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt (`--containers-rollout none`). `production30.com` is not attached (registrar NS `tld-ns.com`, not a Cloudflare zone).
+
+### 2026-08-25 — Legal pages (working copy)
+
+Replaced placeholder `/terms`, `/privacy`, and `/acceptable-use` with original Production30 copy in the same sectioned style as typical creative platforms (accounts, credits, inputs/outputs, impersonation, processors, disclaimers). Specific to this product: 30-second commercial starring you, 1 Ad Credit = 1 production, identity photos + reference video, private storage, Ad Credit back vs money back via Help, no public face gallery. Banner still reads **Requires professional legal review before launch.** Not attorney-reviewed. Signup Terms checkbox now includes Acceptable use. Not deployed.
+
 

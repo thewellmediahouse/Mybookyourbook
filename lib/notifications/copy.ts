@@ -6,6 +6,9 @@ export const VERIFY_EMAIL_SUBJECT = "Verify your Production30 email";
 export const RESET_EMAIL_SUBJECT = "Reset your Production30 password";
 export const RECEIPT_EMAIL_SUBJECT = "Your Production30 payment receipt";
 export const INVITE_EMAIL_SUBJECT = "You're invited to a Production30 studio";
+export const SUPPORT_STAFF_SUBJECT = "New Production30 support message";
+export const SUPPORT_RECEIVED_SUBJECT = "We received your Production30 message";
+export const SUPPORT_REPLY_SUBJECT = "A reply from Production30";
 export const CREDIT_REFUNDED_TITLE = "Your Ad Credit was returned";
 export const CREDIT_REFUNDED_BODY =
   "We couldn't complete that commercial, so your Ad Credit is back in your studio.";
@@ -41,6 +44,18 @@ export function resetPasswordEventKey(url: string): string {
 
 export function teamInviteEventKey(invitationId: string, attempt = "1"): string {
   return `team-invite/${invitationId}/${attempt}`;
+}
+
+export function supportStaffEventKey(ticketId: string, staffEmail: string): string {
+  return `support-staff/${ticketId}/${staffEmail}`;
+}
+
+export function supportReceivedEventKey(ticketId: string): string {
+  return `support-received/${ticketId}`;
+}
+
+export function supportReplyEventKey(replyId: string, recipient: string): string {
+  return `support-reply/${replyId}/${recipient}`;
 }
 
 function tokenFingerprint(url: string): string {

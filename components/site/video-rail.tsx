@@ -12,7 +12,7 @@ export function VideoRail({
   return (
     <section>
       <PublicFrame className="flex items-end justify-between gap-4">
-        <h2 className="text-xl font-semibold tracking-tight text-foreground sm:text-2xl">{title}</h2>
+        <h2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{title}</h2>
       </PublicFrame>
       <PublicFrame className="mt-5 overflow-x-auto pb-2 scrollbar-none">
         <div className="flex snap-x snap-mandatory gap-4">
@@ -22,7 +22,7 @@ export function VideoRail({
               src={clip.src}
               title={clip.title}
               subtitle={clip.subtitle}
-              className="aspect-video w-[min(78vw,22rem)] shrink-0 snap-start sm:w-[24rem]"
+              className="aspect-video w-[min(82vw,26rem)] shrink-0 snap-start shadow-[0_20px_50px_rgba(0,16,56,0.35)] sm:w-[28rem]"
             />
           ))}
         </div>

@@ -101,6 +101,7 @@ export async function startCheckout(db: Db, input: StartCheckoutInput) {
       planId: plan.id,
       paymentId,
     },
+    country: workspace.country,
     providerPlanCode: plan.interval === "month" ? providerPlanCode : undefined,
   });
 

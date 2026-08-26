@@ -58,7 +58,7 @@ export default async function PricingPage({
                   }`}
                 >
                   {plan.highlighted ? (
-                    <p className="text-[11px] font-medium tracking-[0.2em] text-accent">HIGHLIGHTED</p>
+                    <p className="text-[11px] font-medium tracking-[0.2em] text-accent-ink">HIGHLIGHTED</p>
                   ) : null}
                   <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">{plan.name}</h2>
                   <p className="mt-4 font-display text-4xl text-foreground">{plan.priceLabel}</p>

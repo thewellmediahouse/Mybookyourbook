@@ -45,8 +45,8 @@ flowchart TD
     I --> E
     F --> J[NotificationQueue]
     J --> K[EmailProvider]
-    B --> L[PayFast]
-    L --> M[VerifiedITN]
+    B --> L[PayoneerCheckout]
+    L --> M[VerifiedCharge]
     M --> D
 ```
 
@@ -66,7 +66,7 @@ flowchart TD
 | Creative | OpenAI behind `CreativeDirectorProvider` |
 | Video gen | Seedance 2.5 via reAPI, 480p |
 | Upscale | Topaz Labs Video API, default `prob-4` |
-| Payments | PayFast first (ZAR settlement; USD list prices converted at a locked rate); Paystack adapter unused |
+| Payments | Payoneer Checkout (ZAR and USD catalog amounts); PayFast and Paystack adapters unused |
 | Email | Resend behind provider abstraction |
 
 Forbidden: Supabase, Postgres-only SQL, public R2 URLs, video bytes in D1, customer-facing provider names.
@@ -122,7 +122,7 @@ open-next.config.ts
 | `AUTH_RATE_LIMIT` | Workers Rate Limiting | 23 |
 | `PRODUCTION_RATE_LIMIT` | Workers Rate Limiting | 23 |
 
-Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
+Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
 
 Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`. Do not set `PAYMENTS_MODE=live` or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
 
@@ -160,7 +160,7 @@ Uploads: auth → authorize workspace → short-lived signed PUT (10–20 min) w
 
 `CONCEPT_AI_MODE=mock|live` controls Commercial Concept only. `live` calls OpenAI Responses. Missing `OPENAI_API_KEY` must not silently mock. When unset, concept mode follows `AI_PROVIDER_MODE`.
 
-`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified PayFast ITN (`payment_status=COMPLETE`, MD5 signature in posted order, `/eng/query/validate` returns `VALID`, amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` without sandbox PayFast credentials uses the mock adapter and makes no HTTP calls. Live PayFast credentials in test mode are refused.
+`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified Payoneer Checkout charge (`status.code` is `charged` on `GET /api/charges/{longId}` with merchant Basic auth, plus amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` without sandbox Payoneer credentials uses the mock adapter and makes no HTTP calls. Live Payoneer credentials in test mode are refused.
 
 ## OpenNext + Workflows + Containers
 
@@ -206,12 +206,12 @@ Never fabricate exact ETAs or untrusted percentages.
 
 ## Brand
 
-Cinema / agency, not “AI slop”. Tokens in `app/globals.css`. Button fill `#1678FF` with label `#001038`. Purple `#5A45FC` is logo / loader only.
+Cinema / agency, not “AI slop”. Tokens in `app/globals.css`. Studio stays on the navy cinema theme. Public marketing and auth use `[data-theme="public"]` (lifted navy, not black). Button fill `#1678FF` with label `#001038`. Public accent text is `#5AA3FF`. Purple `#5A45FC` is logo / loader only.
 
 ## Security baseline
 
 - Centralized authz
-- Rate limit signup, login, reset, import, concept gen, signed uploads, checkout, production start, webhooks
+- Rate limit signup, login, reset, import, concept gen, signed uploads, checkout, production start, support, webhooks
 - Webhook signature + idempotent event rows
 - Identity consent versioned; adult presenter for MVP
 - Account deletion: cancel sub, revoke sessions, schedule R2 delete, retain financial records only

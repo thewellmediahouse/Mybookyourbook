@@ -11,6 +11,7 @@ export {
   notifications,
   promptFrameworkVersions,
   rateLimitEvents,
+  supportReplies,
   supportTickets,
 } from "./ops";
 export {

@@ -20,7 +20,7 @@ export default async function SignupPage({
   return (
     <AuthShell
       title="Create your account"
-      description="We'll use this to produce your commercial and keep your studio secure."
+      description="We'll email you a confirmation link. You must open that link before you can sign in."
     >
       <SignupForm googleEnabled={await googleAuthEnabled()} next={next} />
     </AuthShell>

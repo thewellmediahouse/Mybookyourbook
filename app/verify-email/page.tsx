@@ -15,21 +15,23 @@ export const dynamic = "force-dynamic";
 export default async function VerifyEmailPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; email?: string }>;
 }) {
-  const next = safeInviteNext((await searchParams).next);
+  const params = await searchParams;
+  const next = safeInviteNext(params.next);
+  const email = params.email?.includes("@") ? params.email.trim().slice(0, 254) : null;
   const mailReady = await emailSendingEnabled();
   return (
     <AuthShell
       title="Confirm your email"
       description={
         mailReady
-          ? "Check your inbox for a Production30 message, then open the link to start your studio."
+          ? "You have an account, but it is not open yet. Check your inbox for a Production30 message, then open the link. You cannot sign in until you do."
           : "Your account was created. Email sending is not connected yet, so we cannot send a confirmation message. You will not receive anything in your inbox until that is set up."
       }
     >
       {mailReady ? (
-        <ResendVerificationForm next={next} />
+        <ResendVerificationForm next={next} email={email} />
       ) : (
         <DisabledAction
           className="mt-8"

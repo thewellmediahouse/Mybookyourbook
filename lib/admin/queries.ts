@@ -10,6 +10,7 @@ import {
   productionJobs,
   projects,
   subscriptions,
+  supportReplies,
   supportTickets,
   user,
   workspaceMembers,
@@ -257,7 +258,63 @@ export async function listAdminCredits(db: Db, limit = 100) {
 }
 
 export async function listAdminTickets(db: Db, limit = 100) {
-  return db.select().from(supportTickets).orderBy(desc(supportTickets.createdAt)).limit(limit);
+  return db
+    .select({
+      id: supportTickets.id,
+      subject: supportTickets.subject,
+      category: supportTickets.category,
+      status: supportTickets.status,
+      message: supportTickets.message,
+      createdAt: supportTickets.createdAt,
+      contactEmail: supportTickets.contactEmail,
+      contactName: supportTickets.contactName,
+      customerName: user.name,
+      customerEmail: user.email,
+      studioName: workspaces.name,
+      workspaceId: supportTickets.workspaceId,
+      projectId: supportTickets.projectId,
+    })
+    .from(supportTickets)
+    .leftJoin(user, eq(supportTickets.userId, user.id))
+    .leftJoin(workspaces, eq(supportTickets.workspaceId, workspaces.id))
+    .orderBy(desc(supportTickets.createdAt))
+    .limit(limit);
+}
+
+export async function getAdminTicketDetail(db: Db, ticketId: string) {
+  const [ticket] = await db
+    .select({
+      id: supportTickets.id,
+      subject: supportTickets.subject,
+      category: supportTickets.category,
+      status: supportTickets.status,
+      message: supportTickets.message,
+      createdAt: supportTickets.createdAt,
+      updatedAt: supportTickets.updatedAt,
+      contactEmail: supportTickets.contactEmail,
+      contactName: supportTickets.contactName,
+      customerName: user.name,
+      customerEmail: user.email,
+      studioName: workspaces.name,
+      workspaceId: supportTickets.workspaceId,
+      projectId: supportTickets.projectId,
+      projectTitle: projects.title,
+    })
+    .from(supportTickets)
+    .leftJoin(user, eq(supportTickets.userId, user.id))
+    .leftJoin(workspaces, eq(supportTickets.workspaceId, workspaces.id))
+    .leftJoin(projects, eq(supportTickets.projectId, projects.id))
+    .where(eq(supportTickets.id, ticketId))
+    .limit(1);
+  if (!ticket) {
+    return null;
+  }
+  const replies = await db
+    .select()
+    .from(supportReplies)
+    .where(eq(supportReplies.ticketId, ticketId))
+    .orderBy(supportReplies.createdAt);
+  return { ticket, replies };
 }
 
 export async function getAdminStorage(db: Db) {

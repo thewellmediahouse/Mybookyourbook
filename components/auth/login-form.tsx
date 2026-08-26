@@ -35,7 +35,14 @@ export function LoginForm({
     setPending(false);
     if (signInError) {
       if (signInError.status === 403) {
-        router.push(next ? `/verify-email?next=${encodeURIComponent(next)}` : "/verify-email");
+        const params = new URLSearchParams();
+        if (next) {
+          params.set("next", next);
+        }
+        if (email) {
+          params.set("email", email);
+        }
+        router.push(`/verify-email?${params.toString()}`);
         return;
       }
       setError("That email or password didn't match. Try again or reset your password.");

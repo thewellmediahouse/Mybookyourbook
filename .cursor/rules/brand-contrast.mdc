@@ -14,7 +14,7 @@ When writing **text-on-background brand colors** (Production30 navy/blue palette
 4. If any pair **fails**: **stop writing those colors.** Tell the user the pair, ratio (1 decimal), and the floor. Ask **“Are you sure?”** Proceed only if they confirm; then note the risk. Do not silently restyle the brand to “fix” it.
 5. If they confirm a fail, still use semantic tokens — never raw `text-neutral-*` to dodge contrast.
 
-Production30 locked pairs (2026-08-22, all pass 4.5:1):
+Studio dark locked pairs (2026-08-22, all pass 4.5:1):
 
 - `#F4F6FB` on `#05070F` ~18.6:1
 - `#9AA3B8` on `#05070F` ~8.0:1
@@ -23,6 +23,19 @@ Production30 locked pairs (2026-08-22, all pass 4.5:1):
 - Button labels on hover: `#001038` on `#2D8CFF` ~5.6:1
 - Do **not** use `#FFFFFF` on `#1678FF` (~4.1:1 — fails)
 
+Public cinema locked pairs (2026-08-24, all pass 4.5:1) — marketing / auth only (`[data-theme="public"]`):
+
+- `#F4F6FB` on `#1A2033` ~15.0:1
+- `#9AA3B8` on `#1A2033` ~6.4:1
+- `#F4F6FB` on `#1E2538` ~14.1:1
+- `#9AA3B8` on `#1E2538` ~6.0:1
+- Accent **text** `#5AA3FF` on `#1A2033` ~6.3:1
+- Button fill stays `#1678FF` with label `#001038`
+- Logo plate: `#001038` on `#F4F6FB`
+- Do **not** use `#1678FF` as small text on `#1A2033` (~4.0:1 — fails)
+- Do **not** use `#FFFFFF` on `#1678FF` (~4.1:1 — fails)
+
 ```
 text #FFFFFF on blue #1678FF → ~4.1:1 (need 4.5:1). Do not use.
+text #1678FF on cinema #1A2033 → ~4.0:1 (need 4.5:1). Use #5AA3FF for public ink.
 ```

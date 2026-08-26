@@ -1,8 +1,12 @@
 import { fulfillVerifiedCharge } from "./fulfill";
 import type { ChargeSnapshot } from "./fulfill";
 import type { Db } from "@/lib/db/client";
-import { PaymentError } from "@/lib/providers/payments";
-import type { ParsedWebhookEvent, PaymentProvider } from "@/lib/providers/payments";
+import {
+  PaymentError,
+  payoneerChargeToWebhookEvent,
+} from "@/lib/providers/payments";
+import type { ParsedWebhookEvent, PaymentProvider, PayoneerChargeView } from "@/lib/providers/payments";
+import { getPaymentByReference } from "./queries";
 
 function asRecord(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
@@ -137,6 +141,45 @@ export async function processSignedPayfastItn(
   if (!snapshot) {
     return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
   }
+  const result = await fulfillVerifiedCharge(db, snapshot);
+  return { httpStatus: 200 as const, ...result };
+}
+
+export async function processPayoneerNotification(
+  db: Db,
+  input: {
+    rawBody: string;
+    provider: PaymentProvider;
+    confirm: (longId: string) => Promise<PayoneerChargeView | null>;
+  },
+) {
+  const parsed = input.provider.handleWebhook({
+    rawBody: input.rawBody,
+    signature: null,
+  });
+  if (parsed.event !== "payoneer.notification") {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const longId = typeof parsed.data.id === "string" ? parsed.data.id : "";
+  if (!longId) {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const charge = await input.confirm(longId);
+  if (!charge || charge.statusCode !== "charged") {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const mapped = payoneerChargeToWebhookEvent(charge);
+  const snapshot = chargeSnapshotFromWebhook(mapped, "payoneer");
+  if (!snapshot) {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const payment = await getPaymentByReference(db, "payoneer", snapshot.reference);
+  const stored = parseMetadata(payment?.metadataJson);
+  snapshot.metadata = {
+    workspaceId: payment?.workspaceId ?? stored.workspaceId,
+    planId: stored.planId,
+    paymentId: payment?.id ?? stored.paymentId,
+  };
   const result = await fulfillVerifiedCharge(db, snapshot);
   return { httpStatus: 200 as const, ...result };
 }

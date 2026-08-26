@@ -13,6 +13,7 @@ export const RATE_LIMITS = {
   upload: { max: 40, windowMs: 10 * 60 * 1000 },
   checkout: { max: 10, windowMs: 60 * 60 * 1000 },
   production: { max: 8, windowMs: 10 * 60 * 1000 },
+  support: { max: 8, windowMs: 60 * 60 * 1000 },
   webhook: { max: 180, windowMs: 60 * 1000 },
 } as const;
 

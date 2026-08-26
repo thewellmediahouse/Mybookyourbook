@@ -1,6 +1,7 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
+import { signJWT } from "better-auth/crypto";
 import { nextCookies } from "better-auth/next-js";
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
@@ -66,9 +67,25 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
     void task;
   };
   const baseURL = getAuthBaseUrl(env);
+  const secret = getAuthSecret(env);
+
+  async function sendSignupVerification(to: string, callbackURL: string) {
+    const token = await signJWT({ email: to.toLowerCase() }, secret, 3600);
+    const url = `${originFromUrl(baseURL)}/api/auth/verify-email?token=${token}&callbackURL=${encodeURIComponent(callbackURL)}`;
+    const task = sendTemplated(email, {
+      kind: "email",
+      template: "verify-email",
+      to,
+      idempotencyKey: verifyEmailEventKey(url),
+      appUrl: baseURL,
+      actionUrl: url,
+    });
+    dispatch(task);
+    await task;
+  }
 
   return betterAuth({
-    secret: getAuthSecret(env),
+    secret,
     baseURL,
     trustedOrigins: [originFromUrl(baseURL)],
     database: drizzleAdapter(db, {
@@ -103,6 +120,12 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
         });
         dispatch(task);
         await task;
+      },
+      onExistingUserSignUp: async ({ user }: { user: { email: string; emailVerified: boolean } }) => {
+        if (user.emailVerified) {
+          return;
+        }
+        await sendSignupVerification(user.email, "/onboarding");
       },
     },
     emailVerification: {

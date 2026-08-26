@@ -7,7 +7,7 @@ export const CHECKOUT_REGION_MISMATCH =
   "That plan is not available for this studio's billing country.";
 export const CHECKOUT_NO_SUBSCRIPTION = "There is no subscription to cancel yet.";
 export const CHECKOUT_CANCEL_NEEDS_PROVIDER =
-  "We couldn't cancel from here. Use the email from your payment provider, or contact us.";
+  "Send a Cancel plan message from Help. We will stop the plan at the end of the current period.";
 export const REDIRECT_CONFIRMING =
   "We're confirming your payment. Credits appear after we receive confirmation from the payment provider.";
 export const REDIRECT_SUCCESS = "Payment successful. Your credits are available.";
@@ -53,6 +53,9 @@ export function paymentStatusLabel(status: string): string {
   }
   if (status === "cancelled") {
     return "Cancelled";
+  }
+  if (status === "refunded") {
+    return "Money returned";
   }
   return status;
 }

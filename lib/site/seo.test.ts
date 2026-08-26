@@ -9,6 +9,7 @@ test("Section U public routes are listed for sitemap", () => {
     "/pricing",
     "/how-it-works",
     "/examples",
+    "/contact",
     "/privacy",
     "/terms",
     "/acceptable-use",

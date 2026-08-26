@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { subscriptions } from "@/lib/db/schema";
 import { PaymentError } from "@/lib/providers/payments";
-import type { PaymentProvider } from "@/lib/providers/payments";
+import type { PaymentProvider, PaymentsAdapter } from "@/lib/providers/payments";
 import { CHECKOUT_CANCEL_NEEDS_PROVIDER, CHECKOUT_NO_SUBSCRIPTION } from "./copy";
 import { unpackCustomer } from "./fulfill";
 import { getActiveSubscription } from "./queries";
@@ -12,7 +12,7 @@ export async function cancelWorkspaceSubscription(
   input: {
     workspaceId: string;
     provider: PaymentProvider;
-    adapter: "mock" | "payfast";
+    adapter: PaymentsAdapter;
   },
 ) {
   const subscription = await getActiveSubscription(db, input.workspaceId);
@@ -20,7 +20,7 @@ export async function cancelWorkspaceSubscription(
     throw new PaymentError("NO_SUBSCRIPTION", CHECKOUT_NO_SUBSCRIPTION);
   }
   const packed = unpackCustomer(subscription.providerCustomerId);
-  if (input.adapter === "payfast") {
+  if (input.adapter === "payfast" || input.adapter === "payoneer") {
     throw new PaymentError("NO_SUBSCRIPTION", CHECKOUT_CANCEL_NEEDS_PROVIDER);
   }
   await input.provider.cancelSubscription({

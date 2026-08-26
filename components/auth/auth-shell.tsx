@@ -12,11 +12,13 @@ export function AuthShell({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-background">
+    <div data-theme="public" className="flex min-h-svh flex-1 flex-col bg-background">
       <header className="border-b border-border/70 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-[88rem] px-5 py-3 sm:px-8">
           <Link href="/" aria-label="Production30 home">
-            <SiteLogo className="h-10 w-auto" />
+            <span className="inline-flex rounded-xl bg-overlay-text px-2 py-1">
+              <SiteLogo className="h-10 w-auto" />
+            </span>
           </Link>
         </div>
       </header>

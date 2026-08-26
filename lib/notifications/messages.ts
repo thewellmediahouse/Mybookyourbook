@@ -5,7 +5,10 @@ export type EmailTemplateId =
   | "commercial-ready"
   | "commercial-failed"
   | "payment-receipt"
-  | "team-invite";
+  | "team-invite"
+  | "support-staff"
+  | "support-received"
+  | "support-reply";
 
 export type EmailQueueMessage = {
   kind: "email";

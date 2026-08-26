@@ -43,7 +43,7 @@ export function OnboardingForm({
         {steps.map((item, index) => (
           <li
             key={item.key}
-            className={index === step ? "text-accent" : undefined}
+            className={index === step ? "text-accent-ink" : undefined}
           >
             {String(index + 1).padStart(2, "0")} {item.title}
           </li>

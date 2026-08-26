@@ -9,6 +9,7 @@ const columns = [
       { href: "/how-it-works", label: "How it works" },
       { href: "/pricing", label: "Pricing" },
       { href: "/examples", label: "Examples" },
+      { href: "/contact", label: "Contact us" },
     ],
   },
   {
@@ -30,11 +31,13 @@ const columns = [
 
 export function PublicFooter() {
   return (
-    <footer className="mt-auto border-t border-border/70">
-      <PublicFrame className="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <footer className="mt-auto border-t border-border bg-surface">
+      <PublicFrame className="grid gap-10 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <SiteLogo size="sm" className="h-10 w-auto" />
-          <p className="mt-3 max-w-xs text-sm leading-6 text-muted">
+          <span className="inline-flex rounded-xl bg-overlay-text px-2 py-1">
+            <SiteLogo size="sm" className="h-10 w-auto" />
+          </span>
+          <p className="mt-4 max-w-xs text-sm leading-6 text-muted">
             Your business, starring you. Professional 30-second commercials without a film crew.
           </p>
         </div>

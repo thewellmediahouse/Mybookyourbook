@@ -13,7 +13,19 @@ export const ACCOUNT_CLOSED_LOGIN = "This account is closed.";
 export const EXPORT_FILENAME = "production30-account-export.json";
 
 export const SUPPORT_ABUSE_CATEGORY = "Abuse";
-export const SUPPORT_CATEGORIES = ["Getting started", "Billing", "Production", SUPPORT_ABUSE_CATEGORY, "Other"] as const;
+export const SUPPORT_REFUND_CATEGORY = "Refund";
+export const SUPPORT_CANCEL_CATEGORY = "Cancel plan";
+export const SUPPORT_CATEGORIES = [
+  "Getting started",
+  "Billing",
+  SUPPORT_REFUND_CATEGORY,
+  SUPPORT_CANCEL_CATEGORY,
+  "Production",
+  SUPPORT_ABUSE_CATEGORY,
+  "Other",
+] as const;
 export const SUPPORT_SENT = "Thanks. We received your message.";
 export const SUPPORT_ABUSE_HINT =
   "Use this if someone is using Production30 to impersonate a person without permission.";
+export const SUPPORT_REPLY_SENT = "We sent that reply.";
+export const SUPPORT_REPLY_HINT = "Tell us a little more so we can help.";

@@ -28,7 +28,7 @@ Canonical product docs:
 | Branding encode | Cloudflare Containers + FFmpeg |
 | Video generation | Seedance 2.5 via reAPI (480p source) |
 | Enhancement | Topaz Labs Video API (1080p) |
-| Payments | PayFast first (ZAR). Paystack adapter remains unused. |
+| Payments | Payoneer Checkout first (ZAR and USD). PayFast and Paystack adapters remain unused. |
 | Email | Resend |
 
 Do not use Supabase or PostgreSQL-specific SQL. Do not store videos in D1.
@@ -121,6 +121,7 @@ npx wrangler secret put INTERNAL_SERVICE_SECRET
 # npx wrangler secret put REAPI_API_KEY
 # npx wrangler secret put TOPAZ_API_KEY
 # npx wrangler secret put OPENAI_API_KEY
+# npx wrangler secret put PAYONEER_TOKEN
 # npx wrangler secret put PAYFAST_MERCHANT_KEY
 # npx wrangler secret put PAYFAST_PASSPHRASE
 # npx wrangler secret put PAYSTACK_SECRET_KEY
@@ -161,6 +162,7 @@ npm run preview:smoke
 - [x] Wrangler var `ADMIN_EMAILS` set (`schalk@thewellmedia.com`)
 - [x] Wrangler secret `INTERNAL_SERVICE_SECRET` set
 - [x] Verify `production30.com` in Resend and upload `RESEND_API_KEY`
+- [x] Remote D1 `0006_support_ops` applied; Contact / ticket mail / Admin reply live on the Worker
 - [ ] Publish the branding container (Docker must be running)
 - [ ] Custom domain `production30.com` on the Worker
 
@@ -173,4 +175,4 @@ npm run preview:smoke
 
 ## Brand
 
-Navy / blue palette from the Production30 logo. Buttons use dark labels (`#001038` on `#1678FF`). Wordmark lives in `public/brand/`.
+Navy / blue palette from the Production30 logo. Public pages use a lifted navy cinema look; the studio stays darker. Buttons use dark labels (`#001038` on `#1678FF`). Wordmark lives in `public/brand/`.

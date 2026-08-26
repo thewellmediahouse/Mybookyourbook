@@ -1,5 +1,8 @@
 export type PaymentsEnv = {
   PAYMENTS_MODE?: string;
+  PAYONEER_MODE?: string;
+  PAYONEER_USERNAME?: string;
+  PAYONEER_TOKEN?: string;
   PAYFAST_MODE?: string;
   PAYFAST_MERCHANT_ID?: string;
   PAYFAST_MERCHANT_KEY?: string;
@@ -9,9 +12,11 @@ export type PaymentsEnv = {
   PAYSTACK_PUBLIC_KEY?: string;
 };
 
-export type PaymentsAdapter = "mock" | "payfast";
+export type PaymentsAdapter = "mock" | "payoneer" | "payfast";
 
 export type PayFastMode = "sandbox" | "live";
+
+export type PayoneerMode = "sandbox" | "live";
 
 export type PaymentsSetup = {
   mode: "test" | "live";
@@ -22,9 +27,12 @@ export type PaymentsSetup = {
   merchantId: string | null;
   merchantKey: string | null;
   passphrase: string | null;
+  payoneerMode: PayoneerMode | null;
+  payoneerUsername: string | null;
+  payoneerToken: string | null;
 };
 
-function readPayfastMode(raw: string | undefined): PayFastMode | null {
+function readEnvMode(raw: string | undefined): PayoneerMode | PayFastMode | null {
   const mode = String(raw ?? "").trim().toLowerCase();
   if (mode === "live") {
     return "live";
@@ -37,6 +45,15 @@ function readPayfastMode(raw: string | undefined): PayFastMode | null {
 
 export function isLivePayments(env: PaymentsEnv): boolean {
   return String(env.PAYMENTS_MODE ?? "test").trim().toLowerCase() === "live";
+}
+
+function payoneerCredentials(env: PaymentsEnv): {
+  username: string | null;
+  token: string | null;
+} {
+  const username = env.PAYONEER_USERNAME?.trim() || null;
+  const token = env.PAYONEER_TOKEN?.trim() || null;
+  return { username, token };
 }
 
 function payfastCredentials(env: PaymentsEnv): {
@@ -64,60 +81,96 @@ function unavailable(
     merchantId: extras?.merchantId ?? null,
     merchantKey: extras?.merchantKey ?? null,
     passphrase: extras?.passphrase ?? null,
+    payoneerMode: extras?.payoneerMode ?? null,
+    payoneerUsername: extras?.payoneerUsername ?? null,
+    payoneerToken: extras?.payoneerToken ?? null,
+  };
+}
+
+function emptyPayfast(): Pick<PaymentsSetup, "payfastMode" | "merchantId" | "merchantKey" | "passphrase"> {
+  return {
+    payfastMode: null,
+    merchantId: null,
+    merchantKey: null,
+    passphrase: null,
   };
 }
 
 export function getPaymentsSetup(env: PaymentsEnv): PaymentsSetup {
   const mode: "test" | "live" = isLivePayments(env) ? "live" : "test";
-  const payfastMode = readPayfastMode(env.PAYFAST_MODE);
+  const payoneerMode = readEnvMode(env.PAYONEER_MODE);
+  const { username, token } = payoneerCredentials(env);
+  const hasPayoneer = Boolean(username && token);
   const { merchantId, merchantKey, passphrase } = payfastCredentials(env);
-  const hasCredentials = Boolean(merchantId && merchantKey);
 
   if (mode === "test") {
-    if (payfastMode === "live") {
-      return unavailable(mode, "payfast", { payfastMode, merchantId, merchantKey, passphrase });
+    if (payoneerMode === "live") {
+      return unavailable(mode, "payoneer", {
+        ...emptyPayfast(),
+        payoneerMode,
+        payoneerUsername: username,
+        payoneerToken: token,
+      });
     }
-    if (hasCredentials && payfastMode === "sandbox") {
+    if (hasPayoneer && payoneerMode === "sandbox") {
       return {
         mode,
-        adapter: "payfast",
+        adapter: "payoneer",
         checkoutAvailable: true,
-        webhookSecret: passphrase,
-        payfastMode,
-        merchantId,
-        merchantKey,
-        passphrase,
+        webhookSecret: null,
+        ...emptyPayfast(),
+        payoneerMode,
+        payoneerUsername: username,
+        payoneerToken: token,
       };
     }
-    if (hasCredentials && payfastMode == null) {
-      return unavailable(mode, "payfast", { payfastMode: null, merchantId, merchantKey, passphrase });
+    if (hasPayoneer && payoneerMode == null) {
+      return unavailable(mode, "payoneer", {
+        ...emptyPayfast(),
+        payoneerMode: null,
+        payoneerUsername: username,
+        payoneerToken: token,
+      });
     }
     return {
       mode,
       adapter: "mock",
       checkoutAvailable: true,
       webhookSecret: null,
-      payfastMode: null,
-      merchantId: null,
-      merchantKey: null,
-      passphrase: null,
+      ...emptyPayfast(),
+      payoneerMode: null,
+      payoneerUsername: null,
+      payoneerToken: null,
     };
   }
 
-  if (payfastMode === "sandbox") {
-    return unavailable(mode, "payfast", { payfastMode, merchantId, merchantKey, passphrase });
+  if (payoneerMode === "sandbox") {
+    return unavailable(mode, "payoneer", {
+      ...emptyPayfast(),
+      payoneerMode,
+      payoneerUsername: username,
+      payoneerToken: token,
+    });
   }
-  if (hasCredentials && payfastMode === "live") {
+  if (hasPayoneer && payoneerMode === "live") {
     return {
       mode,
-      adapter: "payfast",
+      adapter: "payoneer",
       checkoutAvailable: true,
-      webhookSecret: passphrase,
-      payfastMode,
-      merchantId,
-      merchantKey,
-      passphrase,
+      webhookSecret: null,
+      ...emptyPayfast(),
+      payoneerMode,
+      payoneerUsername: username,
+      payoneerToken: token,
     };
   }
-  return unavailable(mode, "payfast", { payfastMode, merchantId, merchantKey, passphrase });
+  return unavailable(mode, "payoneer", {
+    payfastMode: null,
+    merchantId,
+    merchantKey,
+    passphrase,
+    payoneerMode,
+    payoneerUsername: username,
+    payoneerToken: token,
+  });
 }

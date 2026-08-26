@@ -19,7 +19,7 @@ export function PageIntro({
   return (
     <PublicFrame className={cn("pt-12 pb-4 sm:pt-16", className)}>
       {eyebrow ? (
-        <p className="text-[11px] font-medium tracking-[0.22em] text-accent">{eyebrow}</p>
+        <p className="text-[11px] font-medium tracking-[0.22em] text-accent-ink">{eyebrow}</p>
       ) : null}
       <h1 className="mt-3 max-w-3xl font-display text-4xl leading-[1.08] tracking-tight text-foreground sm:text-6xl">
         {title}

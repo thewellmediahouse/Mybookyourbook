@@ -123,3 +123,61 @@ test("signup, session cookie, and password reset against local D1", async (t) =>
   assert.equal(signIn.ok, true, await signIn.clone().text());
   assert.match(cookieHeader(signIn), /session_token/);
 });
+
+test("signing up again with an unverified email sends another confirmation", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+
+  const sent: EmailMessage[] = [];
+  const auth = createAuth(createDb(proxy.env.DB as D1Database), AUTH_ENV, {
+    email: {
+      async send(message) {
+        sent.push(message);
+      },
+    },
+  });
+
+  const email = `phase3.again.${Date.now()}@cineyou.test`;
+  const password = "StudioPass1";
+  const first = await auth.handler(
+    new Request("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name: "Alex Example",
+        firstName: "Alex",
+        lastName: "Example",
+      }),
+    }),
+  );
+  assert.equal(first.ok, true, await first.clone().text());
+  const firstVerify = sent.filter((message) => message.subject.includes("Verify"));
+  assert.equal(firstVerify.length, 1);
+
+  sent.length = 0;
+  const again = await auth.handler(
+    new Request("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name: "Alex Example",
+        firstName: "Alex",
+        lastName: "Example",
+      }),
+    }),
+  );
+  assert.equal(again.ok, true, await again.clone().text());
+  const secondVerify = sent.filter((message) => message.subject.includes("Verify"));
+  assert.equal(secondVerify.length, 1);
+  const verifyUrl = extractUrl(secondVerify[0]!.text);
+  const verify = await auth.handler(new Request(verifyUrl));
+  assert.ok(verify.status === 200 || verify.status === 302, `${verify.status} ${verifyUrl}`);
+  assert.match(cookieHeader(verify), /session_token/);
+});

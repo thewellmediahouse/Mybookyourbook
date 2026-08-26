@@ -533,28 +533,29 @@ Visual positioning: premium creative agency, cinema production company, elegant 
 
 Avoid stereotypical AI visuals. Do NOT use: robots, glowing brains, matrix code, overdone neon, excessive purple gradients, generic AI sparkle graphics.
 
-Suggested palette (logo lock, 2026-08-22):
+Suggested palette (logo lock, 2026-08-22; public marketing surfaces 2026-08-24):
 
 ```text
-Background        #05070F
-Surface           #0C1224
-Secondary Surface #121A30
+Studio background #05070F
+Studio surface    #0C1224
+Studio text       #F4F6FB
+Studio muted      #9AA3B8
 
-Primary Text      #F4F6FB
-Muted Text        #9AA3B8
+Public background #1A2033
+Public surface    #1E2538
+Public text       #F4F6FB
+Public muted      #9AA3B8
+Public accent ink #5AA3FF
 
-Accent            #1678FF
+Accent            #1678FF  (button fill only)
 Accent Hover      #2D8CFF
 Accent Label      #001038
 Accent 2          #5A45FC
-
-Success           #4DBA7A
-Danger            #E06565
 ```
 
-Blue is the button fill. Purple is for the logo mark and loading wheel only — do not flood the UI with purple gradients.
+Blue is the button fill. Public pages must not use `#1678FF` as small text on `#1A2033`. Purple is for the logo mark and loading wheel only — do not flood the UI with purple gradients.
 
-**Contrast lock (2026-08-22):** All listed text-on-background pairs pass WCAG AA 4.5:1. Button labels must use `#001038` on `#1678FF`. Do not use white `#FFFFFF` on blue (~4.1:1).
+**Contrast lock (2026-08-22, public addendum 2026-08-24):** Studio text-on-background pairs pass WCAG AA 4.5:1. Public marketing/auth (`[data-theme="public"]`) uses frost text on a lifted navy (`#1A2033`), not pure black. Button labels must use `#001038` on `#1678FF`. Do not use white `#FFFFFF` on blue (~4.1:1). Do not use `#1678FF` as body text on the public cinema background (~4.0:1); use `#5AA3FF`.
 
 ---
 
@@ -1899,6 +1900,10 @@ PAYFAST_MERCHANT_ID=
 PAYFAST_MERCHANT_KEY=
 PAYFAST_PASSPHRASE=
 
+PAYONEER_MODE=sandbox
+PAYONEER_USERNAME=
+PAYONEER_TOKEN=
+
 PAYSTACK_PUBLIC_KEY=
 PAYSTACK_SECRET_KEY=
 
@@ -1921,7 +1926,7 @@ Cloudflare-native resources should use bindings when appropriate. Never expose s
 
 Production API secrets must be stored using Cloudflare secret configuration.
 
-Never commit: `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`.
+Never commit: `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`.
 
 ---
 
@@ -2137,6 +2142,7 @@ Approximately:
 /api/billing/subscription
 /api/billing/cancel
 /api/webhooks/fal
+/api/webhooks/payoneer
 /api/webhooks/payfast
 /api/webhooks/paystack
 /api/team/invite

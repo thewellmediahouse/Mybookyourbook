@@ -3,10 +3,8 @@ import Link from "next/link";
 import { PageIntro } from "@/components/site/page-intro";
 import { PublicFrame } from "@/components/site/public-frame";
 import { PublicShell } from "@/components/site/public-shell";
-import { VideoCard } from "@/components/site/video-card";
+import { WorkTabs } from "@/components/site/work-tabs";
 import { Button } from "@/components/ui/button";
-import { HOW_IT_WORKS_STEPS } from "@/lib/site/copy";
-import { EXAMPLE_CLIPS } from "@/lib/site/example-videos";
 
 export const metadata: Metadata = {
   title: "How it works",
@@ -36,16 +34,8 @@ export default function HowItWorksPage() {
             </>
           }
         />
-        <PublicFrame className="mt-10 grid gap-4 md:grid-cols-2">
-          {HOW_IT_WORKS_STEPS.map((step, index) => (
-            <VideoCard
-              key={step.number}
-              src={EXAMPLE_CLIPS[index % EXAMPLE_CLIPS.length]!.src}
-              title={`${step.number}  ${step.title}`}
-              subtitle={step.body}
-              className="aspect-[16/10] min-h-[18rem]"
-            />
-          ))}
+        <PublicFrame className="mt-10">
+          <WorkTabs />
         </PublicFrame>
       </main>
     </PublicShell>

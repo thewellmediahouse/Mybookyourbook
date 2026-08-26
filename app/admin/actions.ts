@@ -4,8 +4,11 @@ import { revalidatePath } from "next/cache";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { requireAdminApi } from "@/lib/admin/access";
 import { adminCancelJob, adminMarkTechnicalFailure, adminRefundJob, adminRetryJob } from "@/lib/admin/jobs";
+import { adminMarkCancelAtPeriodEnd, adminRecordMoneyRefund } from "@/lib/admin/billing-ops";
 import { adminDeductCredits, adminGrantCredits, adminSetMemberStatus, adminSetTicketStatus } from "@/lib/admin/credits";
 import { saveAiSettings, savePromptFramework, updatePlanPricing } from "@/lib/admin/settings";
+import { SUPPORT_REPLY_SENT } from "@/lib/security/copy";
+import { addSupportReply, supportMailSinkFromEnv } from "@/lib/security/support";
 import { listPendingCleanup } from "@/lib/admin/queries";
 import { parseAdminEmails } from "@/lib/authz/admin";
 import { getAuth } from "@/lib/auth";
@@ -234,13 +237,71 @@ export async function setTicketAction(_prev: AdminActionState, formData: FormDat
     if (status !== "OPEN" && status !== "IN_PROGRESS" && status !== "RESOLVED" && status !== "CLOSED") {
       return { error: "Choose a valid ticket status." };
     }
+    const ticketId = String(formData.get("ticketId") ?? "");
     await adminSetTicketStatus(ctx.db, ctx, {
-      ticketId: String(formData.get("ticketId") ?? ""),
+      ticketId,
       status,
     });
     revalidatePath("/admin/support");
+    revalidatePath(`/admin/support/${ticketId}`);
     return { message: "Ticket updated." };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "Ticket update failed." };
+  }
+}
+
+export async function replyToTicketAction(_prev: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const ctx = await actor();
+    const ticketId = String(formData.get("ticketId") ?? "");
+    await addSupportReply(
+      ctx.db,
+      {
+        ticketId,
+        authorUserId: ctx.userId,
+        authorRole: "staff",
+        body: String(formData.get("body") ?? ""),
+      },
+      supportMailSinkFromEnv(ctx.env),
+    );
+    revalidatePath("/admin/support");
+    revalidatePath(`/admin/support/${ticketId}`);
+    return { message: SUPPORT_REPLY_SENT };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "We couldn't send that reply." };
+  }
+}
+
+export async function recordMoneyRefundAction(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const ctx = await actor();
+    await adminRecordMoneyRefund(ctx.db, ctx, {
+      paymentId: String(formData.get("paymentId") ?? ""),
+      note: String(formData.get("note") ?? ""),
+      ticketId: String(formData.get("ticketId") ?? "") || null,
+    });
+    revalidatePath("/admin/payments");
+    return { message: "Marked as money returned. Ad Credits were not changed." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "We couldn't record that." };
+  }
+}
+
+export async function markCancelAtPeriodEndAction(
+  _prev: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const ctx = await actor();
+    await adminMarkCancelAtPeriodEnd(ctx.db, ctx, {
+      subscriptionId: String(formData.get("subscriptionId") ?? ""),
+    });
+    revalidatePath("/admin/subscriptions");
+    return { message: "This plan now cancels at the end of the current period." };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "We couldn't update that plan." };
   }
 }

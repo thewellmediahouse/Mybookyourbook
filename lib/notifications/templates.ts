@@ -5,6 +5,9 @@ import {
   READY_EMAIL_SUBJECT,
   RECEIPT_EMAIL_SUBJECT,
   RESET_EMAIL_SUBJECT,
+  SUPPORT_RECEIVED_SUBJECT,
+  SUPPORT_REPLY_SUBJECT,
+  SUPPORT_STAFF_SUBJECT,
   VERIFY_EMAIL_SUBJECT,
   WELCOME_EMAIL_SUBJECT,
 } from "./copy";
@@ -75,6 +78,30 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
         body: message.body ?? "You've been invited to a Production30 studio.",
         actionUrl: action,
         button: "Open invitation",
+      });
+    case "support-staff":
+      return envelope({
+        subject: SUPPORT_STAFF_SUBJECT,
+        heading: SUPPORT_STAFF_SUBJECT,
+        body: message.body ?? "A customer sent a support message.",
+        actionUrl: action,
+        button: "Open Admin Support",
+      });
+    case "support-received":
+      return envelope({
+        subject: SUPPORT_RECEIVED_SUBJECT,
+        heading: SUPPORT_RECEIVED_SUBJECT,
+        body: message.body ?? "Thanks. We received your message. We'll email you back.",
+        actionUrl: action,
+        button: message.buttonLabel ?? "Open Help",
+      });
+    case "support-reply":
+      return envelope({
+        subject: SUPPORT_REPLY_SUBJECT,
+        heading: SUPPORT_REPLY_SUBJECT,
+        body: message.body ?? "We sent a reply to your Production30 message.",
+        actionUrl: action,
+        button: "Read the reply",
       });
   }
 }

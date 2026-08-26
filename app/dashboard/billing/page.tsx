@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { CancelSubscriptionButton } from "@/components/billing/cancel-button";
 import { CheckoutButton } from "@/components/billing/checkout-button";
 import { DisabledAction } from "@/components/dashboard/disabled-action";
@@ -6,6 +7,7 @@ import { PageIntro } from "@/components/dashboard/page-intro";
 import { canManageBilling } from "@/lib/authz/roles";
 import { buyCreditsHoldReason } from "@/lib/billing/availability";
 import {
+  CHECKOUT_CANCEL_NEEDS_PROVIDER,
   CHECKOUT_CUSTOM_PLAN,
   CHECKOUT_MONTHLY_UNAVAILABLE,
   CHECKOUT_NO_SUBSCRIPTION,
@@ -123,7 +125,7 @@ export default async function BillingPage({
             {monthly.map((plan) => {
               const purchasable = isPurchasablePlan({ ...plan, active: true });
               const isCurrent = overview.subscription?.planCode === plan.code;
-              const monthlyNeedsProviderPlan = setup.adapter === "payfast";
+              const monthlyNeedsProviderPlan = setup.adapter === "payfast" || setup.adapter === "payoneer";
               const isUpgrade =
                 currentCredits != null && plan.credits != null && plan.credits > currentCredits;
               const isDowngrade =
@@ -166,6 +168,16 @@ export default async function BillingPage({
                   label="Cancel subscription"
                   reason="This plan already cancels at the end of the current period."
                 />
+              ) : setup.adapter === "payfast" || setup.adapter === "payoneer" ? (
+                <div>
+                  <DisabledAction label="Cancel subscription" reason={CHECKOUT_CANCEL_NEEDS_PROVIDER} />
+                  <Link
+                    href="/dashboard/help"
+                    className="mt-2 inline-flex min-h-11 items-center text-foreground underline"
+                  >
+                    Open Help
+                  </Link>
+                </div>
               ) : (
                 <CancelSubscriptionButton />
               )

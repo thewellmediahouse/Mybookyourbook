@@ -10,7 +10,7 @@
   },
   "vars": {
     // Filming/enhancement/branding stay mock. Concept may be live via CONCEPT_AI_MODE + OPENAI_API_KEY.
-    // PayFast live charges stay off until PAYMENTS_MODE=live is approved.
+    // Payoneer live charges stay off until PAYMENTS_MODE=live is approved.
     "AI_PROVIDER_MODE": "mock",
     "CONCEPT_AI_MODE": "live",
     "OPENAI_MODEL": "gpt-5.6",
