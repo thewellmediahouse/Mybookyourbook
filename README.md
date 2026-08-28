@@ -103,7 +103,7 @@ Worker name: `cineyou`. Live host: **https://production30.thewellmedia.com** (al
 
 **Git push does not update that host by itself.** `.open-next/` is gitignored. A push must run OpenNext, then deploy Worker `cineyou` — not a Cloudflare Pages project and not a bare `wrangler deploy`.
 
-- **GitHub Actions (in this repo):** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on `main`. Add repository secrets `CLOUDFLARE_API_TOKEN` (Workers Edit) and `CLOUDFLARE_ACCOUNT_ID`. Official token setup: [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+- **GitHub Actions (in this repo):** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on `main`. Add repository secret **`CLOUDFLARE_API_TOKEN`** (Cloudflare dashboard → Manage Account → API Tokens → Create Token → **Edit Cloudflare Workers**). Account ID is already in the workflow. Official: [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). A missing token is why **Deploy Worker** fails in about a minute.
 - **Workers Builds (dashboard):** Worker `cineyou` → Settings → Builds. Build command `npx opennextjs-cloudflare build`. Deploy command `npx opennextjs-cloudflare deploy -- --containers-rollout none`. Add build vars `NEXT_PUBLIC_APP_URL=https://production30.thewellmedia.com` and `NEXT_PUBLIC_APP_NAME=Production30`. Official: [OpenNext Workers Builds](https://opennext.js.org/cloudflare/howtos/dev-deploy). Use **either** Actions **or** Workers Builds, not both.
 - Do not Git-connect this repo as **Pages**. That is the old Astro preview path and will not deploy OpenNext.
 
@@ -177,7 +177,7 @@ npm run preview:smoke
 
 ## Common issues
 
-- **Git push did not update production30.thewellmedia.com:** Push only updates GitHub. The live site is Worker `cineyou`, which needs an OpenNext build. Use the Deploy Worker GitHub Action (secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`) or Workers Builds with the OpenNext commands in the Cloudflare section above. Do not use a Pages Git job for this repo.
+- **Git push did not update production30.thewellmedia.com:** Push only updates GitHub. Add secret `CLOUDFLARE_API_TOKEN` (Edit Cloudflare Workers) or the **Deploy Worker** job fails immediately. Then the Action OpenNext-builds and deploys Worker `cineyou`. Do not use a Pages Git job for this repo.
 - **Signup confirmation mail:** Authentication is live. Create an account, confirm the Production30 email from `Accounts@production30.com`, then finish `/onboarding`.
 - **Local tests say `no such table: user`:** Wrangler stores local D1 per `database_id`. After that id changes, run `npm run db:migrate:local` and `npm run db:seed:local`.
 - **Preview uses local D1:** `npm run preview` does not use `--remote`. It keeps local persist even with a real remote `database_id`.
