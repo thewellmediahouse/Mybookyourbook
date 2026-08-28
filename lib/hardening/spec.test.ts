@@ -158,7 +158,7 @@ test("account deletion cancels the subscription, keeps payments, and blocks the 
     }),
   );
   assert.equal(signUp.ok, true, await signUp.clone().text());
-  const verifyMail = sent.find((message) => message.subject.includes("Verify"));
+  const verifyMail = sent.find((message) => message.subject.includes("Confirm"));
   assert.ok(verifyMail);
   const verify = await auth.handler(new Request(extractUrl(verifyMail.text)));
   assert.ok(verify.status === 200 || verify.status === 302, await verify.clone().text());

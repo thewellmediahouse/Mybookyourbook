@@ -21,10 +21,10 @@ export function createResendEmailProvider(apiKey: string, from: string): EmailPr
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as { name?: string; message?: string } | null;
         if (response.status === 409 && payload?.name === "concurrent_idempotent_requests") {
-          throw new Error("Email provider is still processing that message.");
+          return;
         }
-        const detail = payload?.name ? ` ${payload.name}` : "";
-        throw new Error(`Email provider rejected the message (${response.status}${detail}).`);
+        const detail = [payload?.name, payload?.message].filter(Boolean).join(": ");
+        throw new Error(`Email provider rejected the message (${response.status}${detail ? ` ${detail}` : ""}).`);
       }
     },
   };

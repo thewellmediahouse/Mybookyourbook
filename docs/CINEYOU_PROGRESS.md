@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-28 (custom domain production30.thewellmedia.com on Worker cineyou)
+Last updated: 2026-08-28 (signup confirmation mail; remote user table emptied)
 
 ## Foundation
 - [x] Next.js
@@ -551,6 +551,12 @@ Rebuilt `/` to the supplied sales mockup. Assets live in `public/production30-ho
 How it works, Examples, Plans, Contact, legal, and auth now use the same navy sales theme, header, and closing CTA. Promo banner is off on public pages. Signup copy changes when `intent=advert` or `intent=viral`. Dashboard overview empty state and summary cards were tightened. Admin is unchanged. No fake testimonials or invented prices.
 
 Verification: `npm run check`, `npm run lint`, homepage/contrast tests. Not deployed.
+
+### 2026-08-28 — Signup confirmation mail and empty user table
+
+Signing up with an email that already had a verified account returned a generic success and then asked for the email again, with no message sent. All customer rows were removed from remote D1 `cineyou-production` (plans kept). Signup now goes to a Thank you screen that names the inbox and does not show a second email field. Confirmation mail is sent on signup (and again if they try to sign in before confirming). Welcome mail waits until the address is confirmed. Signing up again with a confirmed address sends a sign-in reminder instead of silence.
+
+Verification: `npm run check`, auth/email tests. Worker `cineyou` version `c4f82786-97d8-4618-bccd-58dcb186f63e` with `--containers-rollout none`. Live `/verify-email?email=` shows Thank you and does not ask for the email again.
 
 ### 2026-08-25 — Legal pages (working copy)
 

@@ -1,6 +1,7 @@
 export type EmailTemplateId =
   | "welcome"
   | "verify-email"
+  | "existing-account"
   | "reset-password"
   | "commercial-ready"
   | "commercial-failed"

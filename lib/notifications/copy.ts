@@ -2,7 +2,8 @@ export const READY_EMAIL_SUBJECT = "Your Production30 commercial is ready";
 export const READY_EMAIL_BUTTON = "View My Commercial";
 export const FAILED_EMAIL_SUBJECT = "We couldn't finish your Production30 commercial";
 export const WELCOME_EMAIL_SUBJECT = "Welcome to Production30";
-export const VERIFY_EMAIL_SUBJECT = "Verify your Production30 email";
+export const VERIFY_EMAIL_SUBJECT = "Confirm your Production30 email";
+export const EXISTING_ACCOUNT_SUBJECT = "You already have a Production30 account";
 export const RESET_EMAIL_SUBJECT = "Reset your Production30 password";
 export const RECEIPT_EMAIL_SUBJECT = "Your Production30 payment receipt";
 export const INVITE_EMAIL_SUBJECT = "You're invited to a Production30 studio";
@@ -32,6 +33,10 @@ export function paymentReceiptEventKey(paymentId: string, userId: string): strin
 
 export function welcomeEventKey(userId: string): string {
   return `welcome/${userId}`;
+}
+
+export function existingAccountEventKey(userId: string): string {
+  return `existing-account/${userId}`;
 }
 
 export function verifyEmailEventKey(url: string): string {

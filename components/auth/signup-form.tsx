@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/auth-client";
 import { isStrongPassword, normalizeEmail, passwordHint } from "@/lib/auth/password";
+import { verifyEmailHref } from "@/lib/auth/verify-email-copy";
 
 export function SignupForm({
   googleEnabled,
@@ -21,7 +22,6 @@ export function SignupForm({
   const [pending, setPending] = useState(false);
   const afterSignUp = next || "/onboarding";
   const loginHref = next ? `/login?next=${encodeURIComponent(next)}` : "/login";
-  const verifyHref = next ? `/verify-email?next=${encodeURIComponent(next)}` : "/verify-email";
 
   async function onSubmit(formData: FormData) {
     setError(null);
@@ -65,7 +65,7 @@ export function SignupForm({
       return;
     }
 
-    router.push(verifyHref);
+    router.push(verifyEmailHref(email, next));
   }
 
   return (

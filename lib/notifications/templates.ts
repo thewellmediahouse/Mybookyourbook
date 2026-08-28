@@ -8,6 +8,7 @@ import {
   SUPPORT_RECEIVED_SUBJECT,
   SUPPORT_REPLY_SUBJECT,
   SUPPORT_STAFF_SUBJECT,
+  EXISTING_ACCOUNT_SUBJECT,
   VERIFY_EMAIL_SUBJECT,
   WELCOME_EMAIL_SUBJECT,
 } from "./copy";
@@ -35,9 +36,17 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       return envelope({
         subject: VERIFY_EMAIL_SUBJECT,
         heading: "Confirm your email",
-        body: "Tap the button to verify this email for your Production30 account.",
+        body: "Tap the button to confirm this email for your Production30 account. You cannot sign in until you do.",
         actionUrl: action,
-        button: "Verify email",
+        button: "Confirm my email",
+      });
+    case "existing-account":
+      return envelope({
+        subject: EXISTING_ACCOUNT_SUBJECT,
+        heading: "You already have an account",
+        body: "This email is already registered. Sign in to open your studio. If you forgot your password, use Forgot password on the sign-in page.",
+        actionUrl: action,
+        button: "Sign in",
       });
     case "reset-password":
       return envelope({

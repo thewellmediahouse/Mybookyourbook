@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth/auth-client";
 import { normalizeEmail } from "@/lib/auth/password";
+import { verifyEmailHref } from "@/lib/auth/verify-email-copy";
 
 export function LoginForm({
   googleEnabled,
@@ -35,14 +36,7 @@ export function LoginForm({
     setPending(false);
     if (signInError) {
       if (signInError.status === 403) {
-        const params = new URLSearchParams();
-        if (next) {
-          params.set("next", next);
-        }
-        if (email) {
-          params.set("email", email);
-        }
-        router.push(`/verify-email?${params.toString()}`);
+        router.push(verifyEmailHref(email, next));
         return;
       }
       setError("That email or password didn't match. Try again or reset your password.");

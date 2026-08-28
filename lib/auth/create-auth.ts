@@ -10,7 +10,12 @@ import { getEmailProvider, type EmailProvider } from "@/lib/providers/email";
 import { getAuthBaseUrl, getAuthSecret, getTrustedAuthOrigins, isGoogleAuthConfigured } from "./env";
 import { isStrongPassword, MIN_PASSWORD_LENGTH, normalizeEmail, passwordHint } from "./password";
 import { renderEmail } from "@/lib/notifications/templates";
-import { resetPasswordEventKey, verifyEmailEventKey, welcomeEventKey } from "@/lib/notifications/copy";
+import {
+  existingAccountEventKey,
+  resetPasswordEventKey,
+  verifyEmailEventKey,
+  welcomeEventKey,
+} from "@/lib/notifications/copy";
 import type { EmailQueueMessage } from "@/lib/notifications/messages";
 import { ACCOUNT_CLOSED_LOGIN } from "@/lib/security/copy";
 import { RateLimitError } from "@/lib/security/errors";
@@ -54,6 +59,13 @@ function sendTemplated(email: EmailProvider, message: EmailQueueMessage) {
     text: rendered.text,
     html: rendered.html,
     idempotencyKey: message.idempotencyKey,
+  }).catch((error) => {
+    console.error("[production30:email]", {
+      template: message.template,
+      to: message.to,
+      error: error instanceof Error ? error.message : "send failed",
+    });
+    throw error;
   });
 }
 
@@ -121,8 +133,18 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
         dispatch(task);
         await task;
       },
-      onExistingUserSignUp: async ({ user }: { user: { email: string; emailVerified: boolean } }) => {
+      onExistingUserSignUp: async ({ user }: { user: { id: string; email: string; emailVerified: boolean } }) => {
         if (user.emailVerified) {
+          const task = sendTemplated(email, {
+            kind: "email",
+            template: "existing-account",
+            to: user.email,
+            idempotencyKey: existingAccountEventKey(user.id),
+            appUrl: baseURL,
+            actionUrl: "/login",
+          });
+          dispatch(task);
+          await task;
           return;
         }
         await sendSignupVerification(user.email, "/onboarding");
@@ -130,6 +152,7 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
     },
     emailVerification: {
       sendOnSignUp: true,
+      sendOnSignIn: true,
       autoSignInAfterVerification: true,
       sendVerificationEmail: async ({ user, url }) => {
         const task = sendTemplated(email, {
@@ -140,6 +163,24 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
           appUrl: baseURL,
           actionUrl: url,
         });
+        dispatch(task);
+        await task;
+      },
+      afterEmailVerification: async (user) => {
+        const parts = nameParts(
+          user.name,
+          "firstName" in user ? (user.firstName as string | undefined) : undefined,
+          "lastName" in user ? (user.lastName as string | undefined) : undefined,
+        );
+        const task = sendTemplated(email, {
+          kind: "email",
+          template: "welcome",
+          to: user.email,
+          firstName: parts.firstName,
+          idempotencyKey: welcomeEventKey(user.id),
+          appUrl: baseURL,
+          actionUrl: "/dashboard",
+        }).catch(() => undefined);
         dispatch(task);
         await task;
       },
@@ -174,17 +215,6 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
               firstName: parts.firstName,
               lastName: parts.lastName,
             });
-            const welcome = sendTemplated(email, {
-              kind: "email",
-              template: "welcome",
-              to: user.email,
-              firstName: parts.firstName,
-              idempotencyKey: welcomeEventKey(user.id),
-              appUrl: baseURL,
-              actionUrl: "/dashboard",
-            }).catch(() => undefined);
-            dispatch(welcome);
-            await welcome;
           },
         },
       },

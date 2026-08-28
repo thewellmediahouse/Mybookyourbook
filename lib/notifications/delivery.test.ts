@@ -57,6 +57,16 @@ test("support emails tell staff and the customer what happened", () => {
     body: "Thanks. We received your message. We'll email you back.",
   });
   assert.equal(received.subject, "We received your Production30 message");
+  const reminder = renderEmail({
+    kind: "email",
+    template: "existing-account",
+    to: "pat@cineyou.test",
+    idempotencyKey: "existing-account/user",
+    appUrl: "https://cineyou.test",
+    actionUrl: "/login",
+  });
+  assert.equal(reminder.subject, "You already have a Production30 account");
+  assert.match(reminder.html, /Sign in/);
   const reply = renderEmail({
     kind: "email",
     template: "support-reply",

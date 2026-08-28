@@ -77,8 +77,13 @@ test("signup, session cookie, and password reset against local D1", async (t) =>
   );
   assert.equal(blocked.status, 403);
 
-  const verifyMail = sent.find((message) => message.subject.includes("Verify"));
+  const verifyMail = sent.find((message) => message.subject.includes("Confirm"));
   assert.ok(verifyMail);
+  assert.equal(
+    sent.some((message) => message.subject.includes("Welcome")),
+    false,
+    "welcome mail waits until the email is confirmed",
+  );
   const verifyUrl = extractUrl(verifyMail.text);
   const verify = await auth.handler(new Request(verifyUrl));
   assert.ok(
@@ -87,6 +92,8 @@ test("signup, session cookie, and password reset against local D1", async (t) =>
   );
   const sessionCookie = cookieHeader(verify);
   assert.match(sessionCookie, /session_token/);
+  const welcomeMail = sent.find((message) => message.subject.includes("Welcome"));
+  assert.ok(welcomeMail);
 
   sent.length = 0;
   const forgot = await auth.handler(
@@ -156,7 +163,7 @@ test("signing up again with an unverified email sends another confirmation", asy
     }),
   );
   assert.equal(first.ok, true, await first.clone().text());
-  const firstVerify = sent.filter((message) => message.subject.includes("Verify"));
+  const firstVerify = sent.filter((message) => message.subject.includes("Confirm"));
   assert.equal(firstVerify.length, 1);
 
   sent.length = 0;
@@ -174,10 +181,67 @@ test("signing up again with an unverified email sends another confirmation", asy
     }),
   );
   assert.equal(again.ok, true, await again.clone().text());
-  const secondVerify = sent.filter((message) => message.subject.includes("Verify"));
+  const secondVerify = sent.filter((message) => message.subject.includes("Confirm"));
   assert.equal(secondVerify.length, 1);
   const verifyUrl = extractUrl(secondVerify[0]!.text);
   const verify = await auth.handler(new Request(verifyUrl));
   assert.ok(verify.status === 200 || verify.status === 302, `${verify.status} ${verifyUrl}`);
   assert.match(cookieHeader(verify), /session_token/);
+});
+
+test("signing up again with a confirmed email sends a sign-in reminder", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+
+  const sent: EmailMessage[] = [];
+  const auth = createAuth(createDb(proxy.env.DB as D1Database), AUTH_ENV, {
+    email: {
+      async send(message) {
+        sent.push(message);
+      },
+    },
+  });
+
+  const email = `phase3.exists.${Date.now()}@cineyou.test`;
+  const password = "StudioPass1";
+  const first = await auth.handler(
+    new Request("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name: "Alex Example",
+        firstName: "Alex",
+        lastName: "Example",
+      }),
+    }),
+  );
+  assert.equal(first.ok, true, await first.clone().text());
+  const verifyMail = sent.find((message) => message.subject.includes("Confirm"));
+  assert.ok(verifyMail);
+  const verify = await auth.handler(new Request(extractUrl(verifyMail.text)));
+  assert.ok(verify.status === 200 || verify.status === 302, await verify.clone().text());
+
+  sent.length = 0;
+  const again = await auth.handler(
+    new Request("http://localhost:3000/api/auth/sign-up/email", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        email,
+        password,
+        name: "Alex Example",
+        firstName: "Alex",
+        lastName: "Example",
+      }),
+    }),
+  );
+  assert.equal(again.ok, true, await again.clone().text());
+  const reminder = sent.filter((message) => message.subject.includes("already have"));
+  assert.equal(reminder.length, 1);
+  assert.match(reminder[0]!.text, /Sign in/);
 });
