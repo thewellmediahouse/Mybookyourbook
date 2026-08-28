@@ -20,7 +20,7 @@ export async function cancelWorkspaceSubscription(
     throw new PaymentError("NO_SUBSCRIPTION", CHECKOUT_NO_SUBSCRIPTION);
   }
   const packed = unpackCustomer(subscription.providerCustomerId);
-  if (input.adapter === "payfast" || input.adapter === "payoneer") {
+  if (input.adapter === "payfast" || input.adapter === "payoneer" || input.adapter === "rapyd") {
     throw new PaymentError("NO_SUBSCRIPTION", CHECKOUT_CANCEL_NEEDS_PROVIDER);
   }
   await input.provider.cancelSubscription({

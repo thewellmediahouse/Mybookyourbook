@@ -45,7 +45,7 @@ flowchart TD
     I --> E
     F --> J[NotificationQueue]
     J --> K[EmailProvider]
-    B --> L[PayoneerCheckout]
+    B --> L[RapydCollect]
     L --> M[VerifiedCharge]
     M --> D
 ```
@@ -66,7 +66,7 @@ flowchart TD
 | Creative | OpenAI behind `CreativeDirectorProvider` |
 | Video gen | Seedance 2.5 via reAPI, 480p |
 | Upscale | Topaz Labs Video API, default `prob-4` |
-| Payments | Payoneer Checkout (ZAR and USD catalog amounts); PayFast and Paystack adapters unused |
+| Payments | Rapyd Collect (ZAR and USD catalog amounts); Payoneer, PayFast, and Paystack adapters unused |
 | Email | Resend behind provider abstraction |
 
 Forbidden: Supabase, Postgres-only SQL, public R2 URLs, video bytes in D1, customer-facing provider names.
@@ -90,7 +90,8 @@ lib/
   ai/ad-strategies/           # industry principles, not hardcoded ads
   r2/                         # object keys, MIME allowlist, magic-byte sniff, aws4fetch signed PUT/GET
   security/                   # rate limits, account deletion/export, support tickets, secret checks
-  importers/                  # BusinessImporter (no invented website data)
+  importers/                  # public page meta (og/title only) + unavailable business importer
+  studio/                     # Ad Studio lanes, methods, presets (business first, viral second)
   db/                         # Drizzle client + schema
   providers/video/seedance/   # prompt builder (Phase 12); submit/status later
   providers/upscale/topaz/
@@ -101,6 +102,7 @@ lib/
   lib/admin/                      # staff overview, job retry/refund/cancel, non-secret settings
   contrast.ts                 # WCAG hex contrast (design phase)
 public/brand/                 # replaceable SVG logos
+public/production30-homepage/ # sales homepage photographs, backgrounds, UI, icons
 containers/media-processing/  # FFmpeg/ffprobe image (Worker → container only)
 docs/CINEYOU_*.md
 wrangler.jsonc
@@ -122,9 +124,9 @@ open-next.config.ts
 | `AUTH_RATE_LIMIT` | Workers Rate Limiting | 23 |
 | `PRODUCTION_RATE_LIMIT` | Workers Rate Limiting | 23 |
 
-Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
+Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `RAPYD_ACCESS_KEY`, `RAPYD_SECRET_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
 
-Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`. Do not set `PAYMENTS_MODE=live` or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
+Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`. Do not set `PAYMENTS_MODE=live`, `RAPYD_MODE=live`, or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
 
 ## Tenancy
 
@@ -160,7 +162,7 @@ Uploads: auth → authorize workspace → short-lived signed PUT (10–20 min) w
 
 `CONCEPT_AI_MODE=mock|live` controls Commercial Concept only. `live` calls OpenAI Responses. Missing `OPENAI_API_KEY` must not silently mock. When unset, concept mode follows `AI_PROVIDER_MODE`.
 
-`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified Payoneer Checkout charge (`status.code` is `charged` on `GET /api/charges/{longId}` with merchant Basic auth, plus amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` without sandbox Payoneer credentials uses the mock adapter and makes no HTTP calls. Live Payoneer credentials in test mode are refused.
+`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified Rapyd payment (`status` is `CLO` and `paid` is `true` on `GET /v1/payments/{payment_id}` with signed Collect headers, plus amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` without sandbox Rapyd credentials uses the mock adapter and makes no HTTP calls. Live Rapyd credentials in test mode are refused. Sandbox Rapyd is refused when `PAYMENTS_MODE=live`.
 
 ## OpenNext + Workflows + Containers
 

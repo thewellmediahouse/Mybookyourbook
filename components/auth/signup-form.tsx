@@ -127,13 +127,14 @@ export function SignupForm({
         </span>
       </label>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" busy={pending}>
+      <Button type="submit" busy={pending} className="rounded-full">
         {pending ? "Creating account…" : "Create account"}
       </Button>
       {googleEnabled ? (
         <Button
           type="button"
           variant="outline"
+          className="rounded-full"
           onClick={() => authClient.signIn.social({ provider: "google", callbackURL: afterSignUp })}
         >
           Continue with Google

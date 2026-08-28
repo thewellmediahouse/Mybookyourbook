@@ -79,13 +79,13 @@ test("staff can record a money return without granting credits, and mark cancel 
       adminRecordMoneyRefund(
         db,
         { userId: owner, email: `ops.bill.${stamp}@cineyou.test`, adminEmails: staffActor.adminEmails },
-        { paymentId, note: "Returned in Payoneer Checkout" },
+        { paymentId, note: "Returned in Rapyd Client Portal" },
       ),
     AuthzError,
   );
   await adminRecordMoneyRefund(db, staffActor, {
     paymentId,
-    note: "Returned in Payoneer Checkout",
+    note: "Returned in Rapyd Client Portal",
   });
   const [payment] = await db.select().from(payments).where(eq(payments.id, paymentId)).limit(1);
   assert.equal(payment?.status, "refunded");

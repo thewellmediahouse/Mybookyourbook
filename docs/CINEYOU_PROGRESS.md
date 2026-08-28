@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-25 (Legal pages expanded from platform practice; still marked for counsel)
+Last updated: 2026-08-28 (public pages brought onto the sales homepage look)
 
 ## Foundation
 - [x] Next.js
@@ -518,6 +518,35 @@ Closed the support loop without live chat. Help tickets email `ADMIN_EMAILS` and
 Money returns are recorded on a confirmed payment after staff refunds in Payoneer Checkout — no invented refund API, no extra Ad Credits. Billing cancel for Payoneer/PayFast points to Help. Staff can mark `cancelAtPeriodEnd` after they stop the plan in Payoneer. Help articles explain when an Ad Credit comes back vs when money comes back.
 
 Verification: `npm run check`, `npm run lint`, `npm test`, `npm run db:verify`. Remote D1 `0006_support_ops` applied. Worker `cineyou` version `743376d1-85a8-4db4-90e1-201e7828a012` is live at https://cineyou.schalk-966.workers.dev with Contact, ticket mail, and Admin reply. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt (`--containers-rollout none`). `production30.com` is not attached (registrar NS `tld-ns.com`, not a Cloudflare zone).
+
+### 2026-08-28 — Rapyd Collect adapter
+
+Rapyd Collect replaces Payoneer Checkout as the payment adapter. Sandbox checkout is on when `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`, and both keys are set. Live Rapyd charges stay off until `PAYMENTS_MODE=live` and `RAPYD_MODE=live`.
+
+- Checkout: signed `POST /v1/checkout` on `sandboxapi.rapyd.net`, then redirect to the hosted Rapyd page. Credits only after signed `GET /v1/payments/{id}` returns `status=CLO` and `paid=true`, with amount, currency, and plan checks. Browser return URL is display-only. Live Rapyd credentials are refused while `PAYMENTS_MODE=test`. Monthly plans stay closed. ZAR and USD catalog amounts are charged in that currency.
+- Access key and secret key are `.dev.vars` / Wrangler secrets (never `NEXT_PUBLIC_*`, never committed). Webhook URL in the Rapyd Client Portal must be the exact public URL (`/api/webhooks/rapyd`). Payoneer, PayFast, and Paystack code remains unused. Worker secrets were not uploaded in this pass.
+
+Verification: `npm run check`, `npm run lint`, Rapyd/billing/security tests. Not deployed. `PAYMENTS_MODE` stays `test`. Worker secrets were not uploaded.
+
+### 2026-08-28 — Seedance 2.5 via reAPI stays the filming path
+
+Evaluated the Seedance 2 Generator playground (MuAPI 2.0, Postgres, Stripe). It is not merged. Filming stays `doubao-seedance-2.5-face` on reAPI. No adapter or UI change.
+
+### 2026-08-28 — Ad Studio (business advert first, viral videos second)
+
+`/dashboard/create` is now an Ad Studio hub instead of auto-opening the latest draft. Business advert is first: Website to advert (URL + format, published title/description only), Motion design, then looks (TVC, Cinematic, Corporate, Environments, Motion Studio, Creative Studio). Viral videos is second: Recreate a viral advert (stills + optional original URL), Lifestyle UGC, then looks (Lifestyle UGC, High energy, Funny). Each path creates a normal draft and continues the existing brief → concept → produce pipeline. No second video engine, no generated avatars, no fake instant video from a URL. Nav label is **Ad Studio**; overview CTA is **+ Create Advert**.
+
+Verification: `npm run check`, `npm run lint`, importer/studio tests. Not deployed.
+
+### 2026-08-28 — Sales homepage from supplied media pack
+
+Rebuilt `/` to the supplied sales mockup. Assets live in `public/production30-homepage/` (39 files). Business Sales Advert is first; Viral Growth Video is second. Wyzowl 2026 industry figures stay attributed and are not Production30 results. Button labels on `#2787FF` stay `#001038` (white on that blue fails AA). Existing logo, login, signup, pricing, and produce pipeline are unchanged.
+
+### 2026-08-28 — Public pages match the sales homepage
+
+How it works, Examples, Plans, Contact, legal, and auth now use the same navy sales theme, header, and closing CTA. Promo banner is off on public pages. Signup copy changes when `intent=advert` or `intent=viral`. Dashboard overview empty state and summary cards were tightened. Admin is unchanged. No fake testimonials or invented prices.
+
+Verification: `npm run check`, `npm run lint`, homepage/contrast tests. Not deployed.
 
 ### 2026-08-25 — Legal pages (working copy)
 

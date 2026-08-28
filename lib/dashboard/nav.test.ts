@@ -7,7 +7,7 @@ test("desktop navigation labels match the spec", () => {
     DESKTOP_NAV.map((item) => item.label),
     [
       "Overview",
-      "Create Commercial",
+      "Ad Studio",
       "Commercials",
       "Brands",
       "AI Identity",

@@ -17,7 +17,7 @@ export function RecordMoneyRefundForm({ paymentId }: { paymentId: string }) {
         required
         minLength={8}
         disabled={pending}
-        placeholder="Returned in Payoneer Checkout"
+        placeholder="Returned in Rapyd Client Portal"
       />
       <Button type="submit" variant="outline" busy={pending}>
         {pending ? "Saving…" : "Record money returned"}

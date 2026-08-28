@@ -63,13 +63,14 @@ export function LoginForm({
         <Input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>
       {error ? <p className="text-sm text-danger">{error}</p> : null}
-      <Button type="submit" busy={pending}>
+      <Button type="submit" busy={pending} className="rounded-full">
         {pending ? "Signing in…" : "Sign in"}
       </Button>
       {googleEnabled ? (
         <Button
           type="button"
           variant="outline"
+          className="rounded-full"
           onClick={() => authClient.signIn.social({ provider: "google", callbackURL: afterSignIn })}
         >
           Continue with Google

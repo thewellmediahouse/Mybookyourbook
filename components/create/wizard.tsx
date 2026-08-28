@@ -30,7 +30,8 @@ import {
   requireExplicitAspectRatio,
   type ToneOption,
 } from "@/lib/projects/brief";
-import { WIZARD_STEPS } from "@/lib/projects/copy";
+import { STUDIO_VIRAL_HINT, WIZARD_STEPS } from "@/lib/projects/copy";
+import { isStudioLane } from "@/lib/studio/presets";
 import { cn } from "@/lib/utils";
 
 export type WizardBrief = {
@@ -67,6 +68,8 @@ export function CreateWizard({
   concept,
   briefLocked,
   credits,
+  initialStep,
+  lane,
 }: {
   initial: WizardBrief;
   brands: { id: string; name: string }[];
@@ -74,9 +77,14 @@ export function CreateWizard({
   concept: PublicCreativeConcept | null;
   briefLocked: boolean;
   credits: number;
+  initialStep?: string;
+  lane?: string;
 }) {
   const router = useRouter();
-  const [step, setStep] = useState(concept ? Math.max(CONCEPT_STEP, 0) : 0);
+  const requestedStep = BRIEF_STEPS.findIndex((item) => item.id === initialStep);
+  const [step, setStep] = useState(
+    concept ? Math.max(CONCEPT_STEP, 0) : requestedStep >= 0 ? requestedStep : 0,
+  );
   const [brief, setBrief] = useState(initial);
   const [locked, setLocked] = useState(briefLocked);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -204,12 +212,18 @@ export function CreateWizard({
         {brief.projectId ? (
           <>
             {" "}
-            <Link href="/dashboard/create?new=1" className="underline">
-              Start a new commercial
+            <Link href="/dashboard/create" className="underline">
+              Back to Ad Studio
             </Link>
           </>
         ) : null}
       </p>
+
+      {isStudioLane(lane ?? "") ? (
+        <p className="mt-4 text-sm text-muted">
+          {lane === "viral" ? "Viral video" : "Business advert"}. Starring you, for this business.
+        </p>
+      ) : null}
 
       {BRIEF_STEPS[step]?.id === "campaign" ? (
         <section className="mt-8 flex flex-col gap-6">
@@ -397,6 +411,7 @@ export function CreateWizard({
         <ReferencesStep
           brief={brief}
           library={library}
+          viral={lane === "viral"}
           onError={setError}
           onChange={(references) => patch({ references }, false)}
         />
@@ -487,11 +502,13 @@ function FieldArea({
 function ReferencesStep({
   brief,
   library,
+  viral,
   onError,
   onChange,
 }: {
   brief: WizardBrief;
   library: { id: string; role: string; mimeType: string }[];
+  viral?: boolean;
   onError: (value: string | null) => void;
   onChange: (references: WizardBrief["references"]) => void;
 }) {
@@ -566,8 +583,9 @@ function ReferencesStep({
     <section className="mt-8 flex flex-col gap-6">
       <h2 className="font-display text-2xl text-foreground">References</h2>
       <p className="text-muted">
-        Optional. Up to 6 extra photos — product, shop, vehicle, or similar. Your private identity
-        photos are not used here.
+        {viral
+          ? STUDIO_VIRAL_HINT
+          : "Optional. Up to 6 extra photos — product, shop, vehicle, or similar. Your private identity photos are not used here."}
       </p>
       <div>
         <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border px-4 text-sm text-foreground">

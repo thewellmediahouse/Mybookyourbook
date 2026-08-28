@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 360" fill="none">
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="760" y2="360" gradientUnits="userSpaceOnUse"><stop stop-color="#111E39"/><stop offset="1" stop-color="#081328"/></linearGradient>
+    <linearGradient id="lineA" x1="0" y1="0" x2="130" y2="0"><stop stop-color="#2787FF"/><stop offset="1" stop-color="#5FB2FF"/></linearGradient>
+    <linearGradient id="lineB" x1="0" y1="0" x2="130" y2="0"><stop stop-color="#7657FF"/><stop offset="1" stop-color="#D171FF"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="1" y="1" width="758" height="358" rx="26" fill="url(#panel)" stroke="#60749D" stroke-opacity=".55" stroke-width="2"/>
+  <circle cx="24" cy="24" r="5" fill="#FF6B6B"/><circle cx="42" cy="24" r="5" fill="#FFD166"/><circle cx="60" cy="24" r="5" fill="#5AD394"/>
+  <text x="24" y="75" fill="#F7F8FC" font-family="Inter,Arial,sans-serif" font-size="21" font-weight="650">Ad performance overview</text>
+  <rect x="554" y="17" width="96" height="28" rx="8" fill="#172641" stroke="#5C6F94" stroke-opacity=".6"/><text x="570" y="36" fill="#DCE3F1" font-family="Inter,Arial,sans-serif" font-size="11">Last 30 days⌄</text>
+  <rect x="662" y="17" width="78" height="28" rx="8" fill="#172641" stroke="#5C6F94" stroke-opacity=".6"/><text x="677" y="36" fill="#DCE3F1" font-family="Inter,Arial,sans-serif" font-size="11">Campaigns⌄</text>
+  <g transform="translate(24 102)">
+    <rect width="166" height="222" rx="16" fill="#111F39" stroke="#5C6F94" stroke-opacity=".5"/><text x="16" y="30" fill="#E8EDF7" font-family="Inter,Arial,sans-serif" font-size="14">Video views</text><path d="M16 180 44 152l25 14 30-58 23 19 28-45" stroke="url(#lineA)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/><circle cx="150" cy="82" r="4" fill="#65B5FF"/>
+  </g>
+  <g transform="translate(205 102)">
+    <rect width="166" height="222" rx="16" fill="#111F39" stroke="#5C6F94" stroke-opacity=".5"/><text x="16" y="30" fill="#E8EDF7" font-family="Inter,Arial,sans-serif" font-size="14">Website clicks</text><path d="M16 180 40 160l24 8 31-66 26 31 29-57" stroke="url(#lineA)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/><circle cx="150" cy="76" r="4" fill="#65B5FF"/>
+  </g>
+  <g transform="translate(386 102)">
+    <rect width="166" height="222" rx="16" fill="#111F39" stroke="#5C6F94" stroke-opacity=".5"/><text x="16" y="30" fill="#E8EDF7" font-family="Inter,Arial,sans-serif" font-size="14">Enquiries</text><path d="M16 180 43 149l24 9 27-46 28 22 28-61" stroke="url(#lineB)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/><circle cx="150" cy="73" r="4" fill="#D171FF"/>
+  </g>
+  <g transform="translate(567 102)">
+    <rect width="166" height="222" rx="16" fill="#111F39" stroke="#5C6F94" stroke-opacity=".5"/><text x="16" y="30" fill="#E8EDF7" font-family="Inter,Arial,sans-serif" font-size="14">Sales</text><path d="M16 180 43 154l22 7 31-57 24 24 30-64" stroke="url(#lineB)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" filter="url(#glow)"/><circle cx="150" cy="64" r="4" fill="#D171FF"/>
+  </g>
+</svg>

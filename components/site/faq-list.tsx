@@ -1,14 +1,22 @@
 import { FAQS } from "@/lib/site/copy";
 
-export function FaqList() {
+export function FaqList({ className }: { className?: string }) {
   return (
-    <dl className="grid gap-3">
+    <div className={className}>
       {FAQS.map((item) => (
-        <div key={item.question} className="rounded-2xl border border-border bg-surface px-5 py-5">
-          <dt className="text-base font-semibold tracking-tight text-foreground">{item.question}</dt>
-          <dd className="mt-2 leading-7 text-muted">{item.answer}</dd>
-        </div>
+        <details
+          key={item.question}
+          className="group border-b border-[#111A31]/10 py-2 first:border-t first:border-[#111A31]/10"
+        >
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-left text-base font-semibold tracking-tight text-[#111A31] [&::-webkit-details-marker]:hidden">
+            {item.question}
+            <span className="shrink-0 text-lg text-[#2787FF] group-open:rotate-45" aria-hidden>
+              +
+            </span>
+          </summary>
+          <p className="pb-4 text-base leading-7 text-[#5A6480]">{item.answer}</p>
+        </details>
       ))}
-    </dl>
+    </div>
   );
 }

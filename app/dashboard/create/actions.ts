@@ -3,9 +3,13 @@
 import { requireUser } from "@/lib/auth";
 import { assertCanStartProduction, loadProjectAccess, loadWorkspaceMember } from "@/lib/authz";
 import { getDb } from "@/lib/db/client";
+import { fetchPublicPageMeta } from "@/lib/importers/page-meta";
 import { attachProjectReference, detachProjectReference } from "@/lib/projects/references";
 import { createDraftProject, updateDraftBrief, type BriefInput } from "@/lib/projects/save";
 import { queueObjectCleanup } from "@/lib/security/cleanup";
+import { RateLimitError } from "@/lib/security/errors";
+import { assertRateLimit } from "@/lib/security/rate-limit";
+import { buildStudioStart, type StudioStartInput } from "@/lib/studio/presets";
 import { ACTIVE_WORKSPACE_COOKIE, listUserWorkspaces } from "@/lib/workspaces/queries";
 import { cookies } from "next/headers";
 
@@ -53,6 +57,47 @@ export async function saveBriefAction(input: BriefInput & { projectId?: string |
     return { projectId };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "We couldn't save that brief." };
+  }
+}
+
+export async function previewWebsiteForAdvert(input: {
+  websiteUrl: string;
+}): Promise<{ title?: string; description?: string; url?: string; error?: string }> {
+  try {
+    const ctx = await requireDraftEditor();
+    await assertRateLimit(ctx.db, "import", ctx.userId);
+    const result = await fetchPublicPageMeta(input.websiteUrl);
+    if (!result.ok) {
+      return { error: result.reason };
+    }
+    return {
+      title: result.meta.title,
+      description: result.meta.description,
+      url: result.meta.url,
+    };
+  } catch (error) {
+    if (error instanceof RateLimitError) {
+      return { error: error.message };
+    }
+    return { error: error instanceof Error ? error.message : "We couldn't read that page." };
+  }
+}
+
+export async function startStudioAction(
+  input: StudioStartInput,
+): Promise<BriefSaveResult & { step?: string; lane?: string }> {
+  try {
+    const started = buildStudioStart(input);
+    if (!started.ok) {
+      return { error: started.error };
+    }
+    const saved = await saveBriefAction(started.patch);
+    if (saved.error || !saved.projectId) {
+      return saved;
+    }
+    return { projectId: saved.projectId, step: started.step, lane: started.lane };
+  } catch (error) {
+    return { error: error instanceof Error ? error.message : "We couldn't start that advert." };
   }
 }
 

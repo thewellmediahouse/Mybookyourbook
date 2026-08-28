@@ -47,19 +47,20 @@ export const VALUE_PROPS = [
 export const FAQS = [
   {
     question: "Do I need editing experience?",
-    answer: "No.",
+    answer:
+      "No. You tell us about the business, show us who you are, and approve the concept. We produce the commercial.",
   },
   {
     question: "What do I need?",
-    answer: "A short reference video, three clear photographs and information about your business.",
+    answer: "A short reference video, three clear photographs, and information about your business, offer and customer.",
   },
   {
     question: "What quality is delivered?",
-    answer: "Full HD 1080p after enhancement and finishing.",
+    answer: "Full HD 1080p after enhancement and finishing. Source filming is produced efficiently, then finished for delivery.",
   },
   {
     question: "Can I make another version?",
-    answer: "Yes. Each new production uses another Ad Credit.",
+    answer: "Yes. Each new production uses another Ad Credit. Concept and script changes before production do not use a credit.",
   },
   {
     question: "Why isn't my phone number generated inside the scene?",

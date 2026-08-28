@@ -69,6 +69,8 @@ test("NEXT_PUBLIC_ env in .env.example is not a secret", () => {
   assert.equal(isForbiddenPublicEnvName("NEXT_PUBLIC_PAYFAST_MERCHANT_KEY"), true);
   assert.equal(isForbiddenPublicEnvName("NEXT_PUBLIC_PAYFAST_PASSPHRASE"), true);
   assert.equal(isForbiddenPublicEnvName("NEXT_PUBLIC_PAYONEER_TOKEN"), true);
+  assert.equal(isForbiddenPublicEnvName("NEXT_PUBLIC_RAPYD_SECRET_KEY"), true);
+  assert.equal(isForbiddenPublicEnvName("NEXT_PUBLIC_RAPYD_ACCESS_KEY"), true);
 });
 
 test("rate limit, account deletion retains payments, and abuse tickets", async (t) => {

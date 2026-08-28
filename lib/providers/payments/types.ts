@@ -5,7 +5,7 @@ export type PaymentCheckoutInput = {
   reference: string;
   callbackUrl: string;
   metadata: Record<string, string>;
-  /** ISO 3166-1 alpha-2. Required for Payoneer Checkout LIST `country`. */
+  /** ISO 3166-1 alpha-2. Required for Rapyd Collect and Payoneer Checkout country. */
   country?: string;
   /** Paystack plan code. Official docs: this invalidates `amount`. */
   providerPlanCode?: string;

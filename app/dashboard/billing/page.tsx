@@ -125,7 +125,8 @@ export default async function BillingPage({
             {monthly.map((plan) => {
               const purchasable = isPurchasablePlan({ ...plan, active: true });
               const isCurrent = overview.subscription?.planCode === plan.code;
-              const monthlyNeedsProviderPlan = setup.adapter === "payfast" || setup.adapter === "payoneer";
+              const monthlyNeedsProviderPlan =
+                setup.adapter === "payfast" || setup.adapter === "payoneer" || setup.adapter === "rapyd";
               const isUpgrade =
                 currentCredits != null && plan.credits != null && plan.credits > currentCredits;
               const isDowngrade =
@@ -168,7 +169,7 @@ export default async function BillingPage({
                   label="Cancel subscription"
                   reason="This plan already cancels at the end of the current period."
                 />
-              ) : setup.adapter === "payfast" || setup.adapter === "payoneer" ? (
+              ) : setup.adapter === "payfast" || setup.adapter === "payoneer" || setup.adapter === "rapyd" ? (
                 <div>
                   <DisabledAction label="Cancel subscription" reason={CHECKOUT_CANCEL_NEEDS_PROVIDER} />
                   <Link

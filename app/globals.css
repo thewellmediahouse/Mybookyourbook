@@ -33,6 +33,23 @@
   background-image: radial-gradient(ellipse 90% 50% at 50% -12%, rgba(90, 163, 255, 0.2), transparent 58%);
 }
 
+[data-theme="sales"] {
+  --background: #071225;
+  --surface: #0b1730;
+  --surface-secondary: #10203c;
+  --foreground: #f7f8fc;
+  --muted: #9aa3b8;
+  --accent: #2787ff;
+  --accent-hover: #3d9aff;
+  --accent-foreground: #001038;
+  --accent-ink: #2787ff;
+  --accent-2: #a78bff;
+  --border: #243556;
+  --overlay: #001038;
+  --overlay-text: #f4f6fb;
+  --overlay-muted: #9aa3b8;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);
@@ -68,6 +85,12 @@ html:has([data-theme="public"]) body {
   color: #f4f6fb;
 }
 
+html:has([data-theme="sales"]),
+html:has([data-theme="sales"]) body {
+  background: #071225;
+  color: #f7f8fc;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -101,4 +124,26 @@ body {
 
 .p30-spinner {
   animation: p30-spin 0.75s linear infinite;
+}
+
+@keyframes sales-ribbon {
+  0%,
+  100% {
+    transform: translateX(0);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateX(10px);
+    opacity: 1;
+  }
+}
+
+.sales-ribbon {
+  animation: sales-ribbon 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sales-ribbon {
+    animation: none;
+  }
 }

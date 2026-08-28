@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { SalesPageHero } from "@/components/site/sales-sections";
 import { PublicShell } from "@/components/site/public-shell";
 
 export function LegalPage({
@@ -12,14 +13,23 @@ export function LegalPage({
 }) {
   return (
     <PublicShell>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-16 pb-24">
-        <p className="rounded-2xl border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-ink">
-          Requires professional legal review before launch. This is a working copy, not legal advice,
-          and is not attorney-reviewed.
-        </p>
-        <h1 className="mt-8 font-display text-4xl tracking-tight text-foreground">{title}</h1>
-        {updated ? <p className="mt-3 text-sm text-muted">Last updated {updated}</p> : null}
-        <div className="mt-8 space-y-4 leading-7 text-muted">{children}</div>
+      <main>
+        <SalesPageHero
+          eyebrow="LEGAL"
+          title={title}
+          description={
+            updated
+              ? `Last updated ${updated}. Requires professional legal review before launch.`
+              : "Requires professional legal review before launch. This is a working copy, not legal advice."
+          }
+        />
+        <article className="mx-auto w-full max-w-3xl flex-1 px-6 py-12 pb-24">
+          <p className="rounded-2xl border border-accent/40 bg-surface px-4 py-3 text-sm text-accent-ink">
+            Requires professional legal review before launch. This is a working copy, not legal advice,
+            and is not attorney-reviewed.
+          </p>
+          <div className="mt-8 space-y-4 leading-7 text-muted">{children}</div>
+        </article>
       </main>
     </PublicShell>
   );

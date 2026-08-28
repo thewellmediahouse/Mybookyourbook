@@ -4,8 +4,9 @@ import type { Db } from "@/lib/db/client";
 import {
   PaymentError,
   payoneerChargeToWebhookEvent,
+  rapydPaymentToWebhookEvent,
 } from "@/lib/providers/payments";
-import type { ParsedWebhookEvent, PaymentProvider, PayoneerChargeView } from "@/lib/providers/payments";
+import type { ParsedWebhookEvent, PaymentProvider, PayoneerChargeView, RapydPaymentView } from "@/lib/providers/payments";
 import { getPaymentByReference } from "./queries";
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -85,6 +86,16 @@ export function chargeSnapshotFromWebhook(
         }
       : undefined,
     payloadJson: JSON.stringify({ event: parsed.event, reference }),
+  };
+}
+
+async function attachStoredPaymentMetadata(db: Db, snapshot: ChargeSnapshot) {
+  const storedPayment = await getPaymentByReference(db, snapshot.provider, snapshot.reference);
+  const stored = parseMetadata(storedPayment?.metadataJson);
+  snapshot.metadata = {
+    workspaceId: storedPayment?.workspaceId ?? stored.workspaceId ?? snapshot.metadata.workspaceId,
+    planId: stored.planId ?? snapshot.metadata.planId,
+    paymentId: storedPayment?.id ?? stored.paymentId ?? snapshot.metadata.paymentId,
   };
 }
 
@@ -173,13 +184,46 @@ export async function processPayoneerNotification(
   if (!snapshot) {
     return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
   }
-  const payment = await getPaymentByReference(db, "payoneer", snapshot.reference);
-  const stored = parseMetadata(payment?.metadataJson);
-  snapshot.metadata = {
-    workspaceId: payment?.workspaceId ?? stored.workspaceId,
-    planId: stored.planId,
-    paymentId: payment?.id ?? stored.paymentId,
-  };
+  await attachStoredPaymentMetadata(db, snapshot);
+  const result = await fulfillVerifiedCharge(db, snapshot);
+  return { httpStatus: 200 as const, ...result };
+}
+
+export async function processRapydNotification(
+  db: Db,
+  input: {
+    rawBody: string;
+    signatureOk: boolean;
+    provider: PaymentProvider;
+    confirm: (paymentId: string) => Promise<RapydPaymentView | null>;
+  },
+) {
+  if (!input.signatureOk) {
+    throw new PaymentError("INVALID_SIGNATURE", "We couldn't confirm that payment event.");
+  }
+  const parsed = input.provider.handleWebhook({
+    rawBody: input.rawBody,
+    signature: null,
+  });
+  if (parsed.event !== "rapyd.notification") {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const paymentId = typeof parsed.data.id === "string" ? parsed.data.id : "";
+  if (!paymentId) {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const confirmed = await input.confirm(paymentId);
+  if (!confirmed || confirmed.status !== "CLO" || !confirmed.paid) {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  const mapped = rapydPaymentToWebhookEvent(confirmed);
+  const snapshot = chargeSnapshotFromWebhook(mapped, "rapyd");
+  if (!snapshot) {
+    return { httpStatus: 200 as const, granted: false, alreadyProcessed: false };
+  }
+  await attachStoredPaymentMetadata(db, snapshot);
+  snapshot.last4 = confirmed.last4;
+  snapshot.brand = confirmed.brand;
   const result = await fulfillVerifiedCharge(db, snapshot);
   return { httpStatus: 200 as const, ...result };
 }

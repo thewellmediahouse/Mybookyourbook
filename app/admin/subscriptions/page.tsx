@@ -12,7 +12,7 @@ export default async function AdminSubscriptionsPage() {
       <PageIntro
         kicker="STAFF"
         title="Subscriptions"
-        description="Mark cancel at period end only after you have stopped the plan in Payoneer. Monthly self-serve cancel is not connected yet."
+        description="Mark cancel at period end only after you have stopped the plan in the Rapyd Client Portal. Monthly self-serve cancel is not connected yet."
       />
       <AdminTable
         headers={["Status", "Provider", "Workspace", "Period end", "Cancel"]}

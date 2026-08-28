@@ -27,7 +27,7 @@ export function CommercialList({
                     ? `/dashboard/commercials/${item.id}/production`
                     : `/dashboard/commercials/${item.id}`
               }
-              className="flex flex-col gap-4 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-accent sm:flex-row sm:items-center"
+              className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent sm:flex-row sm:items-center"
             >
               <div className="h-28 w-full overflow-hidden rounded-md bg-surface-secondary sm:h-20 sm:w-36 sm:shrink-0">
                 {item.thumbnailAssetId ? (

@@ -1,6 +1,6 @@
 export const DESKTOP_NAV = [
   { href: "/dashboard", label: "Overview", exact: true },
-  { href: "/dashboard/create", label: "Create Commercial", exact: false },
+  { href: "/dashboard/create", label: "Ad Studio", exact: false },
   { href: "/dashboard/commercials", label: "Commercials", exact: false },
   { href: "/dashboard/brands", label: "Brands", exact: false },
   { href: "/dashboard/identity", label: "AI Identity", exact: false },

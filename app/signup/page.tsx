@@ -14,13 +14,20 @@ export const dynamic = "force-dynamic";
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; intent?: string }>;
 }) {
-  const next = safeInviteNext((await searchParams).next);
+  const params = await searchParams;
+  const next = safeInviteNext(params.next);
+  const description =
+    params.intent === "viral"
+      ? "We'll email you a confirmation link. After that, you can start a short social growth video starring you."
+      : params.intent === "advert"
+        ? "We'll email you a confirmation link. After that, you can start a sales advert starring you."
+        : "We'll email you a confirmation link. You must open that link before you can sign in.";
   return (
     <AuthShell
       title="Create your account"
-      description="We'll email you a confirmation link. You must open that link before you can sign in."
+      description={description}
     >
       <SignupForm googleEnabled={await googleAuthEnabled()} next={next} />
     </AuthShell>

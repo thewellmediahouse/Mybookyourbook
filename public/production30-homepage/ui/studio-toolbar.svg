@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 140" fill="none">
+  <rect x="1" y="1" width="1178" height="138" rx="24" fill="#0A162B" stroke="#334D79" stroke-width="2"/>
+  <g font-family="Inter,Arial,sans-serif" font-size="15">
+    <rect x="20" y="18" width="116" height="42" rx="10" fill="#102648" stroke="#2787FF"/><text x="54" y="44" fill="#F7F8FC">▣ Advert</text>
+    <rect x="146" y="18" width="104" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="178" y="44" fill="#D6DFEF">▱ Viral</text>
+    <rect x="20" y="74" width="112" height="42" rx="10" fill="#0E2A51" stroke="#2787FF"/><text x="51" y="100" fill="#48A1FF">◇ Product</text>
+    <rect x="142" y="74" width="108" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="170" y="100" fill="#D6DFEF">▧ Service</text>
+    <rect x="260" y="74" width="96" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="287" y="100" fill="#D6DFEF">◇ Offer</text>
+    <rect x="366" y="74" width="88" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="397" y="100" fill="#D6DFEF">♙ POV</text>
+    <rect x="464" y="74" width="126" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="492" y="100" fill="#D6DFEF">▢ Storytime</text>
+    <rect x="600" y="74" width="166" height="42" rx="10" fill="#111E34" stroke="#314363"/><text x="626" y="100" fill="#D6DFEF">⟷ Before &amp; After</text>
+    <text x="826" y="39" fill="#D6DFEF">Duration</text>
+    <rect x="824" y="65" width="74" height="50" rx="11" fill="#111E34" stroke="#314363"/><text x="848" y="95" fill="#D6DFEF">15s</text>
+    <rect x="908" y="65" width="74" height="50" rx="11" fill="#111E34" stroke="#314363"/><text x="932" y="95" fill="#D6DFEF">20s</text>
+    <rect x="992" y="65" width="82" height="50" rx="11" fill="#2787FF"/><text x="1018" y="95" fill="#FFFFFF" font-weight="700">30s</text>
+  </g>
+</svg>

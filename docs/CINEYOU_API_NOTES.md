@@ -29,7 +29,8 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 | Cloudflare Containers | Phase 18 | https://developers.cloudflare.com/containers/ |
 | Cloudflare Queues | Phase 20 | https://developers.cloudflare.com/queues/ |
 | Paystack | Phase 14 (unused leftover) | https://paystack.com/docs |
-| Payoneer Checkout | Payments (primary) | https://checkoutdocs.payoneer.com/ / https://www.npmjs.com/package/@payoneer/op-payment-widget-v3 |
+| Rapyd Collect | Payments (primary) | https://docs.rapyd.net/en/create-checkout-page.html |
+| Payoneer Checkout | Payments (unused leftover) | https://checkoutdocs.payoneer.com/ / https://www.npmjs.com/package/@payoneer/op-payment-widget-v3 |
 | PayFast | Payments (unused leftover) | https://developers.payfast.co.za/docs |
 | Resend | Phase 20 | https://resend.com/docs |
 
@@ -229,6 +230,24 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - New Help / Contact tickets email `ADMIN_EMAILS` (`support-staff`) and the customer (`support-received`). Staff replies email the customer (`support-reply`) through the existing Resend adapter. No Intercom/Crisp.
 - Money returns are recorded in D1 after staff refund in the **Payoneer Checkout dashboard**. Official Checkout list/charge docs used for payments do not document a merchant refund HTTP we can call; do not invent `POST /refunds`. Payment status becomes `refunded`. Ad Credits are not granted from that action.
 - Monthly cancel still cannot self-serve. Staff sets `cancelAtPeriodEnd` in D1 after stopping the plan in Payoneer.
+
+### 2026-08-28 — Rapyd Collect is the payment provider
+
+- Official Collect (fetched 2026-08-28): [Create Checkout Page](https://docs.rapyd.net/en/create-checkout-page.html) `POST https://sandboxapi.rapyd.net/v1/checkout` (live host `api.rapyd.net`). [Request signatures](https://docs.rapyd.net/en/request-signatures.html): `BASE64(HMAC-SHA256(http_method + url_path + salt + timestamp + access_key + secret_key + body).digest("hex"))`. Official Node sample hashes **hex then Base64**. `url_path` starts at `/v1` and includes query string when present. Headers: `access_key`, `salt`, `timestamp`, `signature`, optional `idempotency`.
+- Checkout body uses documented fields only: `amount` (major units), `country` (ISO 3166-1 alpha-2), `currency`, `merchant_reference_id`, `metadata`, optional `complete_checkout_url` / `cancel_checkout_url`. Hosted redirect is `redirect_url` on `sandboxcheckout.rapyd.net` (or live checkout). Those return URLs **do not support localhost**; we omit them unless the callback is public HTTPS. Catalog ZAR and USD are charged in that currency. EUR stays closed. Monthly / recurring is not wired; monthly buttons stay closed.
+- Webhooks: [Webhook authentication](https://docs.rapyd.net/en/webhook-authentication.html) omits HTTP method; `url_path` is the **full** configured webhook URL. [PAYMENT_COMPLETED](https://docs.rapyd.net/en/payment-completed-webhook.html) (and PAYMENT_SUCCEEDED as a retrieve trigger) POST JSON to `/api/webhooks/rapyd`. We do **not** grant from that body or from the browser return. Confirm with signed `GET /v1/payments/{payment_id}` ([Retrieve Payment](https://docs.rapyd.net/en/retrieve-payment.html)) and require `status === "CLO"` **and** `paid === true`. PAYMENT_SUCCEEDED can be `ACT` during 3DS. Amount is converted to minor units by rounding. Match stored payment amount/currency/plan. Invalid JSON or bad signature → 400. GET failure other than 404 → 500 so Rapyd can retry. Pending/non-closed → 200, no credits.
+- `PAYMENTS_MODE=test` without sandbox credentials: mock adapter, no HTTP. Live Rapyd (`RAPYD_MODE=live`) in test mode is refused. `PAYMENTS_MODE=live` requires `RAPYD_MODE=live` plus access/secret keys and does not fall back to mock. Sandbox credentials are refused in live payments mode. Rapyd is preferred over Payoneer when both sandbox pairs are set.
+- Grant idempotency: `purchase:rapyd:{merchant_reference_id}`. Event idempotency: `rapyd` + payment id. Access key and secret key stay in `.dev.vars` / Wrangler secrets (never `NEXT_PUBLIC_*`). Payoneer, PayFast, and Paystack adapters remain unused.
+- Money returns are recorded in D1 after staff refund in the **Rapyd Client Portal**. Do not invent a Collect refund HTTP. Payment status becomes `refunded`. Ad Credits are not granted from that action.
+
+### 2026-08-28 — Seedance 2 Generator evaluated; filming stays reAPI 2.5
+
+- Evaluated [SamurAIGPT/seedance-2-generator](https://github.com/SamurAIGPT/seedance-2-generator) (local clone `Dev/seedance-2-generator`). It is a Vercel playground: NextAuth, Prisma PostgreSQL, Stripe, MuAPI Seedance **2.0 / Mini**. Its README still marks Seedance 2.5 as coming soon. Browser-pasted MuAPI keys and persisted CDN output URLs are not acceptable here.
+- Filming stays the existing contract: model `doubao-seedance-2.5-face`, `Authorization: Bearer $REAPI_API_KEY`, `POST https://reapi.ai/api/v1/videos/generations`, poll `GET /api/v1/tasks/{id}`, 480p / 30s, identity photos + presenter video as signed R2 GET URLs, copy result bytes into private R2. Do not adopt MuAPI, Seedance 2.0, Postgres, or Stripe for this product. Do not copy unsigned MuAPI webhooks. `audio_urls` remains omitted unless a later official-docs pass says otherwise.
+
+### 2026-08-28 — Website to advert reads published page facts only
+
+- Ad Studio “Website to advert” fetches the customer-supplied public `http`/`https` URL server-side and copies `og:title` / `og:description` (or `twitter:` / `<title>` fallbacks). It does not invent an offer, phone, or tagline. Localhost, `.local`, RFC1918, and link-local hosts are refused, including after redirects. If the page cannot be read, the owner types the brief. The existing `getBusinessImporter()` still returns unavailable for onboarding.
 
 ## Open questions (do not guess in code)
 

@@ -9,28 +9,45 @@ import { SUPPORT_ABUSE_HINT, SUPPORT_CATEGORIES } from "@/lib/security/copy";
 
 const initial: ContactActionState = {};
 
+const fieldClass =
+  "h-11 rounded-xl border border-[#111A31]/12 bg-[#F7F8FC] px-3 text-base text-[#111A31] placeholder:text-[#5A6480]";
+
 export function PublicContactForm() {
   const [state, action, pending] = useActionState(sendPublicContactMessage, initial);
 
   return (
-    <form action={action} className="mt-8 flex max-w-xl flex-col gap-4">
+    <form action={action} className="mt-8 flex flex-col gap-4">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="name">Your name</Label>
-        <Input id="name" name="name" autoComplete="name" disabled={pending} />
+        <Label htmlFor="name" className="text-[#111A31]">
+          Your name
+        </Label>
+        <Input id="name" name="name" autoComplete="name" disabled={pending} className={fieldClass} />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" required autoComplete="email" disabled={pending} />
+        <Label htmlFor="email" className="text-[#111A31]">
+          Email
+        </Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          disabled={pending}
+          className={fieldClass}
+        />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="category">Category</Label>
+        <Label htmlFor="category" className="text-[#111A31]">
+          Category
+        </Label>
         <select
           id="category"
           name="category"
           defaultValue=""
           required
           disabled={pending}
-          className="h-11 rounded-md border border-border bg-surface px-3 text-base text-foreground"
+          className={fieldClass}
         >
           <option value="" disabled>
             Choose one
@@ -43,11 +60,15 @@ export function PublicContactForm() {
         </select>
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="subject">Subject</Label>
-        <Input id="subject" name="subject" required disabled={pending} />
+        <Label htmlFor="subject" className="text-[#111A31]">
+          Subject
+        </Label>
+        <Input id="subject" name="subject" required disabled={pending} className={fieldClass} />
       </div>
       <div className="flex flex-col gap-2">
-        <Label htmlFor="message">Message</Label>
+        <Label htmlFor="message" className="text-[#111A31]">
+          Message
+        </Label>
         <textarea
           id="message"
           name="message"
@@ -55,13 +76,13 @@ export function PublicContactForm() {
           minLength={10}
           disabled={pending}
           rows={6}
-          className="rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground"
+          className="rounded-xl border border-[#111A31]/12 bg-[#F7F8FC] px-3 py-2 text-base text-[#111A31]"
         />
       </div>
-      <p className="text-sm text-muted">{SUPPORT_ABUSE_HINT}</p>
+      <p className="text-sm text-[#5A6480]">{SUPPORT_ABUSE_HINT}</p>
       {state.error ? <p className="text-sm text-danger">{state.error}</p> : null}
       {state.message ? <p className="text-sm text-success">{state.message}</p> : null}
-      <Button type="submit" busy={pending}>
+      <Button type="submit" busy={pending} className="rounded-full">
         {pending ? "Sending…" : "Send message"}
       </Button>
     </form>

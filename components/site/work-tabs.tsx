@@ -26,18 +26,16 @@ export function WorkTabs() {
                 id={`work-tab-${item.number}`}
                 aria-controls="work-tab-panel"
                 className={cn(
-                  "rounded-2xl border px-5 py-4 text-left transition-colors",
+                  "rounded-[1.4rem] border px-5 py-4 text-left transition-colors",
                   selected
-                    ? "border-accent bg-surface"
-                    : "border-transparent hover:bg-surface",
+                    ? "border-[#2787FF] bg-white shadow-[0_16px_40px_rgba(17,26,49,0.08)]"
+                    : "border-transparent bg-white/60 hover:bg-white",
                 )}
                 onClick={() => setActive(index)}
               >
-                <p className="text-[11px] font-medium tracking-[0.2em] text-accent-ink">{item.number}</p>
-                <p className="mt-1 text-lg font-semibold text-foreground">{item.title}</p>
-                {selected ? (
-                  <p className="mt-1.5 text-sm leading-6 text-muted">{item.body}</p>
-                ) : null}
+                <p className="text-[11px] font-semibold tracking-[0.2em] text-[#2787FF]">{item.number}</p>
+                <p className="mt-1 text-lg font-semibold text-[#111A31]">{item.title}</p>
+                {selected ? <p className="mt-1.5 text-sm leading-6 text-[#5A6480]">{item.body}</p> : null}
               </button>
             );
           })}
@@ -48,7 +46,7 @@ export function WorkTabs() {
           src={clip.src}
           title={step.title}
           subtitle={step.body}
-          className="aspect-[16/10] min-h-[18rem] rounded-[1.75rem] shadow-[0_24px_60px_rgba(0,16,56,0.12)]"
+          className="aspect-[16/10] min-h-[18rem] rounded-[1.75rem] shadow-[0_24px_60px_rgba(17,26,49,0.16)]"
         />
       </div>
     </div>

@@ -44,3 +44,30 @@ test("public cinema tokens pass AA and do not use white on blue", () => {
   assert.equal(forbidden[0]?.pass, false);
   assert.equal(forbidden[1]?.pass, false);
 });
+
+test("sales homepage tokens pass AA and do not use white on electric blue", () => {
+  const findings = checkContrastPairs([
+    { name: "text on navy", foreground: "#F7F8FC", background: "#071225", min: 4.5 },
+    { name: "muted on navy", foreground: "#9AA3B8", background: "#071225", min: 4.5 },
+    { name: "text on midnight", foreground: "#F7F8FC", background: "#0B1730", min: 4.5 },
+    { name: "accent ink on navy", foreground: "#2787FF", background: "#071225", min: 4.5 },
+    { name: "gradient end on navy", foreground: "#A78BFF", background: "#071225", min: 4.5 },
+    { name: "button label on electric blue", foreground: "#001038", background: "#2787FF", min: 4.5 },
+    { name: "button label on hover", foreground: "#001038", background: "#3D9AFF", min: 4.5 },
+    { name: "ink on light", foreground: "#111A31", background: "#F7F8FC", min: 4.5 },
+    { name: "ink on white", foreground: "#111A31", background: "#FFFFFF", min: 4.5 },
+    { name: "muted on light", foreground: "#5A6480", background: "#F7F8FC", min: 4.5 },
+    { name: "muted on white", foreground: "#5A6480", background: "#FFFFFF", min: 4.5 },
+    { name: "viral button label", foreground: "#001038", background: "#B8A4FF", min: 4.5 },
+  ]);
+  for (const finding of findings) {
+    assert.equal(finding.pass, true, `${finding.name} ${finding.ratio?.toFixed(1)}:1`);
+  }
+
+  const forbidden = checkContrastPairs([
+    { name: "white on electric blue", foreground: "#FFFFFF", background: "#2787FF", min: 4.5 },
+    { name: "violet as small text on navy", foreground: "#7657FF", background: "#071225", min: 4.5 },
+  ]);
+  assert.equal(forbidden[0]?.pass, false);
+  assert.equal(forbidden[1]?.pass, false);
+});

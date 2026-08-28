@@ -10,11 +10,13 @@
   },
   "vars": {
     // Filming/enhancement/branding stay mock. Concept may be live via CONCEPT_AI_MODE + OPENAI_API_KEY.
-    // Payoneer live charges stay off until PAYMENTS_MODE=live is approved.
+    // Rapyd sandbox checkout is on when RAPYD_ACCESS_KEY / RAPYD_SECRET_KEY are set.
+    // Live Rapyd charges stay off until PAYMENTS_MODE=live and RAPYD_MODE=live.
     "AI_PROVIDER_MODE": "mock",
     "CONCEPT_AI_MODE": "live",
     "OPENAI_MODEL": "gpt-5.6",
     "PAYMENTS_MODE": "test",
+    "RAPYD_MODE": "sandbox",
     "PAYFAST_USD_ZAR_RATE": "18.5",
     "BETTER_AUTH_URL": "https://cineyou.schalk-966.workers.dev",
     "NEXT_PUBLIC_APP_URL": "https://cineyou.schalk-966.workers.dev",

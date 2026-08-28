@@ -15,7 +15,7 @@ On a new session or when context is large, reread those five files. They are aut
 
 ## Stack (do not substitute)
 
-Next.js App Router + TypeScript strict + Tailwind + shadcn/ui. Cloudflare Workers via `@opennextjs/cloudflare`. D1 + Drizzle. Better Auth. Private R2. Workflows for production jobs. Containers + FFmpeg for branding. Payoneer Checkout first (ZAR and USD). No Supabase. No PostgreSQL-specific SQL. No video blobs in D1.
+Next.js App Router + TypeScript strict + Tailwind + shadcn/ui. Cloudflare Workers via `@opennextjs/cloudflare`. D1 + Drizzle. Better Auth. Private R2. Workflows for production jobs. Containers + FFmpeg for branding. Rapyd Collect first (ZAR and USD). No Supabase. No PostgreSQL-specific SQL. No video blobs in D1.
 
 ## Customer language
 

@@ -26,7 +26,7 @@ export async function adminRecordMoneyRefund(
   assertAdminActor(actor.email, actor.adminEmails);
   const note = input.note.trim();
   if (note.length < 8) {
-    throw new Error("Note where you returned the money (for example in Payoneer Checkout).");
+    throw new Error("Note where you returned the money (for example in the Rapyd Client Portal).");
   }
   const [payment] = await db.select().from(payments).where(eq(payments.id, input.paymentId)).limit(1);
   if (!payment) {

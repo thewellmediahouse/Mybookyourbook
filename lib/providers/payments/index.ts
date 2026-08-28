@@ -4,6 +4,7 @@ import { createMockPaymentProvider } from "./mock";
 import { getPaymentsSetup, type PaymentsEnv } from "./mode";
 import { createPayfastProvider } from "./payfast";
 import { createPayoneerProvider } from "./payoneer";
+import { createRapydProvider } from "./rapyd";
 import type { PaymentProvider } from "./types";
 
 export { PaymentError } from "./errors";
@@ -41,6 +42,25 @@ export {
   verifyPayfastItnSignature,
 } from "./payfast";
 export { PAYSTACK_SIGNATURE_HEADER, signPaystackBody, verifyPaystackSignature } from "./signature";
+export {
+  buildRapydCheckoutRequest,
+  confirmRapydPayment,
+  createRapydProvider,
+  parseRapydCheckout,
+  parseRapydPayment,
+  parseRapydWebhook,
+  rapydAmountFromMinor,
+  rapydAmountToMinor,
+  rapydApiUrl,
+  rapydCountry,
+  rapydPaymentToWebhookEvent,
+  rapydPaymentUrl,
+  rapydRequestSignature,
+  rapydWebhookSignature,
+  signaturesMatch,
+  verifyRapydWebhookSignature,
+} from "./rapyd";
+export type { RapydMode, RapydPaymentView } from "./rapyd";
 export type {
   CancelSubscriptionInput,
   CreateSubscriptionInput,
@@ -62,6 +82,18 @@ export function getPaymentProvider(
     return createMockPaymentProvider({
       appUrl,
       webhookSecret: setup.webhookSecret ?? undefined,
+    });
+  }
+  if (setup.adapter === "rapyd") {
+    if (!setup.checkoutAvailable || !setup.rapydAccessKey || !setup.rapydSecretKey || !setup.rapydMode) {
+      throw new PaymentError("NOT_CONNECTED", "Payment is not connected.");
+    }
+    return createRapydProvider({
+      accessKey: setup.rapydAccessKey,
+      secretKey: setup.rapydSecretKey,
+      mode: setup.rapydMode,
+      appUrl,
+      webhookUrl: setup.rapydWebhookUrl ?? undefined,
     });
   }
   if (setup.adapter === "payoneer") {

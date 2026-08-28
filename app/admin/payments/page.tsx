@@ -13,7 +13,7 @@ export default async function AdminPaymentsPage() {
       <PageIntro
         kicker="STAFF"
         title="Payments"
-        description="Record money returned only after you have refunded the payment in Payoneer Checkout. This does not add Ad Credits."
+        description="Record money returned only after you have refunded the payment in the Rapyd Client Portal. This does not add Ad Credits."
       />
       <AdminTable headers={["Reference", "Status", "Amount", "Workspace", "Money returned"]} empty={rows.length === 0}>
         {rows.map((row) => (

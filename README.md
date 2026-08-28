@@ -28,7 +28,7 @@ Canonical product docs:
 | Branding encode | Cloudflare Containers + FFmpeg |
 | Video generation | Seedance 2.5 via reAPI (480p source) |
 | Enhancement | Topaz Labs Video API (1080p) |
-| Payments | Payoneer Checkout first (ZAR and USD). PayFast and Paystack adapters remain unused. |
+| Payments | Rapyd Collect first (ZAR and USD, sandbox while `PAYMENTS_MODE=test`). Payoneer, PayFast, and Paystack adapters remain unused. |
 | Email | Resend |
 
 Do not use Supabase or PostgreSQL-specific SQL. Do not store videos in D1.
@@ -110,7 +110,7 @@ Bindings:
 - `COMMERCIAL_PRODUCTION_WORKFLOW` / `MediaProcessingService` exported from `worker.ts`
 - `AUTH_RATE_LIMIT`, `PRODUCTION_RATE_LIMIT`
 
-Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`.
+Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`.
 
 Secrets stay out of git. For a future deploy, set them with Wrangler **after** you explicitly decide to ship — `wrangler secret put` publishes a new Worker version:
 
@@ -121,6 +121,8 @@ npx wrangler secret put INTERNAL_SERVICE_SECRET
 # npx wrangler secret put REAPI_API_KEY
 # npx wrangler secret put TOPAZ_API_KEY
 # npx wrangler secret put OPENAI_API_KEY
+# npx wrangler secret put RAPYD_ACCESS_KEY
+# npx wrangler secret put RAPYD_SECRET_KEY
 # npx wrangler secret put PAYONEER_TOKEN
 # npx wrangler secret put PAYFAST_MERCHANT_KEY
 # npx wrangler secret put PAYFAST_PASSPHRASE

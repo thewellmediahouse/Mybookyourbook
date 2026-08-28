@@ -10,7 +10,7 @@ export const VIEWER_CANNOT_CREATE =
 export const BUY_CREDITS_UNAVAILABLE =
   "Buying credits opens when payment is connected. No charge can be made from here yet.";
 export const BUY_CREDITS_OWNER_ONLY = "Only the studio owner can buy credits.";
-export const CREATE_BUTTON = "+ Create Commercial";
+export const CREATE_BUTTON = "+ Create Advert";
 export const WELCOME_SUBHEADING = "What would you like to create today?";
 export const COMMERCIALS_HEADING = "Your Commercials";
 

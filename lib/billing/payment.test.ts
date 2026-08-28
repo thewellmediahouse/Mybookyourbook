@@ -9,13 +9,14 @@ import { eq } from "drizzle-orm";
 import { startCheckout } from "./checkout";
 import { insertTestPlan } from "./plans";
 import { inspectCheckoutRedirect } from "./redirect";
-import { processPayoneerNotification, processSignedPayfastItn, processSignedPaystackWebhook } from "./webhook";
+import { processPayoneerNotification, processRapydNotification, processSignedPayfastItn, processSignedPaystackWebhook } from "./webhook";
 import { fulfillVerifiedCharge } from "./fulfill";
 import { getActiveSubscription } from "./queries";
 import {
   createMockPaymentProvider,
   createPayfastProvider,
   createPayoneerProvider,
+  createRapydProvider,
   getPaymentsSetup,
   md5Hex,
   payfastUrlEncode,
@@ -90,9 +91,35 @@ test("Paystack webhook signature is HMAC-SHA512 of the raw body", () => {
   assert.equal(verifyPaystackSignature(body, "deadbeef", secret), false);
 });
 
-test("payment mode never uses live Payoneer in test, and live does not silently mock", () => {
+test("payment mode never uses live Rapyd or Payoneer in test, and live does not silently mock", () => {
   assert.deepEqual(getPaymentsSetup({ PAYMENTS_MODE: "test" }).adapter, "mock");
   assert.equal(getPaymentsSetup({ PAYMENTS_MODE: "test" }).checkoutAvailable, true);
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
+      RAPYD_MODE: "live",
+      RAPYD_ACCESS_KEY: "rak_live_must_not_run",
+      RAPYD_SECRET_KEY: "rsk_live_must_not_run_value",
+    }).checkoutAvailable,
+    false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
+      RAPYD_ACCESS_KEY: "rak_sandbox",
+      RAPYD_SECRET_KEY: "rsk_sandbox_secret",
+    }).checkoutAvailable,
+    false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
+      RAPYD_MODE: "sandbox",
+      RAPYD_ACCESS_KEY: "rak_sandbox",
+      RAPYD_SECRET_KEY: "rsk_sandbox_secret",
+    }).adapter,
+    "rapyd",
+  );
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "test",
@@ -146,6 +173,24 @@ test("payment mode never uses live Payoneer in test, and live does not silently 
       PAYONEER_TOKEN: "live-token-must-not-run",
     }).checkoutAvailable,
     true,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "live",
+      RAPYD_MODE: "sandbox",
+      RAPYD_ACCESS_KEY: "rak_sandbox",
+      RAPYD_SECRET_KEY: "rsk_sandbox_secret",
+    }).checkoutAvailable,
+    false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "live",
+      RAPYD_MODE: "live",
+      RAPYD_ACCESS_KEY: "rak_live_must_not_run",
+      RAPYD_SECRET_KEY: "rsk_live_must_not_run_value",
+    }).adapter,
+    "rapyd",
   );
 });
 
@@ -755,5 +800,131 @@ test("Payoneer charges dollar plans in dollars", async (t) => {
   assert.equal(granted.granted, true);
   assert.equal(granted.credits, 1);
   assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+});
+
+test("Rapyd grants once after GET payment is CLO and paid; redirect does not", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+  const db = createDb(proxy.env.DB as D1Database);
+  const stamp = Date.now() + 41;
+  const { studio } = await openStudio(db, stamp);
+  const plan = await insertTestPlan(db, {
+    id: `plan_za_rapyd_${stamp}`,
+    code: `rapyd_${stamp}`,
+    name: "Single Commercial",
+    region: "ZA",
+    currency: "ZAR",
+    amountMinor: 79900,
+    credits: 1,
+    interval: "one_time",
+    metadataJson: null,
+  });
+  const paymentId = `payment_${stamp}za`;
+  const provider = createRapydProvider({
+    accessKey: "rak_test",
+    secretKey: "rsk_test_secret",
+    mode: "sandbox",
+    appUrl: "https://example.com",
+    fetchImpl: (async () =>
+      new Response(
+        JSON.stringify({
+          status: { status: "SUCCESS" },
+          data: {
+            id: "checkout_abc123def",
+            redirect_url: "https://sandboxcheckout.rapyd.net/?token=checkout_abc123def",
+          },
+        }),
+        { status: 200 },
+      )) as typeof fetch,
+  });
+  const checkout = await startCheckout(db, {
+    workspaceId: studio.workspaceId,
+    email: `phase14.${stamp}@cineyou.test`,
+    planId: plan.id,
+    callbackUrl: "https://example.com/dashboard/billing",
+    provider,
+    providerName: "rapyd",
+  });
+  assert.match(checkout.authorizationUrl, /sandboxcheckout\.rapyd\.net/);
+  const redirect = await inspectCheckoutRedirect(db, {
+    reference: checkout.reference,
+    success: "true",
+  });
+  assert.equal(redirect.granted, false);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
+
+  const rawBody = JSON.stringify({
+    id: `wh_${stamp}`,
+    type: "PAYMENT_COMPLETED",
+    data: { id: paymentId },
+  });
+  await assert.rejects(
+    () =>
+      processRapydNotification(db, {
+        rawBody,
+        signatureOk: false,
+        provider,
+        confirm: async () => ({
+          paymentId,
+          reference: checkout.reference,
+          status: "CLO",
+          paid: true,
+          amountMinor: 79900,
+          currency: "ZAR",
+        }),
+      }),
+    (error: unknown) => error instanceof Error && error.message.includes("confirm"),
+  );
+
+  const pending = await processRapydNotification(db, {
+    rawBody,
+    signatureOk: true,
+    provider,
+    confirm: async () => ({
+      paymentId,
+      reference: checkout.reference,
+      status: "ACT",
+      paid: false,
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(pending.granted, false);
+
+  const first = await processRapydNotification(db, {
+    rawBody,
+    signatureOk: true,
+    provider,
+    confirm: async () => ({
+      paymentId,
+      reference: checkout.reference,
+      status: "CLO",
+      paid: true,
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(first.granted, true);
+  assert.equal(first.credits, 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+
+  const duplicate = await processRapydNotification(db, {
+    rawBody,
+    signatureOk: true,
+    provider,
+    confirm: async () => ({
+      paymentId,
+      reference: checkout.reference,
+      status: "CLO",
+      paid: true,
+      amountMinor: 79900,
+      currency: "ZAR",
+    }),
+  });
+  assert.equal(duplicate.granted, false);
+  assert.equal(duplicate.alreadyProcessed, true);
 });
 
