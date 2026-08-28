@@ -10,6 +10,7 @@ export const HOME_IMAGES = {
   styleLuxury: `${HOME_ASSET_ROOT}/images/style-luxury.webp`,
   styleFunny: `${HOME_ASSET_ROOT}/images/style-funny.webp`,
   finalCtaAd: `${HOME_ASSET_ROOT}/images/final-cta-ad.webp`,
+  fromSelfieToSales: `${HOME_ASSET_ROOT}/images/from-selfie-to-sales.webp`,
 } as const;
 
 export const HOME_VIDEOS = {
@@ -54,6 +55,10 @@ export const HOME_ICONS = {
   beforeAfter: `${HOME_ASSET_ROOT}/icons/before-after.svg`,
   arrowLeft: `${HOME_ASSET_ROOT}/icons/arrow-left.svg`,
   arrowRight: `${HOME_ASSET_ROOT}/icons/arrow-right.svg`,
+  selfieVideo: `${HOME_ASSET_ROOT}/icons/selfie-video.svg`,
+  uploadLogo: `${HOME_ASSET_ROOT}/icons/upload-logo.svg`,
+  generateScript: `${HOME_ASSET_ROOT}/icons/generate-script.svg`,
+  getAdvert: `${HOME_ASSET_ROOT}/icons/get-advert.svg`,
 } as const;
 
 export const HOME_MEDIA_PATHS = [
@@ -85,6 +90,33 @@ export const HOME_HERO = {
     { icon: HOME_ICONS.socialReady, label: "Social ready" },
   ] as const,
 } as const;
+
+export const HOME_HERO_STEPS = [
+  {
+    number: "1",
+    title: "Record a selfie",
+    body: "Talk to camera for 20 seconds.",
+    icon: HOME_ICONS.selfieVideo,
+  },
+  {
+    number: "2",
+    title: "Add your brand",
+    body: "Upload your logo and product.",
+    icon: HOME_ICONS.uploadLogo,
+  },
+  {
+    number: "3",
+    title: "Build your advert",
+    body: "AI writes the hook, offer and call to action.",
+    icon: HOME_ICONS.generateScript,
+  },
+  {
+    number: "4",
+    title: "Launch in minutes",
+    body: "Receive a polished commercial starring you.",
+    icon: HOME_ICONS.getAdvert,
+  },
+] as const;
 
 export const HOME_STATS = {
   eyebrow: "WHY BUSINESSES INVEST IN VIDEO",

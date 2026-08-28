@@ -1,0 +1,39 @@
+name: Deploy Worker
+
+# OpenNext on Workers. A git push must build with OpenNext, then deploy
+# Worker cineyou (production30.thewellmedia.com). Plain `wrangler deploy`
+# without that build, or a leftover Pages Git job, is the wrong target.
+# Official: https://opennext.js.org/cloudflare/howtos/dev-deploy
+# Official: https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-cineyou
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Install
+        run: npm ci
+      - name: OpenNext build
+        run: npx opennextjs-cloudflare build
+        env:
+          NEXT_PUBLIC_APP_URL: https://production30.thewellmedia.com
+          NEXT_PUBLIC_APP_NAME: Production30
+      - name: Deploy cineyou
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --containers-rollout none

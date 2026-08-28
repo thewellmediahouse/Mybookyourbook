@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { PhoneStage } from "@/components/site/phone-stage";
+import { HeroPhoneSequence } from "@/components/site/hero-phone-sequence";
 import { HomeFrame } from "@/components/site/home-frame";
 import { Button } from "@/components/ui/button";
-import { HOME_BACKGROUNDS, HOME_HERO, HOME_ICONS, HOME_UI, HOME_VIDEOS } from "@/lib/site/home";
+import { HOME_BACKGROUNDS, HOME_HERO, HOME_ICONS } from "@/lib/site/home";
 import { StaticGraphic } from "@/components/site/static-graphic";
 
 export function SalesHero() {
@@ -46,29 +46,7 @@ export function SalesHero() {
         </div>
 
         <div className="relative mx-auto w-full max-w-[36rem]">
-          <div className="flex items-end justify-center gap-2 sm:gap-4">
-            <PhoneStage
-              src={HOME_VIDEOS.heroSelfie}
-              alt="A short vertical advert playing on a phone"
-              media="video"
-              priority
-              label="YOUR SELFIE"
-            />
-
-            <StaticGraphic
-              src={HOME_UI.transformationRibbon}
-              alt=""
-              className="sales-ribbon pointer-events-none absolute left-1/2 top-[42%] z-10 hidden w-[min(42%,11rem)] -translate-x-1/2 sm:block"
-            />
-
-            <PhoneStage
-              src={HOME_VIDEOS.heroFinishedAd}
-              alt="A finished professional advert playing on a phone"
-              media="video"
-              priority
-              label="FINISHED AD"
-            />
-          </div>
+          <HeroPhoneSequence />
 
           <ul className="mt-5 hidden justify-end gap-2 lg:flex">
             {HOME_HERO.chips.map((chip) => (
