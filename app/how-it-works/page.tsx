@@ -48,7 +48,7 @@ export default function HowItWorksPage() {
                   className="rounded-[1.6rem] border border-[#2787FF]/15 bg-white p-6 shadow-[0_16px_40px_rgba(17,26,49,0.06)]"
                 >
                   <StaticGraphic src={STEP_ICONS[index]!} alt="" width={28} height={28} className="size-7" />
-                  <p className="mt-5 text-[11px] font-semibold tracking-[0.22em] text-[#2787FF]">{step.number}</p>
+                  <p className="mt-5 text-[11px] font-semibold tracking-[0.22em] text-accent-ink">{step.number}</p>
                   <h2 className="mt-2 text-xl font-semibold tracking-tight text-[#111A31]">{step.title}</h2>
                   <p className="mt-3 text-sm leading-6 text-[#5A6480]">{step.body}</p>
                 </li>

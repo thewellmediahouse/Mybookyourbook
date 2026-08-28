@@ -10,7 +10,7 @@ export function FaqList({ className }: { className?: string }) {
         >
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-4 py-3 text-left text-base font-semibold tracking-tight text-[#111A31] [&::-webkit-details-marker]:hidden">
             {item.question}
-            <span className="shrink-0 text-lg text-[#2787FF] group-open:rotate-45" aria-hidden>
+            <span className="shrink-0 text-lg text-accent-ink group-open:rotate-45" aria-hidden>
               +
             </span>
           </summary>

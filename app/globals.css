@@ -50,6 +50,19 @@
   --overlay-muted: #9aa3b8;
 }
 
+.sales-light {
+  color: #111a31;
+  --background: #f7f8fc;
+  --surface: #ffffff;
+  --surface-secondary: #f7f8fc;
+  --foreground: #111a31;
+  --muted: #5a6480;
+  --accent-ink: #0b5bd6;
+  --border: #c5cddc;
+  --danger: #b42318;
+  --success: #1b6b3c;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-surface: var(--surface);

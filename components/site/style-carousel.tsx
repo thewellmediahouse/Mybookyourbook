@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRef } from "react";
 import { HomeFrame } from "@/components/site/home-frame";
 import { HOME_BACKGROUNDS, HOME_ICONS, HOME_STYLES } from "@/lib/site/home";
@@ -20,7 +19,7 @@ export function StyleCarousel() {
   }
 
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24">
+    <section className="sales-light relative overflow-hidden py-20 sm:py-24">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-35"
         style={{ backgroundImage: `url(${HOME_BACKGROUNDS.lightFlow})` }}
@@ -65,13 +64,12 @@ export function StyleCarousel() {
               key={style.id}
               className="relative h-[22rem] w-[min(70vw,16.5rem)] shrink-0 snap-start overflow-hidden rounded-[1.6rem] sm:h-[26rem]"
             >
-              <Image
+              <StaticGraphic
                 src={style.image}
                 alt={`${style.label} look`}
-                fill
-                sizes="264px"
-                className="object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
                 style={{ objectPosition: style.objectPosition }}
+                loading="lazy"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 to-transparent px-4 py-5">
                 <p className="text-lg font-semibold text-[#F7F8FC]">{style.label}</p>

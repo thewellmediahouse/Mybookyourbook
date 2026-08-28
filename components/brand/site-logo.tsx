@@ -18,6 +18,7 @@ export function SiteLogo({
       width={box.width}
       height={box.height}
       priority={priority}
+      unoptimized
       className={className ?? "h-10 w-auto"}
     />
   );

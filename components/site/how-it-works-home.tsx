@@ -13,7 +13,7 @@ const TOPICS = [
 
 export function HowItWorksHome() {
   return (
-    <section className="bg-[#F7F8FC] py-20 sm:py-24">
+    <section className="sales-light bg-[#F7F8FC] py-20 sm:py-24">
       <HomeFrame>
         <h2 className="max-w-xl text-3xl font-semibold tracking-tight text-[#111A31] sm:text-4xl">
           From idea to video that sells.

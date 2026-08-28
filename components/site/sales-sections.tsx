@@ -44,7 +44,7 @@ export function LightSection({
   className?: string;
 }) {
   return (
-    <section className={cn("relative overflow-hidden py-16 sm:py-24", className)}>
+    <section className={cn("sales-light relative overflow-hidden py-16 sm:py-24", className)}>
       <div
         className="absolute inset-0 bg-cover bg-center opacity-35"
         style={{ backgroundImage: `url(${HOME_BACKGROUNDS.lightFlow})` }}

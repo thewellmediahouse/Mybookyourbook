@@ -245,6 +245,11 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - Evaluated [SamurAIGPT/seedance-2-generator](https://github.com/SamurAIGPT/seedance-2-generator) (local clone `Dev/seedance-2-generator`). It is a Vercel playground: NextAuth, Prisma PostgreSQL, Stripe, MuAPI Seedance **2.0 / Mini**. Its README still marks Seedance 2.5 as coming soon. Browser-pasted MuAPI keys and persisted CDN output URLs are not acceptable here.
 - Filming stays the existing contract: model `doubao-seedance-2.5-face`, `Authorization: Bearer $REAPI_API_KEY`, `POST https://reapi.ai/api/v1/videos/generations`, poll `GET /api/v1/tasks/{id}`, 480p / 30s, identity photos + presenter video as signed R2 GET URLs, copy result bytes into private R2. Do not adopt MuAPI, Seedance 2.0, Postgres, or Stripe for this product. Do not copy unsigned MuAPI webhooks. `audio_urls` remains omitted unless a later official-docs pass says otherwise.
 
+### 2026-08-28 — Error 1102: skip Worker image resizing
+
+- Live `production30.thewellmedia.com` returned Cloudflare **Error 1102** (`Worker exceeded resource limits`, Ray `a32480414d2973fe`). Official meaning: CPU or memory, not a Next 404. Docs: [Error 1102](https://developers.cloudflare.com/support/troubleshooting/http-status-codes/cloudflare-1xxx-errors/error-1102/), [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) (Free: 10 ms CPU; Paid default 30 s; isolate memory 128 MB; startup 1 s).
+- OpenNext on Workers has no Vercel image pipeline. `/_next/image` resizes inside the Worker. Homepage pack webps are already compressed and go out as static files (`images.unoptimized: true`, photographs via `StaticGraphic`). Do not turn the optimizer back on without Cloudflare Image Resizing / Images.
+
 ### 2026-08-28 — Website to advert reads published page facts only
 
 - Ad Studio “Website to advert” fetches the customer-supplied public `http`/`https` URL server-side and copies `og:title` / `og:description` (or `twitter:` / `<title>` fallbacks). It does not invent an offer, phone, or tagline. Localhost, `.local`, RFC1918, and link-local hosts are refused, including after redirects. If the page cannot be read, the owner types the brief. The existing `getBusinessImporter()` still returns unavailable for onboarding.

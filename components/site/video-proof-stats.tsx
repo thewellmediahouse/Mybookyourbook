@@ -3,7 +3,7 @@ import { HOME_BACKGROUNDS, HOME_STATS } from "@/lib/site/home";
 
 export function VideoProofStats() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24">
+    <section className="sales-light relative overflow-hidden py-20 sm:py-24">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-40"
         style={{ backgroundImage: `url(${HOME_BACKGROUNDS.lightFlow})` }}
@@ -11,7 +11,7 @@ export function VideoProofStats() {
       />
       <div className="absolute inset-0 bg-[#F7F8FC]" aria-hidden />
       <HomeFrame className="relative">
-        <p className="text-[11px] font-semibold tracking-[0.26em] text-[#2787FF]">{HOME_STATS.eyebrow}</p>
+        <p className="text-[11px] font-semibold tracking-[0.26em] text-accent-ink">{HOME_STATS.eyebrow}</p>
         <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-[#111A31] sm:text-4xl">
           {HOME_STATS.heading}
         </h2>

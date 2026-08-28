@@ -1,4 +1,4 @@
-/* SVGs from the homepage pack stay as static files; next/image is for photographs. */
+/* Public pack files are already compressed. Serve them as static files on Workers. */
 /* eslint-disable @next/next/no-img-element */
 import type { ImgHTMLAttributes } from "react";
 

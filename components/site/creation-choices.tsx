@@ -1,13 +1,13 @@
-import Image from "next/image";
 import Link from "next/link";
 import { HomeFrame } from "@/components/site/home-frame";
+import { StaticGraphic } from "@/components/site/static-graphic";
 import { Button } from "@/components/ui/button";
 import { HOME_BACKGROUNDS, HOME_CHOICES } from "@/lib/site/home";
 import { cn } from "@/lib/utils";
 
 export function CreationChoices() {
   return (
-    <section className="relative overflow-hidden py-20 sm:py-24">
+    <section className="sales-light relative overflow-hidden py-20 sm:py-24">
       <div
         className="absolute inset-0 bg-cover bg-center opacity-35"
         style={{ backgroundImage: `url(${HOME_BACKGROUNDS.lightFlow})` }}
@@ -17,17 +17,16 @@ export function CreationChoices() {
       <HomeFrame className="relative grid gap-5 lg:grid-cols-2">
         {HOME_CHOICES.map((choice) => (
           <article key={choice.id} className="relative min-h-[22rem] overflow-hidden rounded-[1.75rem] sm:min-h-[26rem]">
-            <Image
+            <StaticGraphic
               src={choice.image}
               alt={
                 choice.id === "viral"
                   ? "A person recording a casual social video at home"
                   : "A product bottle in a studio, ready for a sales advert"
               }
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              className="object-cover"
+              className="absolute inset-0 h-full w-full object-cover"
               style={{ objectPosition: choice.objectPosition }}
+              loading="lazy"
             />
             <div
               className={cn(

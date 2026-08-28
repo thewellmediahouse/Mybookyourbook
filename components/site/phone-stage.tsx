@@ -1,4 +1,3 @@
-import Image from "next/image";
 import type { ReactNode } from "react";
 import { HOME_UI } from "@/lib/site/home";
 import { StaticGraphic } from "@/components/site/static-graphic";
@@ -30,14 +29,13 @@ export function PhoneStage({
       ) : null}
       <div className="relative aspect-[320/640]">
         <div className="absolute inset-[3.2%_6.9%] overflow-hidden rounded-[2.6rem] bg-surface">
-          <Image
+          <StaticGraphic
             src={src}
             alt={alt}
-            fill
-            sizes="(max-width: 768px) 42vw, 264px"
-            priority={priority}
-            className="object-cover"
+            className="absolute inset-0 h-full w-full object-cover"
             style={{ objectPosition }}
+            loading={priority ? "eager" : "lazy"}
+            fetchPriority={priority ? "high" : "low"}
           />
           {children}
         </div>

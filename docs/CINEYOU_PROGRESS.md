@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-28 (public pages brought onto the sales homepage look)
+Last updated: 2026-08-28 (Error 1102: public photos skip Worker image resize)
 
 ## Foundation
 - [x] Next.js

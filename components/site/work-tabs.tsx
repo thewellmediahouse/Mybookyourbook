@@ -33,7 +33,7 @@ export function WorkTabs() {
                 )}
                 onClick={() => setActive(index)}
               >
-                <p className="text-[11px] font-semibold tracking-[0.2em] text-[#2787FF]">{item.number}</p>
+                <p className="text-[11px] font-semibold tracking-[0.2em] text-accent-ink">{item.number}</p>
                 <p className="mt-1 text-lg font-semibold text-[#111A31]">{item.title}</p>
                 {selected ? <p className="mt-1.5 text-sm leading-6 text-[#5A6480]">{item.body}</p> : null}
               </button>

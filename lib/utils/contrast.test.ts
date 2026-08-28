@@ -71,3 +71,29 @@ test("sales homepage tokens pass AA and do not use white on electric blue", () =
   assert.equal(forbidden[0]?.pass, false);
   assert.equal(forbidden[1]?.pass, false);
 });
+
+test("sales light sections use dark ink, not off-white on white", () => {
+  const findings = checkContrastPairs([
+    { name: "ink on light", foreground: "#111A31", background: "#F7F8FC", min: 4.5 },
+    { name: "ink on white", foreground: "#111A31", background: "#FFFFFF", min: 4.5 },
+    { name: "muted on light", foreground: "#5A6480", background: "#F7F8FC", min: 4.5 },
+    { name: "muted on white", foreground: "#5A6480", background: "#FFFFFF", min: 4.5 },
+    { name: "accent ink on light", foreground: "#0B5BD6", background: "#F7F8FC", min: 4.5 },
+    { name: "accent ink on white", foreground: "#0B5BD6", background: "#FFFFFF", min: 4.5 },
+    { name: "danger on light", foreground: "#B42318", background: "#F7F8FC", min: 4.5 },
+    { name: "success on light", foreground: "#1B6B3C", background: "#F7F8FC", min: 4.5 },
+    { name: "button label on blue", foreground: "#001038", background: "#2787FF", min: 4.5 },
+  ]);
+  for (const finding of findings) {
+    assert.equal(finding.pass, true, `${finding.name} ${finding.ratio?.toFixed(1)}:1`);
+  }
+
+  const forbidden = checkContrastPairs([
+    { name: "off-white on light", foreground: "#F7F8FC", background: "#F7F8FC", min: 4.5 },
+    { name: "off-white on white", foreground: "#F7F8FC", background: "#FFFFFF", min: 4.5 },
+    { name: "electric blue as small text on light", foreground: "#2787FF", background: "#F7F8FC", min: 4.5 },
+  ]);
+  assert.equal(forbidden[0]?.pass, false);
+  assert.equal(forbidden[1]?.pass, false);
+  assert.equal(forbidden[2]?.pass, false);
+});

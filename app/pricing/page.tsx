@@ -99,7 +99,7 @@ export default async function PricingPage({
                     )}
                   >
                     {plan.highlighted ? (
-                      <p className="text-[11px] font-semibold tracking-[0.2em] text-[#2787FF]">FEATURED</p>
+                      <p className="text-[11px] font-semibold tracking-[0.2em] text-accent-ink">FEATURED</p>
                     ) : (
                       <p className="text-[11px] font-semibold tracking-[0.2em] text-[#5A6480]">PLAN</p>
                     )}
