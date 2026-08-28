@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-28 (Error 1102: public photos skip Worker image resize)
+Last updated: 2026-08-28 (custom domain production30.thewellmedia.com on Worker cineyou)
 
 ## Foundation
 - [x] Next.js
@@ -531,6 +531,10 @@ Verification: `npm run check`, `npm run lint`, Rapyd/billing/security tests. Not
 ### 2026-08-28 — Seedance 2.5 via reAPI stays the filming path
 
 Evaluated the Seedance 2 Generator playground (MuAPI 2.0, Postgres, Stripe). It is not merged. Filming stays `doubao-seedance-2.5-face` on reAPI. No adapter or UI change.
+
+### 2026-08-28 — Live on production30.thewellmedia.com
+
+Git push does not update this host. Worker `cineyou` version `998d5d89-c0c7-488d-910f-62cd687c830d` is deployed with Wrangler custom domain `production30.thewellmedia.com` and `workers_dev` kept on. Auth vars point at that host. `AI_PROVIDER_MODE` stays `mock`. `PAYMENTS_MODE` stays `test`. Branding container was not rebuilt (`--containers-rollout none`). Live smoke: `/` 200 with the sales homepage (no `/_next/image`), `/login` `/how-it-works` `/pricing` `/examples` 200.
 
 ### 2026-08-28 — Ad Studio (business advert first, viral videos second)
 

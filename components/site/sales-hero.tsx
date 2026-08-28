@@ -2,7 +2,7 @@ import Link from "next/link";
 import { PhoneStage } from "@/components/site/phone-stage";
 import { HomeFrame } from "@/components/site/home-frame";
 import { Button } from "@/components/ui/button";
-import { HOME_BACKGROUNDS, HOME_HERO, HOME_ICONS, HOME_IMAGES, HOME_UI } from "@/lib/site/home";
+import { HOME_BACKGROUNDS, HOME_HERO, HOME_ICONS, HOME_UI, HOME_VIDEOS } from "@/lib/site/home";
 import { StaticGraphic } from "@/components/site/static-graphic";
 
 export function SalesHero() {
@@ -48,19 +48,12 @@ export function SalesHero() {
         <div className="relative mx-auto w-full max-w-[36rem]">
           <div className="flex items-end justify-center gap-2 sm:gap-4">
             <PhoneStage
-              src={HOME_IMAGES.heroSelfie}
-              alt="A business owner recording a simple selfie on a phone"
-              objectPosition="50% 45%"
+              src={HOME_VIDEOS.heroSelfie}
+              alt="A short vertical advert playing on a phone"
+              media="video"
               priority
               label="YOUR SELFIE"
-            >
-              <div className="absolute inset-x-0 bottom-5 flex justify-center" aria-hidden>
-                <span className="inline-flex items-center gap-2 rounded-full bg-black/55 px-3 py-1.5">
-                  <span className="size-2 rounded-full bg-[#E06565]" />
-                  <span className="h-1 w-10 rounded-full bg-white/70" />
-                </span>
-              </div>
-            </PhoneStage>
+            />
 
             <StaticGraphic
               src={HOME_UI.transformationRibbon}
@@ -69,26 +62,12 @@ export function SalesHero() {
             />
 
             <PhoneStage
-              src={HOME_IMAGES.heroFinishedAd}
-              alt="The same person presenting a finished professional advert on a phone"
-              objectPosition="50% 42%"
+              src={HOME_VIDEOS.heroFinishedAd}
+              alt="A finished professional advert playing on a phone"
+              media="video"
               priority
               label="FINISHED AD"
-            >
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent px-4 pb-7 pt-16 text-left">
-                <p className="text-sm font-semibold leading-5 text-[#F7F8FC]">Premium skincare.</p>
-                <p className="text-sm font-semibold leading-5 text-[#F7F8FC]">Real results.</p>
-                <p className="mt-1 text-[11px] leading-4 text-[#F7F8FC]/90">
-                  Made with natural ingredients your customers will love.
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <span className="inline-flex min-h-8 items-center rounded-full bg-[#2787FF] px-3 text-[11px] font-semibold text-[#001038]">
-                    Shop now
-                  </span>
-                  <span className="text-[11px] font-medium text-[#F7F8FC]">30 sec</span>
-                </div>
-              </div>
-            </PhoneStage>
+            />
           </div>
 
           <ul className="mt-5 hidden justify-end gap-2 lg:flex">

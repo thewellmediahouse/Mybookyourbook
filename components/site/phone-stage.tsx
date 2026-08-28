@@ -6,16 +6,18 @@ import { cn } from "@/lib/utils";
 export function PhoneStage({
   src,
   alt,
-  objectPosition,
+  objectPosition = "center",
   priority = false,
+  media = "image",
   label,
   className,
   children,
 }: {
   src: string;
   alt: string;
-  objectPosition: string;
+  objectPosition?: string;
   priority?: boolean;
+  media?: "image" | "video";
   label?: string;
   className?: string;
   children?: ReactNode;
@@ -29,14 +31,28 @@ export function PhoneStage({
       ) : null}
       <div className="relative aspect-[320/640]">
         <div className="absolute inset-[3.2%_6.9%] overflow-hidden rounded-[2.6rem] bg-surface">
-          <StaticGraphic
-            src={src}
-            alt={alt}
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition }}
-            loading={priority ? "eager" : "lazy"}
-            fetchPriority={priority ? "high" : "low"}
-          />
+          {media === "video" ? (
+            <video
+              src={src}
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition }}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload={priority ? "auto" : "metadata"}
+              aria-label={alt}
+            />
+          ) : (
+            <StaticGraphic
+              src={src}
+              alt={alt}
+              className="absolute inset-0 h-full w-full object-cover"
+              style={{ objectPosition }}
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "low"}
+            />
+          )}
           {children}
         </div>
         <StaticGraphic

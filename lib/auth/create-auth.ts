@@ -7,7 +7,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { account, profiles, session, user, verification } from "@/lib/db/schema";
 import { getEmailProvider, type EmailProvider } from "@/lib/providers/email";
-import { getAuthBaseUrl, getAuthSecret, isGoogleAuthConfigured } from "./env";
+import { getAuthBaseUrl, getAuthSecret, getTrustedAuthOrigins, isGoogleAuthConfigured } from "./env";
 import { isStrongPassword, MIN_PASSWORD_LENGTH, normalizeEmail, passwordHint } from "./password";
 import { renderEmail } from "@/lib/notifications/templates";
 import { resetPasswordEventKey, verifyEmailEventKey, welcomeEventKey } from "@/lib/notifications/copy";
@@ -87,7 +87,7 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
   return betterAuth({
     secret,
     baseURL,
-    trustedOrigins: [originFromUrl(baseURL)],
+    trustedOrigins: getTrustedAuthOrigins(env),
     database: drizzleAdapter(db, {
       provider: "sqlite",
       schema: {

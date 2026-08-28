@@ -166,6 +166,7 @@ npm run preview:smoke
 - [x] Verify `production30.com` in Resend and upload `RESEND_API_KEY`
 - [x] Remote D1 `0006_support_ops` applied; Contact / ticket mail / Admin reply live on the Worker
 - [ ] Publish the branding container (Docker must be running)
+- [x] Custom domain `production30.thewellmedia.com` on Worker `cineyou` (Wrangler `routes` + `workers_dev`)
 - [ ] Custom domain `production30.com` on the Worker
 
 ## Common issues

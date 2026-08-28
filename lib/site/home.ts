@@ -12,6 +12,11 @@ export const HOME_IMAGES = {
   finalCtaAd: `${HOME_ASSET_ROOT}/images/final-cta-ad.webp`,
 } as const;
 
+export const HOME_VIDEOS = {
+  heroSelfie: `${HOME_ASSET_ROOT}/videos/hero-selfie.mp4`,
+  heroFinishedAd: `${HOME_ASSET_ROOT}/videos/hero-finished-ad.mp4`,
+} as const;
+
 export const HOME_BACKGROUNDS = {
   heroAurora: `${HOME_ASSET_ROOT}/backgrounds/hero-aurora.webp`,
   lightFlow: `${HOME_ASSET_ROOT}/backgrounds/light-flow.webp`,
@@ -53,6 +58,7 @@ export const HOME_ICONS = {
 
 export const HOME_MEDIA_PATHS = [
   ...Object.values(HOME_IMAGES),
+  ...Object.values(HOME_VIDEOS),
   ...Object.values(HOME_BACKGROUNDS),
   ...Object.values(HOME_UI),
   ...Object.values(HOME_ICONS),

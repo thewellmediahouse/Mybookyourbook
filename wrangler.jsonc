@@ -8,6 +8,14 @@
     "enabled": true,
     "head_sampling_rate": 1
   },
+  // Keep workers.dev as well. Adding `routes` without this flag infers workers_dev=false.
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "production30.thewellmedia.com",
+      "custom_domain": true
+    }
+  ],
   "vars": {
     // Filming/enhancement/branding stay mock. Concept may be live via CONCEPT_AI_MODE + OPENAI_API_KEY.
     // Rapyd sandbox checkout is on when RAPYD_ACCESS_KEY / RAPYD_SECRET_KEY are set.
@@ -18,8 +26,8 @@
     "PAYMENTS_MODE": "test",
     "RAPYD_MODE": "sandbox",
     "PAYFAST_USD_ZAR_RATE": "18.5",
-    "BETTER_AUTH_URL": "https://cineyou.schalk-966.workers.dev",
-    "NEXT_PUBLIC_APP_URL": "https://cineyou.schalk-966.workers.dev",
+    "BETTER_AUTH_URL": "https://production30.thewellmedia.com",
+    "NEXT_PUBLIC_APP_URL": "https://production30.thewellmedia.com",
     "NEXT_PUBLIC_APP_NAME": "Production30",
     "EMAIL_FROM": "Production30 <Accounts@production30.com>",
     "ADMIN_EMAILS": "schalk@thewellmedia.com"
