@@ -11,6 +11,8 @@ export const DUPLICATE_PRODUCTION =
   "This commercial is already being produced. You can follow progress on the status page.";
 export const CUSTOMER_FAILURE =
   "We couldn't complete this commercial. Your Ad Credit has not been lost.";
+export const REFERENCE_VIDEO_FORMAT =
+  "Your selfie video needs to be a movie file from your phone camera or Upload Video. Record again or upload a new clip, then produce the commercial again.";
 export const READY_TITLE = "Your commercial is ready";
 export const READY_BODY = "Your Production30 commercial is ready to watch in your studio.";
 export const DOWNLOAD_1080P = "Download 1080p";

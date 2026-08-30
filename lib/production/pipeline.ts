@@ -4,7 +4,7 @@ import { assets, creativeVersions } from "@/lib/db/schema";
 import { refundTechnicalFailure } from "@/lib/credits/ledger";
 import { generationIdempotencyKey } from "@/lib/credits/copy";
 import { getBrand, getBrandLogoAsset } from "@/lib/businesses/queries";
-import { CUSTOMER_FAILURE } from "./copy";
+import { CUSTOMER_FAILURE, REFERENCE_VIDEO_FORMAT } from "./copy";
 import { appendProductionEvent, setJobStatus } from "./events";
 import { insertProductionAsset } from "./assets";
 import { getJobById } from "./queries";
@@ -31,8 +31,10 @@ export type ProductionParams = {
   attemptId: string;
 };
 
+export type StepRetry = { limit: number };
+
 export type DurableStep = {
-  do<T>(name: string, callback: () => Promise<T>): Promise<T>;
+  do<T>(name: string, callback: () => Promise<T>, retry?: StepRetry): Promise<T>;
   sleep(name: string, duration: string): Promise<void>;
 };
 
@@ -79,7 +81,7 @@ export async function failProductionJob(
       failureType: "provider",
       failureCode: internal.slice(0, 80),
       internalFailureMessage: internal,
-      customerFailureMessage: CUSTOMER_FAILURE,
+      customerFailureMessage: internal === "REFERENCE_VIDEO_FORMAT" ? REFERENCE_VIDEO_FORMAT : CUSTOMER_FAILURE,
     },
   });
   await appendProductionEvent(db, { jobId: params.jobId, type: "FAILED", payload: { refunded } });
@@ -149,24 +151,28 @@ export async function runCommercialProduction(
       return { finalAssetId: prior.finalAssetId };
     }
 
-    const submitInput = await step.do("prepare-references", async () => {
-      const [version] = await deps.db
-        .select({ seedancePrompt: creativeVersions.seedancePrompt })
-        .from(creativeVersions)
-        .where(eq(creativeVersions.id, params.creativeVersionId))
-        .limit(1);
-      if (!version?.seedancePrompt) {
-        throw new Error("PROMPT_MISSING");
-      }
-      return buildVideoSubmitInput(deps.db, {
-        projectId: params.projectId,
-        workspaceId: params.workspaceId,
-        userId: params.userId,
-        prompt: version.seedancePrompt,
-        signGetUrl: deps.signGetUrl,
-        requireReferenceUrls: deps.requireReferenceUrls,
-      });
-    });
+    const submitInput = await step.do(
+      "prepare-references",
+      async () => {
+        const [version] = await deps.db
+          .select({ seedancePrompt: creativeVersions.seedancePrompt })
+          .from(creativeVersions)
+          .where(eq(creativeVersions.id, params.creativeVersionId))
+          .limit(1);
+        if (!version?.seedancePrompt) {
+          throw new Error("PROMPT_MISSING");
+        }
+        return buildVideoSubmitInput(deps.db, {
+          projectId: params.projectId,
+          workspaceId: params.workspaceId,
+          userId: params.userId,
+          prompt: version.seedancePrompt,
+          signGetUrl: deps.signGetUrl,
+          requireReferenceUrls: deps.requireReferenceUrls,
+        });
+      },
+      { limit: 0 },
+    );
 
     let sourceBytes: { bytes: number[]; mimeType: string } | null = null;
     let sourceAssetId = prior.sourceAssetId;

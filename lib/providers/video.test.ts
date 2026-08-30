@@ -35,6 +35,7 @@ test("live Seedance payload is 480p, 30s, audio, and official size", () => {
   assert.equal(body.duration, SEEDANCE_DURATION);
   assert.equal(body.generate_audio, true);
   assert.equal(body.output_format, "mp4");
+  assert.equal(body.omni_reference_task_type, "reference");
   assert.equal(body.size, "9:16");
   assert.equal("aspect_ratio" in body, false);
   assert.deepEqual(body.image_urls, ["https://signed.example/front.jpg", "https://signed.example/left.jpg"]);

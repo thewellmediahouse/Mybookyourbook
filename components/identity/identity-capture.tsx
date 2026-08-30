@@ -471,7 +471,7 @@ function captureJpegFromVideo(video: HTMLVideoElement): Promise<File> {
 }
 
 function pickRecorderMime(): string | undefined {
-  const types = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"];
+  const types = ["video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
   return types.find((type) => MediaRecorder.isTypeSupported(type));
 }
 

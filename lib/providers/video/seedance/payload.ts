@@ -38,6 +38,7 @@ export function seedanceSubmitBody(input: VideoSubmitInput): Record<string, unkn
     size: reapiSize(input.aspectRatio),
     generate_audio: true,
     output_format: "mp4",
+    omni_reference_task_type: "reference",
   };
   if (input.imageUrls.length > 0) {
     body.image_urls = input.imageUrls.slice(0, 30);

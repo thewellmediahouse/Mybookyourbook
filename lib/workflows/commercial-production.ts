@@ -26,7 +26,14 @@ export class CommercialProductionWorkflow extends WorkflowEntrypoint<WorkflowEnv
       pipelineDepsFromEnv(env as unknown as Record<string, unknown>, createDb(env.DB), env.MEDIA_BUCKET),
       event.payload,
       {
-        async do<T>(name: string, callback: () => Promise<T>): Promise<T> {
+        async do<T>(name: string, callback: () => Promise<T>, retry?: { limit: number }): Promise<T> {
+          if (retry) {
+            return (await step.do(
+              name,
+              { retries: { limit: retry.limit, delay: "1 second" } },
+              async () => (await callback()) as never,
+            )) as T;
+          }
           return (await step.do(name, async () => (await callback()) as never)) as T;
         },
         async sleep(name, duration) {
