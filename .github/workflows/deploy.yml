@@ -18,7 +18,7 @@ env:
   NEXT_PUBLIC_APP_URL: https://production30.thewellmedia.com
   NEXT_PUBLIC_APP_NAME: Production30
   NEXT_TELEMETRY_DISABLED: "1"
-  NODE_OPTIONS: --max-old-space-size=6144
+  NODE_OPTIONS: --max-old-space-size=4096
 
 jobs:
   deploy:
@@ -40,7 +40,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: "24"
           cache: npm
 
       - name: Install

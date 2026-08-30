@@ -582,7 +582,7 @@ Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou
 
 ### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
 
-`CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. The workflow now adds 8 GB swap at `/mnt/opennext.swap` (the first `/swapfile` attempt failed because the runner already uses that path) and `NODE_OPTIONS=--max-old-space-size=6144`, and passes the token into the build step. Swap setup is allowed to fail so the OpenNext build still runs.
+`CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. Run 8 got swap on `/mnt/opennext.swap`, then OpenNext was cancelled after ~3 minutes (`The operation was canceled.`). A 6 GB Node heap on the 7 GB runner likely evicted the job. Heap is now 4 GB and Node is pinned to 24.
 
 ### 2026-08-30 — Simple studio: Overview, Create Advert, My Adverts, Reference Profile
 
