@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (simple studio nav and Create Advert flow)
+Last updated: 2026-08-30 (GitHub OpenNext build memory)
 
 ## Foundation
 - [x] Next.js
@@ -579,6 +579,10 @@ Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `51
 Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-seedance-2.5-face` when `REAPI_API_KEY` is set. `AI_PROVIDER_MODE` stays `mock`, so Enhancing Your Footage and Adding Your Brand do not call Topaz or the branding container. Mock enhancement now keeps the filmed file instead of swapping in the development fixture. Missing `REAPI_API_KEY` still fails with “Live filming is not connected yet.” and does not silently mock.
 
 Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
+
+`CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. The workflow now adds 8 GB swap and `NODE_OPTIONS=--max-old-space-size=6144`, and passes the token into the build step.
 
 ### 2026-08-30 — Simple studio: Overview, Create Advert, My Adverts, Reference Profile
 

@@ -17,6 +17,8 @@ env:
   CLOUDFLARE_ACCOUNT_ID: 9664d6a341ee02a3dc21db99dc992c61
   NEXT_PUBLIC_APP_URL: https://production30.thewellmedia.com
   NEXT_PUBLIC_APP_NAME: Production30
+  NEXT_TELEMETRY_DISABLED: "1"
+  NODE_OPTIONS: --max-old-space-size=6144
 
 jobs:
   deploy:
@@ -44,7 +46,17 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Add swap for OpenNext
+        run: |
+          sudo fallocate -l 8G /swapfile || sudo dd if=/dev/zero of=/swapfile bs=1M count=8192
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          free -h
+
       - name: OpenNext build
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npm run build
 
       - name: Deploy cineyou
