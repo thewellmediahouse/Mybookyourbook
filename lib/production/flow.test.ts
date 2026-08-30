@@ -305,9 +305,37 @@ test("mock production spends one credit, writes R2, and resumes memoized steps",
     .where(eq(notifications.workspaceId, studio.workspaceId));
   assert.ok(readyNotices.some((row) => row.title === READY_TITLE));
 
+  await grantCredits(db, {
+    workspaceId: studio.workspaceId,
+    amount: 1,
+    type: "PROMOTION",
+    idempotencyKey: `grant-${studio.workspaceId}-again`,
+    description: "Film again credit",
+  });
+  const againStep = memoStep();
+  const filmedAgain = await startProduction(
+    db,
+    { projectId: readyId, workspaceId: studio.workspaceId, userId: owner },
+    {
+      ...deps,
+      startWorkflow: async (params) => {
+        await runCommercialProduction(deps, params, againStep);
+        return { id: params.jobId };
+      },
+    },
+  );
+  assert.notEqual(filmedAgain.jobId, started.jobId);
+  assert.equal(submits, 2);
+  const againJob = await getJobById(db, filmedAgain.jobId);
+  assert.equal(againJob?.status, "COMPLETE");
+  assert.equal(againJob?.creativeVersionId, job?.creativeVersionId);
+  const [againProject] = await db.select().from(projects).where(eq(projects.id, readyId)).limit(1);
+  assert.equal(againProject?.status, "READY");
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
+
   assert.ok(captured);
   await runCommercialProduction(deps, captured, step);
-  assert.equal(submits, 1);
+  assert.equal(submits, 2);
 
   await grantCredits(db, {
     workspaceId: studio.workspaceId,

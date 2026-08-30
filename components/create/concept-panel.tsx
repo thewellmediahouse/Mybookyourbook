@@ -175,7 +175,7 @@ export function ConceptPanel({
   }
 
   return (
-    <section className="relative mt-8 flex flex-col gap-6">
+    <section className="relative mt-5 flex flex-col gap-5 lg:mt-8 lg:gap-6">
       {pending !== "idle" ? (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-2xl bg-background/80 backdrop-blur-sm">
           <Spinner className="size-10" />
@@ -190,11 +190,11 @@ export function ConceptPanel({
           </p>
         </div>
       ) : null}
-      <h2 className="font-display text-2xl text-foreground">{CONCEPT_HEADING}</h2>
+      <h2 className="font-display text-xl text-foreground lg:text-2xl">{CONCEPT_HEADING}</h2>
       {!ready.ready ? <p className="text-muted">{ready.reason}</p> : null}
       {!concept ? (
         <div>
-          <Button type="button" disabled={!ready.ready} busy={pending === "generate"} onClick={() => onGenerate()}>
+          <Button type="button" className="w-full sm:w-auto" disabled={!ready.ready} busy={pending === "generate"} onClick={() => onGenerate()}>
             {CONCEPT_CREATE}
           </Button>
         </div>
@@ -213,10 +213,11 @@ export function ConceptPanel({
         <ConceptReadout concept={concept} />
       )}
       {concept && !editing ? (
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             disabled={pending !== "idle"}
             onClick={() => {
               setDraft(concept);
@@ -228,6 +229,7 @@ export function ConceptPanel({
           <Button
             type="button"
             variant="outline"
+            className="w-full sm:w-auto"
             disabled={!ready.ready}
             busy={pending === "generate"}
             onClick={() => onGenerate()}
@@ -239,7 +241,7 @@ export function ConceptPanel({
               credits < 1 ? (
                 <DisabledAction label={PRODUCE_COMMERCIAL} reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)} />
               ) : (
-                <Button type="button" busy={pending === "produce"} onClick={() => onProduce()}>
+                <Button type="button" className="w-full sm:w-auto" busy={pending === "produce"} onClick={() => onProduce()}>
                   {pending === "produce" ? PRODUCING : PRODUCE_COMMERCIAL}
                 </Button>
               )
@@ -247,7 +249,7 @@ export function ConceptPanel({
               <p className="self-center text-sm text-muted">Script approved. Choose Next to generate the video.</p>
             )
           ) : (
-            <Button type="button" busy={pending === "approve"} onClick={() => onApprove()}>
+            <Button type="button" className="w-full sm:w-auto" busy={pending === "approve"} onClick={() => onApprove()}>
               {pending === "approve" ? CONCEPT_APPROVING : CONCEPT_APPROVE}
             </Button>
           )}
@@ -354,11 +356,11 @@ function EditFields({
         value={draft.callToAction}
         onChange={(callToAction) => patch({ callToAction })}
       />
-      <div className="flex flex-wrap gap-3">
-        <Button type="button" busy={pending} onClick={onSave}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <Button type="button" className="w-full sm:w-auto" busy={pending} onClick={onSave}>
           {pending ? CONCEPT_SAVING : CONCEPT_SAVE_EDITS}
         </Button>
-        <Button type="button" variant="outline" disabled={pending} onClick={onCancel}>
+        <Button type="button" variant="outline" className="w-full sm:w-auto" disabled={pending} onClick={onCancel}>
           {CONCEPT_CANCEL_EDIT}
         </Button>
       </div>

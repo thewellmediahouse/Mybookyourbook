@@ -45,11 +45,21 @@ export function contentRangeHeader(start: number, end: number, size: number): st
 }
 
 export function pickPlayableVideoAssetId(
-  jobs: Array<{ finalAssetId: string | null; sourceAssetId: string | null; status: string }>,
+  jobs: Array<{
+    finalAssetId: string | null;
+    enhancedAssetId?: string | null;
+    sourceAssetId: string | null;
+    status: string;
+  }>,
 ): string | null {
   for (const job of jobs) {
     if (job.finalAssetId) {
       return job.finalAssetId;
+    }
+  }
+  for (const job of jobs) {
+    if (job.enhancedAssetId) {
+      return job.enhancedAssetId;
     }
   }
   for (const job of jobs) {

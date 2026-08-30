@@ -144,14 +144,20 @@ export default async function CreateAdvertPage({
     <StudioBoard
       wizard={
         <>
-          <p className="text-xs tracking-[0.18em] text-muted">CREATE</p>
-          <h1 className="mt-2 font-display text-3xl text-foreground">{CREATE_HEADING}</h1>
-          <p className="mt-2 text-sm text-muted">{CREATE_BODY}</p>
-          <div className="mt-6">{wizard}</div>
+          <div className="hidden lg:block">
+            <p className="text-xs tracking-[0.18em] text-muted">CREATE</p>
+            <h1 className="mt-2 font-display text-3xl text-foreground">{CREATE_HEADING}</h1>
+            <p className="mt-2 text-sm text-muted">{CREATE_BODY}</p>
+          </div>
+          <h1 className="font-display text-2xl text-foreground lg:hidden">{CREATE_HEADING}</h1>
+          <div className="mt-4 lg:mt-6">{wizard}</div>
         </>
       }
       items={commercials}
       canDelete={canProduce(studio.role)}
+      canProduce={produce.allowed}
+      credits={credits}
+      produceBlockedReason={produce.allowed ? undefined : produce.reason}
     />
   );
 }

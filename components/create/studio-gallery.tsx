@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { deleteCommercialAction } from "@/app/dashboard/commercials/[id]/actions";
 import { Button } from "@/components/ui/button";
-import { productionProgressLabel, productionProgressPercent, DOWNLOAD_COMMERCIAL } from "@/lib/production/copy";
+import { NO_PRODUCTION_CREDITS } from "@/lib/credits/copy";
+import {
+  CLOSE_PLAYER,
+  DOWNLOAD_COMMERCIAL,
+  FILM_AGAIN,
+  FILM_AGAIN_HINT,
+  PLAY_COMMERCIAL,
+  productionProgressLabel,
+  productionProgressPercent,
+} from "@/lib/production/copy";
 import {
   DELETE,
   DELETE_PERMANENT_CONFIRM,
@@ -19,9 +28,15 @@ import { cn } from "@/lib/utils";
 export function StudioGallery({
   items,
   canDelete,
+  canProduce,
+  credits,
+  produceBlockedReason,
 }: {
   items: CommercialListItem[];
   canDelete: boolean;
+  canProduce: boolean;
+  credits: number;
+  produceBlockedReason?: string;
 }) {
   const router = useRouter();
   const filming = items.some((item) => isInProductionStatus(item.status));
@@ -46,14 +61,20 @@ export function StudioGallery({
       </div>
       {items.length === 0 ? (
         <p className="mt-8 max-w-md text-muted">
-          Finish the steps on the left. When filming starts, a loading card appears here. The
+          Finish the steps in Create. When filming starts, a loading card appears here. The
           finished commercial then plays in that same card.
         </p>
       ) : (
         <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {items.map((item) => (
             <li key={item.id}>
-              <StudioVideoCard item={item} canDelete={canDelete} />
+              <StudioVideoCard
+                item={item}
+                canDelete={canDelete}
+                canProduce={canProduce}
+                credits={credits}
+                produceBlockedReason={produceBlockedReason}
+              />
             </li>
           ))}
         </ul>
@@ -65,17 +86,28 @@ export function StudioGallery({
 function StudioVideoCard({
   item,
   canDelete,
+  canProduce,
+  credits,
+  produceBlockedReason,
 }: {
   item: CommercialListItem;
   canDelete: boolean;
+  canProduce: boolean;
+  credits: number;
+  produceBlockedReason?: string;
 }) {
   const router = useRouter();
   const producing = isInProductionStatus(item.status);
   const percent = productionProgressPercent(item.jobStatus);
   const label = productionProgressLabel(item.jobStatus);
-  const ready = Boolean(item.finalAssetId) && !producing;
+  const playSrc = item.finalAssetId ? `/api/assets/${item.finalAssetId}` : null;
+  const ready = Boolean(playSrc) && !producing;
+  const canFilmAgain = !producing && (item.status === "READY" || item.status === "FAILED");
+  const filmAgainBlocked =
+    produceBlockedReason ?? (credits < 1 ? NO_PRODUCTION_CREDITS : null);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [pending, setPending] = useState(false);
+  const [watching, setWatching] = useState(false);
+  const [pending, setPending] = useState<"idle" | "delete" | "film">("idle");
   const [error, setError] = useState<string | null>(null);
   const shape =
     item.aspectRatio === "9:16"
@@ -85,10 +117,10 @@ function StudioVideoCard({
         : "aspect-video";
 
   async function remove() {
-    setPending(true);
+    setPending("delete");
     setError(null);
     const result = await deleteCommercialAction(item.id);
-    setPending(false);
+    setPending("idle");
     if (result.error) {
       setError(result.error);
       return;
@@ -96,11 +128,40 @@ function StudioVideoCard({
     router.refresh();
   }
 
+  async function filmAgain() {
+    if (!canProduce || filmAgainBlocked) {
+      return;
+    }
+    setPending("film");
+    setError(null);
+    try {
+      const response = await fetch("/api/production/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId: item.id }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "We couldn't start filming.");
+      }
+      setWatching(false);
+      router.refresh();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "We couldn't start filming.");
+    } finally {
+      setPending("idle");
+    }
+  }
+
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-surface">
       <div className={cn("relative w-full overflow-hidden bg-surface-secondary", shape)}>
-        {ready ? (
-          <StudioPreview title={item.title} src={`/api/assets/${item.finalAssetId}`} />
+        {ready && playSrc ? (
+          watching ? (
+            <StudioPlayer title={item.title} src={playSrc} onClose={() => setWatching(false)} />
+          ) : (
+            <StudioPreview title={item.title} src={playSrc} />
+          )
         ) : producing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
             <span
@@ -128,7 +189,7 @@ function StudioVideoCard({
             )}
           </Link>
         )}
-        {!producing && (ready || canDelete) ? (
+        {!producing && !watching && (ready || canDelete || (canFilmAgain && canProduce)) ? (
           <div
             className={cn(
               "absolute inset-x-0 bottom-0 flex flex-col bg-[#001038] p-3 transition-opacity",
@@ -144,7 +205,7 @@ function StudioVideoCard({
                   <Button
                     type="button"
                     size="sm"
-                    disabled={pending}
+                    disabled={pending !== "idle"}
                     onClick={() => {
                       setConfirmDelete(false);
                       setError(null);
@@ -156,7 +217,7 @@ function StudioVideoCard({
                     type="button"
                     variant="outline"
                     size="sm"
-                    busy={pending}
+                    busy={pending === "delete"}
                     className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038]"
                     onClick={() => remove()}
                   >
@@ -167,8 +228,32 @@ function StudioVideoCard({
             ) : (
               <div className="flex flex-wrap gap-2">
                 {ready ? (
-                  <Button asChild size="sm">
-                    <a href={`/api/assets/${item.finalAssetId}?download=1`}>{DOWNLOAD_COMMERCIAL}</a>
+                  <Button type="button" size="sm" onClick={() => setWatching(true)}>
+                    {PLAY_COMMERCIAL}
+                  </Button>
+                ) : null}
+                {canFilmAgain && canProduce ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    busy={pending === "film"}
+                    disabled={Boolean(filmAgainBlocked)}
+                    title={filmAgainBlocked ?? FILM_AGAIN_HINT}
+                    className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038] disabled:opacity-60"
+                    onClick={() => filmAgain()}
+                  >
+                    {FILM_AGAIN}
+                  </Button>
+                ) : null}
+                {ready ? (
+                  <Button asChild size="sm" variant={ready ? "outline" : "default"}>
+                    <a
+                      href={`${playSrc}?download=1`}
+                      className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038]"
+                    >
+                      {DOWNLOAD_COMMERCIAL}
+                    </a>
                   </Button>
                 ) : null}
                 {canDelete ? (
@@ -185,6 +270,9 @@ function StudioVideoCard({
               </div>
             )}
             {error ? <p className="mt-2 text-sm text-[#F4F6FB]">{error}</p> : null}
+            {canFilmAgain && canProduce && filmAgainBlocked ? (
+              <p className="mt-2 text-sm text-[#F4F6FB]">{filmAgainBlocked}</p>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -261,5 +349,37 @@ function StudioPreview({ title, src }: { title: string; src: string }) {
       <source src={src} type="video/mp4" />
       Your commercial is ready.
     </video>
+  );
+}
+
+function StudioPlayer({
+  title,
+  src,
+  onClose,
+}: {
+  title: string;
+  src: string;
+  onClose: () => void;
+}) {
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col bg-[#001038]">
+      <video
+        className="min-h-0 w-full flex-1 object-contain"
+        controls
+        autoPlay
+        playsInline
+        preload="auto"
+        controlsList="nodownload"
+        aria-label={title}
+      >
+        <source src={src} type="video/mp4" />
+        Your commercial is ready.
+      </video>
+      <div className="flex justify-end p-3">
+        <Button type="button" size="sm" onClick={onClose}>
+          {CLOSE_PLAYER}
+        </Button>
+      </div>
+    </div>
   );
 }

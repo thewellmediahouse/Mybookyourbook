@@ -145,10 +145,10 @@ export function ExtraRefsUploader({
 
   return (
     <section>
-      <h3 className="font-display text-xl text-foreground">
+      <h3 className="font-display text-lg text-foreground lg:text-xl">
         {pickForAdvert ? "Extra photos for this advert" : "Extra photos"}
       </h3>
-      <p className="mt-2 text-muted">
+      <p className="mt-2 text-sm text-muted lg:text-base">
         {pickForAdvert
           ? "Optional. Upload new photos of your shop, product, or place, or pick from photos you already uploaded. Face photos and the selfie video are chosen above."
           : "Optional. Photos of your shop, product, or place. You can pick these when you create an advert."}
@@ -156,9 +156,13 @@ export function ExtraRefsUploader({
       {!canWrite ? (
         <p className="mt-4 text-sm text-muted">{writeReason}</p>
       ) : (
-        <label className="mt-4 inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-md border border-border px-4 text-sm text-foreground">
+        <label className="relative mt-4 flex min-h-28 cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface px-4 py-6 text-center lg:min-h-11 lg:flex-row lg:rounded-md lg:border-solid lg:py-0 lg:text-left">
+          <span className="absolute right-3 top-3 rounded-full border border-border px-2 py-0.5 text-xs text-muted lg:hidden">
+            Optional
+          </span>
           {pending ? <Spinner className="size-4" /> : null}
-          {pending ? "Uploading…" : "Upload new photo"}
+          <span className="text-sm text-foreground">{pending ? "Uploading…" : "Upload new photo"}</span>
+          <span className="text-xs text-muted lg:hidden">Shop, product, or place</span>
           <input
             type="file"
             accept={libraryAcceptAttribute("campaign")}
@@ -171,7 +175,7 @@ export function ExtraRefsUploader({
       {pending && progress !== null ? <p className="mt-2 text-sm text-muted">Uploading {progress}%</p> : null}
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
       {items.length > 0 ? (
-        <ul className="mt-6 grid gap-3 sm:grid-cols-3">
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {items.map((item) => {
             const on = chosen.has(item.id);
             return (

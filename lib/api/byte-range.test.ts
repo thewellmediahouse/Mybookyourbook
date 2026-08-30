@@ -12,13 +12,24 @@ test("parseBytesRange understands open, closed, and suffix spans", () => {
   assert.equal(contentRangeHeader(0, 1, 1000), "bytes 0-1/1000");
 });
 
-test("pickPlayableVideoAssetId prefers a finished file, then filmed source", () => {
+test("pickPlayableVideoAssetId prefers a finished file, then enhanced, then filmed source", () => {
   assert.equal(
     pickPlayableVideoAssetId([
       { status: "FAILED", finalAssetId: null, sourceAssetId: null },
       { status: "COMPLETE", finalAssetId: "final-1", sourceAssetId: "source-1" },
     ]),
     "final-1",
+  );
+  assert.equal(
+    pickPlayableVideoAssetId([
+      {
+        status: "COMPLETE",
+        finalAssetId: null,
+        enhancedAssetId: "enhanced-2",
+        sourceAssetId: "source-2",
+      },
+    ]),
+    "enhanced-2",
   );
   assert.equal(
     pickPlayableVideoAssetId([

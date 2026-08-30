@@ -56,11 +56,12 @@ Copy `.dev.vars` is already present for OpenNext local bindings (`NEXTJS_ENV=dev
 ```env
 AI_PROVIDER_MODE=mock
 FILMING_AI_MODE=live
+ENHANCEMENT_AI_MODE=live
 CONCEPT_AI_MODE=live
 PAYMENTS_MODE=test
 ```
 
-`AI_PROVIDER_MODE=mock` is pinned in `wrangler.jsonc` and must never call paid enhancement or branding APIs. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live` and `REAPI_API_KEY`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` and `OPENAI_API_KEY`. Missing those keys must not silently mock. `PAYMENTS_MODE=test` stays on until live Rapyd charges are explicitly approved.
+`AI_PROVIDER_MODE=mock` is pinned in `wrangler.jsonc` and must never call paid branding APIs. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live` and `REAPI_API_KEY`. Enhancing Your Footage may be independently live via `ENHANCEMENT_AI_MODE=live` and `TOPAZ_API_KEY`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` and `OPENAI_API_KEY`. Missing those keys must not silently mock. `PAYMENTS_MODE=test` stays on until live Rapyd charges are explicitly approved.
 
 ## Scripts
 
@@ -119,7 +120,7 @@ Bindings:
 - `COMMERCIAL_PRODUCTION_WORKFLOW` / `MediaProcessingService` exported from `worker.ts`
 - `AUTH_RATE_LIMIT`, `PRODUCTION_RATE_LIMIT`
 
-Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `FILMING_AI_MODE=live`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`.
+Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `FILMING_AI_MODE=live`, `ENHANCEMENT_AI_MODE=live`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`.
 
 Secrets stay out of git. For a future deploy, set them with Wrangler **after** you explicitly decide to ship — `wrangler secret put` publishes a new Worker version:
 
@@ -165,7 +166,7 @@ npm run preview:smoke
 - [x] Wrangler secret `BETTER_AUTH_SECRET` set
 - [x] Real D1 `database_id` in `wrangler.jsonc`
 - [x] R2 bucket `cineyou-production` created and private (no public access / custom domain)
-- [x] `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test` explicit in Wrangler `vars`. Filming may be live via `FILMING_AI_MODE`. Concept may be live via `CONCEPT_AI_MODE`.
+- [x] `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test` explicit in Wrangler `vars`. Filming may be live via `FILMING_AI_MODE`. Enhancement may be live via `ENHANCEMENT_AI_MODE`. Concept may be live via `CONCEPT_AI_MODE`.
 - [ ] Legal pages reviewed by counsel before launch
 - [ ] Do not enable live AI or live payments without an explicit decision
 - [x] Worker deployed (`https://cineyou.schalk-966.workers.dev`)

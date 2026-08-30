@@ -31,6 +31,7 @@ interface __BaseEnv_CloudflareEnv {
 	OPENAI_MODEL: string;
 	LLM_PROVIDER: string;
 	FILMING_AI_MODE: string;
+	ENHANCEMENT_AI_MODE: string;
 	MEDIA_PROCESSING: DurableObjectNamespace<import("./worker").MediaProcessingService>;
 	WORKER_SELF_REFERENCE: Service<typeof import("./worker").default>;
 	COMMERCIAL_PRODUCTION_WORKFLOW: Workflow<Parameters<import("./worker").CommercialProductionWorkflow['run']>[0]['payload']>;
@@ -47,7 +48,7 @@ type StringifyValues<EnvType extends Record<string, unknown>> = {
 	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PAYFAST_USD_ZAR_RATE" | "NEXT_PUBLIC_APP_URL" | "NEXT_PUBLIC_APP_NAME" | "NEXTJS_ENV" | "AI_PROVIDER_MODE" | "CONCEPT_AI_MODE" | "PAYMENTS_MODE" | "RAPYD_MODE" | "RAPYD_ACCESS_KEY" | "RAPYD_SECRET_KEY" | "RAPYD_WEBHOOK_URL" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "RESEND_API_KEY" | "EMAIL_FROM" | "ADMIN_EMAILS" | "INTERNAL_SERVICE_SECRET" | "REAPI_API_KEY" | "OPENAI_API_KEY" | "OPENAI_MODEL" | "LLM_PROVIDER" | "FILMING_AI_MODE">> {}
+	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "PAYFAST_USD_ZAR_RATE" | "NEXT_PUBLIC_APP_URL" | "NEXT_PUBLIC_APP_NAME" | "NEXTJS_ENV" | "AI_PROVIDER_MODE" | "CONCEPT_AI_MODE" | "PAYMENTS_MODE" | "RAPYD_MODE" | "RAPYD_ACCESS_KEY" | "RAPYD_SECRET_KEY" | "RAPYD_WEBHOOK_URL" | "BETTER_AUTH_SECRET" | "BETTER_AUTH_URL" | "RESEND_API_KEY" | "EMAIL_FROM" | "ADMIN_EMAILS" | "INTERNAL_SERVICE_SECRET" | "REAPI_API_KEY" | "OPENAI_API_KEY" | "OPENAI_MODEL" | "LLM_PROVIDER" | "FILMING_AI_MODE" | "ENHANCEMENT_AI_MODE">> {}
 }
 
 // Begin runtime types

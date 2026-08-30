@@ -51,7 +51,7 @@ export function DashboardShell({
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
-        <header className="flex flex-col gap-3 border-b border-border px-4 py-3 lg:hidden">
+        <header className="flex flex-col gap-2 border-b border-border px-4 py-2 lg:hidden">
           <div className="flex items-center justify-between gap-4">
             <Link href="/dashboard/create" aria-label="Production30 studio">
               <SiteLogo className="h-9 w-auto" />

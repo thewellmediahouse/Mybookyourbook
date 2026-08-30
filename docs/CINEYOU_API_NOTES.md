@@ -2,7 +2,7 @@
 
 Decision log for external APIs. **Do not invent request fields.** Before implementing a provider, read current official docs and record the date, URL, and any deviation from the master spec.
 
-Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live`. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live`. Live enhancement, branding, and Rapyd charges only when those flags are explicitly enabled.
+Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live`. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live`. Enhancing Your Footage may be independently live via `ENHANCEMENT_AI_MODE=live`. Branding and Rapyd charges only when those flags are explicitly enabled.
 
 ## Rule
 
@@ -163,7 +163,9 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - Accept: `PATCH /video/{requestId}/accept` → `{ uploadId, urls[] }`. Split source bytes across `urls.length` and `PUT` each HTTPS URL with `Content-Type: video/mp4`. Keep the `ETag` from each PUT.
 - Complete: `PATCH /video/{requestId}/complete-upload` (no trailing slash, matching the quickstart) with `{ uploadResults: [{ partNum, eTag }] }`. `partNum` starts at 1. `uploadUrls` are persisted in the Workflow `submit-topaz` step result so they survive `step.do` resumes. ETags stay in the same `upload-topaz` step as `completeUpload`.
 - Status: `GET /video/{requestId}/status`. In-flight: `requested` / `accepted` / `initializing` / `preprocessing` / `processing` / `postprocessing`. Terminal: `complete` (then `download.url`, TTL ~24h), `failed` / `canceled`. Workflow polls with `step.sleep` 15s, up to 120 attempts. We download `download.url` server-side, store bytes in private R2, and never persist that URL for customers.
-- `AI_PROVIDER_MODE=mock` never calls Topaz even if `TOPAZ_API_KEY` is set. Live without a key does not silently mock; create fails with “Live enhancement is not connected yet.” Live HTTP errors use a customer-safe enhancement message. Customers still see Enhancing Your Footage.
+- Official contract re-checked 2026-08-30: [Video Quickstart](https://developer.topazlabs.com/getting-started/video-quickstart), [Create Request](https://developer.topazlabs.com/reference/api-endpoints/video/create-request.md). Same create → accept → multipart PUT → complete-upload → poll `download.url` path. Default model still `prob-4` (official UpscaleFilter enum). Output still 1080p from the brief aspect, not 4K. Auth still `X-API-Key`.
+- `ENHANCEMENT_AI_MODE=live` (or `AI_PROVIDER_MODE=live` when enhancement mode is unset) calls Topaz after filming is saved to private R2 and before branding / Studio playback. `ENHANCEMENT_AI_MODE=mock` never calls Topaz even if `AI_PROVIDER_MODE=live` and `TOPAZ_API_KEY` is set. Live without a key does not silently mock; create fails with “Live enhancement is not connected yet.” Live HTTP errors use a customer-safe enhancement message. Customers still see Enhancing Your Footage. Branding stays on `AI_PROVIDER_MODE`.
+- Studio Play streams the authenticated `/api/assets/{id}` file (no `?download=1`). Film again starts a new production on the same commercial (`READY` or `FAILED`) with the same approved script and references and spends 1 Ad Credit.
 
 ### 2026-08-20 — Phase 18 Cloudflare Containers + media branding
 

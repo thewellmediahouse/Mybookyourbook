@@ -17,14 +17,27 @@ export {
 
 type UpscaleEnv = {
   AI_PROVIDER_MODE?: string;
+  ENHANCEMENT_AI_MODE?: string;
   TOPAZ_API_KEY?: string;
   TOPAZ_DEFAULT_MODEL?: string;
 };
 
 const LIVE_NOT_CONNECTED = "Live enhancement is not connected yet.";
 
-export function isLiveUpscaleMode(env: UpscaleEnv): boolean {
+function isLivePipelineMode(env: Pick<UpscaleEnv, "AI_PROVIDER_MODE">): boolean {
   return String(env.AI_PROVIDER_MODE ?? "mock").trim().toLowerCase() === "live";
+}
+
+/** Enhancement only. Branding still follows AI_PROVIDER_MODE. */
+export function isLiveUpscaleMode(env: UpscaleEnv): boolean {
+  const enhancement = String(env.ENHANCEMENT_AI_MODE ?? "").trim().toLowerCase();
+  if (enhancement === "live") {
+    return true;
+  }
+  if (enhancement === "mock") {
+    return false;
+  }
+  return isLivePipelineMode(env);
 }
 
 function disconnectedUpscaleProvider(message: string): UpscaleProvider {

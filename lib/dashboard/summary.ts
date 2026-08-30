@@ -114,7 +114,15 @@ export async function listCommercials(
 }
 
 async function jobsForProjects(db: Db, projectIds: string[]) {
-  const map = new Map<string, Array<{ status: string; finalAssetId: string | null; sourceAssetId: string | null }>>();
+  const map = new Map<
+    string,
+    Array<{
+      status: string;
+      finalAssetId: string | null;
+      enhancedAssetId: string | null;
+      sourceAssetId: string | null;
+    }>
+  >();
   if (projectIds.length === 0) {
     return map;
   }
@@ -123,6 +131,7 @@ async function jobsForProjects(db: Db, projectIds: string[]) {
       projectId: productionJobs.projectId,
       status: productionJobs.status,
       finalAssetId: productionJobs.finalAssetId,
+      enhancedAssetId: productionJobs.enhancedAssetId,
       sourceAssetId: productionJobs.sourceAssetId,
       createdAt: productionJobs.createdAt,
     })
@@ -134,6 +143,7 @@ async function jobsForProjects(db: Db, projectIds: string[]) {
     list.push({
       status: row.status,
       finalAssetId: row.finalAssetId,
+      enhancedAssetId: row.enhancedAssetId,
       sourceAssetId: row.sourceAssetId,
     });
     map.set(row.projectId, list);

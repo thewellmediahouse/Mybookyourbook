@@ -20,6 +20,10 @@ export const REFERENCE_VIDEO_FORMAT =
 export const READY_TITLE = "Your commercial is ready";
 export const READY_BODY = "Your Production30 commercial is ready to watch in your studio.";
 export const DOWNLOAD_COMMERCIAL = "Download";
+export const PLAY_COMMERCIAL = "Play";
+export const FILM_AGAIN = "Film again";
+export const FILM_AGAIN_HINT = "Uses 1 Ad Credit. Same script and photos.";
+export const CLOSE_PLAYER = "Close";
 export const FAILED_TITLE = "We couldn't finish this commercial";
 
 export const TIMELINE = [

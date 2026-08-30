@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (button loading wheels)
+Last updated: 2026-08-30 (studio play, film again, live enhancement)
 
 ## Foundation
 - [x] Next.js
@@ -600,6 +600,12 @@ Live job `3a384874` stayed on Filming Your Commercial for five minutes. Workflow
 
 OpenNext on GitHub succeeds (~29s). Every `wrangler deploy` / `versions upload` then dies in ~3s and **no new Worker version is created**. The repository secret cannot publish scripts. GitHub Actions is typecheck only again (last green pattern). Recreate `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit on account `9664d6a341ee02a3dc21db99dc992c61` and Queues Edit. Until then: `npm run deploy` on this laptop. This laptop promoted Worker `cineyou` version `07c5e854-433e-4592-bd20-8330b645d08d` (reference-video keys + Take photo camera) with `versions upload` + `versions deploy`. Branding container not rebuilt. `scripts/deploy-ci.sh` stays for when the token can publish.
 
+### 2026-08-30 — Studio Play, Film again, and live enhancement
+
+Finished cards now have Play (watch in Studio with sound and controls, no download required) and Film again (same approved script and photos, 1 Ad Credit). `validateReadyToProduce` accepts `READY` as well as `READY_TO_PRODUCE` / `FAILED`. Playback prefers the finished file, then the enhanced file, then the filmed source.
+
+Enhancing Your Footage can be independently live via `ENHANCEMENT_AI_MODE=live` + `TOPAZ_API_KEY`. Official Topaz Video API (re-checked 2026-08-30): create → accept → multipart PUT → complete-upload → poll → copy `download.url` into private R2 before branding and before Studio shows the file. Default model `prob-4`, 1080p from the brief aspect. `AI_PROVIDER_MODE` stays `mock`, so Adding Your Brand does not call the container. Missing `TOPAZ_API_KEY` fails with “Live enhancement is not connected yet.” and does not silently mock. `ENHANCEMENT_AI_MODE=mock` never calls Topaz. Laptop promoted Worker `cineyou` `fe8789e8-0646-4522-a534-c91d53e86a63` (tag `studio-play-enhance`) at 100% on https://production30.thewellmedia.com. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`.
+
 ### 2026-08-30 — Take photo opens the computer camera
 
 Take photo used a hidden file input with `capture="user"`, which desktop browsers treat as a file picker. It now asks for the webcam only after the click (same as Record Now), shows a live preview, and Capture photo saves a JPEG. Upload photo still picks a file. Camera is not requested until Take photo.
@@ -617,6 +623,10 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — Studio mobile is compose-first
+
+On a phone, Studio opens as Create or Your videos. The wizard is a single column: compact step pills, Who we film / Extra photos tabs, a dashed optional photo drop, a large script box, shape and length as two pills, and a sticky Next / Produce bar above the studio tabs. Desktop stays the two-column board. No vendor names. No 480p on the customer screen. Laptop promoted Worker `cineyou` `017415cc-a6d4-4d5e-aa5f-da47cf97e1d3` (tag `studio-mobile`) at 100%. Branding container not rebuilt.
 
 ### 2026-08-30 — Buttons show a loading wheel while they work
 

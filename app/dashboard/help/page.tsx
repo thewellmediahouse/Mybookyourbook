@@ -30,7 +30,7 @@ const ARTICLES = [
   },
   {
     title: "Understanding Ad Credits",
-    body: "One Ad Credit starts one new commercial production. Concept work before production does not use a credit.",
+    body: "One Ad Credit starts one new commercial production, including Film again with the same script and photos. Concept work before production does not use a credit.",
     href: "/pricing",
     linkLabel: "Pricing",
   },
@@ -53,8 +53,16 @@ const ARTICLES = [
     body: "Your logo must be a PNG, JPEG, or WebP. We use that picture when we film. Exact written words are still added afterwards so spelling stays exact.",
   },
   {
+    title: "Watching Your Video",
+    body: "When a commercial is ready, tap Play on the card to watch it in Studio. You do not need to download it first. Download is still there if you want a copy.",
+  },
+  {
+    title: "Film again",
+    body: "Film again uses the same script and the same photos. It uses 1 Ad Credit and starts a new production. The new video appears on the same card when it is ready.",
+  },
+  {
     title: "Downloading Your Video",
-    body: "Download appears on a finished commercial. There is no file to download until a commercial is ready.",
+    body: "Download appears on a finished commercial. You can also play it in Studio without downloading. There is no file to download until a commercial is ready.",
   },
 ] as const;
 

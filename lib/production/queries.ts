@@ -56,7 +56,11 @@ export async function validateReadyToProduce(
   if (!project || project.workspaceId !== input.workspaceId || project.deletedAt) {
     throw new ProductionError("NOT_FOUND", "That commercial is not available.");
   }
-  if (project.status !== "READY_TO_PRODUCE" && project.status !== "FAILED") {
+  if (
+    project.status !== "READY_TO_PRODUCE" &&
+    project.status !== "FAILED" &&
+    project.status !== "READY"
+  ) {
     if (project.status === "IN_PRODUCTION" || project.status === "ENHANCING" || project.status === "BRANDING" || project.status === "FINALISING") {
       throw new ProductionError("DUPLICATE", "This commercial is already being produced.");
     }

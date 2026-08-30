@@ -84,6 +84,8 @@ export function SimpleCreateWizard({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [producing, setProducing] = useState(false);
+  const [profilePane, setProfilePane] = useState<"film" | "extras">("film");
+  const [formatOpen, setFormatOpen] = useState<"shape" | "length" | null>(null);
   const timer = useRef<number | null>(null);
   const briefRef = useRef(brief);
   const wasFresh = useRef(false);
@@ -275,15 +277,21 @@ export function SimpleCreateWizard({
   const recommended = recommendedAspectRatio(brief.platform);
 
   return (
-    <div>
-      <ol className="flex flex-wrap gap-2 text-xs tracking-[0.18em] text-muted">
+    <div className="pb-28 lg:pb-0">
+      <ol className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 text-xs tracking-[0.12em] text-muted lg:flex-wrap lg:overflow-visible">
         {SIMPLE_WIZARD_STEPS.map((item, index) => (
-          <li key={item.id} className={index === step ? "text-accent" : undefined}>
+          <li
+            key={item.id}
+            className={cn(
+              "shrink-0 rounded-full border px-3 py-1.5",
+              index === step ? "border-accent text-foreground" : "border-border",
+            )}
+          >
             {String(index + 1).padStart(2, "0")} {item.label}
           </li>
         ))}
       </ol>
-      <p className="mt-3 text-sm text-muted">
+      <p className="mt-3 hidden text-sm text-muted lg:block">
         {status === "saving" ? "Saving…" : status === "saved" ? "Saved." : CREATE_BODY}
         {brief.projectId ? (
           <>
@@ -294,11 +302,28 @@ export function SimpleCreateWizard({
           </>
         ) : null}
       </p>
+      <p className="mt-2 text-xs text-muted lg:hidden">
+        {status === "saving" ? "Saving…" : status === "saved" ? "Saved." : null}
+        {brief.projectId ? (
+          <Link href="/dashboard/create?new=1" className="ml-2 underline">
+            New advert
+          </Link>
+        ) : null}
+      </p>
 
       {current?.id === "profile" ? (
-        <section className="mt-8 flex flex-col gap-6">
-          <h2 className="font-display text-2xl text-foreground">Who should we film?</h2>
-          <p className="text-muted">
+        <section className="mt-5 flex flex-col gap-5 lg:mt-8 lg:gap-6">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-surface-secondary p-1 lg:hidden">
+            <PaneTab selected={profilePane === "film"} onClick={() => setProfilePane("film")}>
+              Who we film
+            </PaneTab>
+            <PaneTab selected={profilePane === "extras"} onClick={() => setProfilePane("extras")}>
+              Extra photos
+            </PaneTab>
+          </div>
+          <div className={cn(profilePane === "film" ? "contents" : "hidden lg:contents")}>
+          <h2 className="font-display text-xl text-foreground lg:text-2xl">Who should we film?</h2>
+          <p className="text-sm text-muted lg:text-base">
             We do not assume your saved profile. Choose it for this advert, or upload a new selfie
             video and face photos.
           </p>
@@ -345,8 +370,8 @@ export function SimpleCreateWizard({
           ) : null}
           {brand && mode ? (
             <div>
-              <h3 className="font-display text-xl text-foreground">Logo</h3>
-              <div className="mt-4">
+              <h3 className="font-display text-lg text-foreground lg:text-xl">Logo</h3>
+              <div className="mt-3 lg:mt-4">
                 <LogoUploader
                   businessId={brand.id}
                   logoAssetId={brand.logoAssetId}
@@ -355,6 +380,8 @@ export function SimpleCreateWizard({
               </div>
             </div>
           ) : null}
+          </div>
+          <div className={cn(profilePane === "extras" ? "contents" : "hidden lg:contents")}>
           <ExtraRefsUploader
             canWrite={extrasWrite.allowed}
             writeReason={extrasWrite.allowed ? null : extrasWrite.reason}
@@ -378,13 +405,14 @@ export function SimpleCreateWizard({
               )
             }
           />
+          </div>
         </section>
       ) : null}
 
       {current?.id === "script" ? (
-        <section className="mt-8 flex flex-col gap-6">
-          <h2 className="font-display text-2xl text-foreground">Write your script</h2>
-          <p className="text-muted">
+        <section className="mt-5 flex flex-col gap-5 lg:mt-8 lg:gap-6">
+          <h2 className="font-display text-xl text-foreground lg:text-2xl">Write your script</h2>
+          <p className="hidden text-muted lg:block">
             Tell us what this advert should say and show. Use the suggestions below so we know the
             type, look, and where it will run.
           </p>
@@ -419,7 +447,7 @@ export function SimpleCreateWizard({
               id="prompt"
               value={prompt}
               onChange={(event) => setPrompt(event.target.value)}
-              className="min-h-40 w-full rounded-md border border-border bg-surface px-3 py-2 text-base text-foreground placeholder:text-muted"
+              className="min-h-36 w-full rounded-2xl border-2 border-accent bg-surface px-4 py-3 text-base text-foreground placeholder:text-muted lg:min-h-40 lg:rounded-md lg:border lg:border-border lg:px-3 lg:py-2"
               placeholder="Example: We are a family bakery in Durban. Show warm morning light, fresh bread, and ask people to visit this Saturday."
             />
           </div>
@@ -450,7 +478,53 @@ export function SimpleCreateWizard({
           {recommended ? (
             <p className="text-sm text-muted">Recommended: {recommended}. Choose it below if you agree.</p>
           ) : null}
-          <fieldset>
+          <div className="grid grid-cols-2 gap-2 lg:hidden">
+            <ConfigPill
+              selected={formatOpen === "shape"}
+              onClick={() => setFormatOpen((currentOpen) => (currentOpen === "shape" ? null : "shape"))}
+            >
+              {brief.aspectRatio || "Shape"}
+            </ConfigPill>
+            <ConfigPill
+              selected={formatOpen === "length"}
+              onClick={() => setFormatOpen((currentOpen) => (currentOpen === "length" ? null : "length"))}
+            >
+              {brief.duration}s
+            </ConfigPill>
+          </div>
+          {formatOpen === "shape" ? (
+            <div className="flex flex-wrap gap-2 lg:hidden">
+              {ASPECT_RATIOS.map((item) => (
+                <Chip
+                  key={item.value}
+                  selected={brief.aspectRatio === item.value}
+                  onClick={() => {
+                    patch({ aspectRatio: item.value });
+                    setFormatOpen(null);
+                  }}
+                >
+                  {item.value}
+                </Chip>
+              ))}
+            </div>
+          ) : null}
+          {formatOpen === "length" ? (
+            <div className="flex flex-wrap gap-2 lg:hidden">
+              {DURATIONS.map((item) => (
+                <Chip
+                  key={item}
+                  selected={brief.duration === item}
+                  onClick={() => {
+                    patch({ duration: item });
+                    setFormatOpen(null);
+                  }}
+                >
+                  {item}s
+                </Chip>
+              ))}
+            </div>
+          ) : null}
+          <fieldset className="hidden lg:block">
             <legend className="text-sm font-medium text-foreground">Shape</legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {ASPECT_RATIOS.map((item) => (
@@ -464,7 +538,7 @@ export function SimpleCreateWizard({
               ))}
             </div>
           </fieldset>
-          <fieldset>
+          <fieldset className="hidden lg:block">
             <legend className="text-sm font-medium text-foreground">Length</legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {DURATIONS.map((item) => (
@@ -500,11 +574,11 @@ export function SimpleCreateWizard({
       ) : null}
 
       {current?.id === "generate" ? (
-        <section className="mt-8 flex flex-col gap-6">
-          <h2 className="font-display text-2xl text-foreground">Generate video</h2>
-          <p className="text-muted">
-            This uses 1 Ad Credit. A loading card appears on the right and becomes your video when
-            filming finishes.
+        <section className="mt-5 flex flex-col gap-4 lg:mt-8 lg:gap-6">
+          <h2 className="font-display text-xl text-foreground lg:text-2xl">Generate video</h2>
+          <p className="text-sm text-muted lg:text-base">
+            This uses 1 Ad Credit. A loading card appears under Your videos and becomes your
+            commercial when filming finishes.
           </p>
           {!approved ? (
             <p className="text-muted">Approve the script first, then we can film.</p>
@@ -514,26 +588,39 @@ export function SimpleCreateWizard({
               reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)}
             />
           ) : (
-            <Button type="button" busy={producing} onClick={() => onProduce()}>
-              {producing ? PRODUCING : PRODUCE_COMMERCIAL}
-            </Button>
+            <div className="hidden lg:block">
+              <Button type="button" busy={producing} onClick={() => onProduce()}>
+                {producing ? PRODUCING : PRODUCE_COMMERCIAL}
+              </Button>
+            </div>
           )}
         </section>
       ) : null}
 
-      {error ? <p className="mt-6 text-sm text-danger">{error}</p> : null}
+      {error ? <p className="mt-4 text-sm text-danger lg:mt-6">{error}</p> : null}
 
-      <div className="mt-10 flex flex-wrap gap-3">
-        {step > 0 ? (
-          <Button type="button" variant="outline" onClick={() => setStep((value) => value - 1)}>
-            Back
-          </Button>
-        ) : null}
-        {step < SIMPLE_WIZARD_STEPS.length - 1 ? (
-          <Button type="button" onClick={() => goNext()}>
-            Next
-          </Button>
-        ) : null}
+      <div className="fixed inset-x-0 bottom-[calc(3.5rem+env(safe-area-inset-bottom))] z-40 border-t border-border bg-background px-4 py-3 lg:static lg:bottom-auto lg:mt-10 lg:border-0 lg:bg-transparent lg:p-0">
+        <div className="flex gap-3">
+          {step > 0 ? (
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 lg:flex-none"
+              onClick={() => setStep((value) => value - 1)}
+            >
+              Back
+            </Button>
+          ) : null}
+          {step < SIMPLE_WIZARD_STEPS.length - 1 ? (
+            <Button type="button" className="flex-1 lg:flex-none" onClick={() => goNext()}>
+              Next
+            </Button>
+          ) : current?.id === "generate" && approved && credits >= 1 ? (
+            <Button type="button" className="flex-1 lg:hidden" busy={producing} onClick={() => onProduce()}>
+              {producing ? PRODUCING : PRODUCE_COMMERCIAL}
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   );
@@ -577,6 +664,52 @@ function SavedProfilePreview({
   );
 }
 
+function PaneTab({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "min-h-11 rounded-full px-3 text-sm",
+        selected ? "bg-surface text-foreground" : "text-muted",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ConfigPill({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "min-h-11 rounded-full border px-3 text-sm",
+        selected ? "border-accent text-foreground" : "border-border text-muted",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
 function ChoiceCard({
   selected,
   disabled,
@@ -596,7 +729,7 @@ function ChoiceCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "rounded-2xl border p-5 text-left",
+        "rounded-2xl border p-4 text-left lg:p-5",
         selected ? "border-accent bg-surface" : "border-border bg-surface",
         disabled ? "cursor-not-allowed opacity-60" : undefined,
       )}
@@ -645,7 +778,7 @@ function Chip({
     <button
       type="button"
       className={cn(
-        "min-h-11 rounded-md border px-3 text-sm",
+        "min-h-11 rounded-full border px-3 text-sm",
         selected ? "border-accent text-foreground" : "border-border text-muted",
       )}
       onClick={onClick}

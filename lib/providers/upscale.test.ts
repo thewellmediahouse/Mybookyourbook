@@ -69,6 +69,53 @@ test("mock mode never calls Topaz even when a key is present", async () => {
   }
 });
 
+test("ENHANCEMENT_AI_MODE=live uses Topaz while the rest of the pipeline stays mock", async () => {
+  const provider = createUpscaleProvider({
+    AI_PROVIDER_MODE: "mock",
+    ENHANCEMENT_AI_MODE: "live",
+  });
+  await assert.rejects(
+    () =>
+      provider.create({
+        sourceBytes: FIXTURE_MP4,
+        mimeType: FIXTURE_VIDEO_MIME,
+        aspectRatio: "9:16",
+        durationSeconds: 30,
+      }),
+    (error: unknown) => error instanceof Error && error.message === "Live enhancement is not connected yet.",
+  );
+});
+
+test("ENHANCEMENT_AI_MODE=mock keeps enhancement mock even when AI_PROVIDER_MODE is live", async () => {
+  let called = 0;
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    called += 1;
+    throw new Error("paid HTTP must not run when enhancement is mock");
+  }) as typeof fetch;
+  try {
+    const provider = createUpscaleProvider({
+      AI_PROVIDER_MODE: "live",
+      ENHANCEMENT_AI_MODE: "mock",
+      TOPAZ_API_KEY: "topaz_secret",
+    });
+    const created = await provider.create({
+      sourceBytes: FIXTURE_MP4,
+      mimeType: FIXTURE_VIDEO_MIME,
+      aspectRatio: "9:16",
+      durationSeconds: 30,
+    });
+    await provider.accept(created.id);
+    await provider.upload(created.id, FIXTURE_MP4);
+    await provider.completeUpload(created.id);
+    const polled = await provider.poll(created.id);
+    assert.equal(polled.status, "complete");
+    assert.equal(called, 0);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 test("live mode without a key does not silently mock", async () => {
   let called = 0;
   const original = globalThis.fetch;
