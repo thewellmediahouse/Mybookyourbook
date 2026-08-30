@@ -1539,6 +1539,8 @@ Notification icon in dashboard header.
 
 Send transactional email for: Welcome, Verify Email, Password Reset, Commercial Ready (subject **Your Production30 commercial is ready**, button **View My Commercial**), Production Failure (customer-friendly language), Payment Receipt, Team Invitation.
 
+Every outgoing email uses one light layout with the Production30 logo. Do not send the dark studio canvas. Inbox dark mode must stay light (`color-scheme: light only`). Button labels stay `#001038` on `#1678FF`. Body links use `#0B5BD6`, never `#1678FF` as small text.
+
 Never attach giant videos.
 
 ---

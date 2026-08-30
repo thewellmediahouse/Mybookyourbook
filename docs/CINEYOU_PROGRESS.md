@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (no filmed small text)
+Last updated: 2026-08-30 (light branded emails)
 
 ## Foundation
 - [x] Next.js
@@ -617,6 +617,10 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — Light branded transactional emails
+
+All outgoing mail (welcome, confirm, reset, ready, failed, receipt, invite, support) uses one light layout: frost page, white card, Production30 stacked logo, navy ink, muted body, blue button with `#001038` label. Forced light (`color-scheme: light only`) so dark inboxes do not invert it. Links use `#0B5BD6` — `#1678FF` as small text on white fails 4.5:1. No video attachments.
 
 ### 2026-08-30 — No small filmed text or on-screen CTAs
 

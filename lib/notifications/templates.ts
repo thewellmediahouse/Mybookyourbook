@@ -12,6 +12,7 @@ import {
   VERIFY_EMAIL_SUBJECT,
   WELCOME_EMAIL_SUBJECT,
 } from "./copy";
+import { renderEmailHtml } from "./email-layout";
 import type { EmailQueueMessage } from "./messages";
 
 export type RenderedEmail = {
@@ -26,6 +27,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
   switch (message.template) {
     case "welcome":
       return envelope({
+        appUrl: message.appUrl,
         subject: WELCOME_EMAIL_SUBJECT,
         heading: "Welcome to Production30",
         body: `Hi ${name}. Your account is ready. Open your studio to brief your first commercial.`,
@@ -34,6 +36,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "verify-email":
       return envelope({
+        appUrl: message.appUrl,
         subject: VERIFY_EMAIL_SUBJECT,
         heading: "Confirm your email",
         body: "Tap the button to confirm this email for your Production30 account. You cannot sign in until you do.",
@@ -42,6 +45,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "existing-account":
       return envelope({
+        appUrl: message.appUrl,
         subject: EXISTING_ACCOUNT_SUBJECT,
         heading: "You already have an account",
         body: "This email is already registered. Sign in to open your studio. If you forgot your password, use Forgot password on the sign-in page.",
@@ -50,6 +54,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "reset-password":
       return envelope({
+        appUrl: message.appUrl,
         subject: RESET_EMAIL_SUBJECT,
         heading: "Reset your password",
         body: "Tap the button to choose a new password. If you did not ask for this, you can ignore the email.",
@@ -58,6 +63,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "commercial-ready":
       return envelope({
+        appUrl: message.appUrl,
         subject: READY_EMAIL_SUBJECT,
         heading: READY_EMAIL_SUBJECT,
         body: message.body ?? "Your Production30 commercial is ready to watch in your studio.",
@@ -66,6 +72,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "commercial-failed":
       return envelope({
+        appUrl: message.appUrl,
         subject: FAILED_EMAIL_SUBJECT,
         heading: FAILED_EMAIL_SUBJECT,
         body: message.body ?? "We couldn't complete this commercial. Your Ad Credit has not been lost.",
@@ -74,6 +81,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "payment-receipt":
       return envelope({
+        appUrl: message.appUrl,
         subject: RECEIPT_EMAIL_SUBJECT,
         heading: RECEIPT_EMAIL_SUBJECT,
         body: message.body ?? "Your payment was received and your Ad Credits are in your studio.",
@@ -82,6 +90,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "team-invite":
       return envelope({
+        appUrl: message.appUrl,
         subject: INVITE_EMAIL_SUBJECT,
         heading: INVITE_EMAIL_SUBJECT,
         body: message.body ?? "You've been invited to a Production30 studio.",
@@ -90,6 +99,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "support-staff":
       return envelope({
+        appUrl: message.appUrl,
         subject: SUPPORT_STAFF_SUBJECT,
         heading: SUPPORT_STAFF_SUBJECT,
         body: message.body ?? "A customer sent a support message.",
@@ -98,6 +108,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "support-received":
       return envelope({
+        appUrl: message.appUrl,
         subject: SUPPORT_RECEIVED_SUBJECT,
         heading: SUPPORT_RECEIVED_SUBJECT,
         body: message.body ?? "Thanks. We received your message. We'll email you back.",
@@ -106,6 +117,7 @@ export function renderEmail(message: EmailQueueMessage): RenderedEmail {
       });
     case "support-reply":
       return envelope({
+        appUrl: message.appUrl,
         subject: SUPPORT_REPLY_SUBJECT,
         heading: SUPPORT_REPLY_SUBJECT,
         body: message.body ?? "We sent a reply to your Production30 message.",
@@ -127,6 +139,7 @@ function absoluteAction(appUrl: string, actionUrl?: string): string {
 }
 
 function envelope(input: {
+  appUrl: string;
   subject: string;
   heading: string;
   body: string;
@@ -134,29 +147,9 @@ function envelope(input: {
   button: string;
 }): RenderedEmail {
   const text = `${input.heading}\n\n${input.body}\n\n${input.button}:\n${input.actionUrl}`;
-  const html = `<!doctype html>
-<html>
-<body style="margin:0;padding:24px;background:#05070F;color:#F4F6FB;font-family:ui-sans-serif,system-ui,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;">
-    <tr><td>
-      <p style="font-size:13px;letter-spacing:0.12em;color:#1678FF;margin:0 0 16px;">PRODUCTION30</p>
-      <h1 style="font-size:28px;line-height:1.2;margin:0 0 16px;color:#F4F6FB;">${escapeHtml(input.heading)}</h1>
-      <p style="font-size:16px;line-height:1.5;color:#9AA3B8;margin:0 0 24px;">${escapeHtml(input.body)}</p>
-      <p style="margin:0 0 24px;">
-        <a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;background:#1678FF;color:#001038;text-decoration:none;padding:12px 20px;border-radius:8px;font-weight:600;">${escapeHtml(input.button)}</a>
-      </p>
-      <p style="font-size:13px;color:#9AA3B8;margin:0;">If the button does not work, open this link:<br>${escapeHtml(input.actionUrl)}</p>
-    </td></tr>
-  </table>
-</body>
-</html>`;
-  return { subject: input.subject, text, html };
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+  return {
+    subject: input.subject,
+    text,
+    html: renderEmailHtml(input),
+  };
 }
