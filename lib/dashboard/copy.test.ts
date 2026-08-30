@@ -20,9 +20,10 @@ test("empty dashboard copy matches the spec", () => {
   );
   assert.equal(EMPTY_CTA, "Create My First Advert");
   assert.deepEqual([...EMPTY_STEPS], [
-    "Brief us",
-    "Approve the concept",
-    "Receive your commercial",
+    "Choose your profile",
+    "Write your script",
+    "Approve it",
+    "We film it",
   ]);
 });
 
@@ -30,7 +31,7 @@ test("overview header copy matches the spec", () => {
   assert.equal(welcomeHeading("Schalk"), "Welcome back, Schalk.");
   assert.equal(WELCOME_SUBHEADING, "What would you like to create today?");
   assert.equal(CREATE_BUTTON, "+ Create Advert");
-  assert.equal(COMMERCIALS_HEADING, "Your Commercials");
+  assert.equal(COMMERCIALS_HEADING, "My Adverts");
 });
 
 test("credit labels use the real balance", () => {

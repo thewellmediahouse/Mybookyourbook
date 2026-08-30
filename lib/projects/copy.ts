@@ -1,5 +1,12 @@
-export const CREATE_HEADING = "Create Commercial";
-export const CREATE_BODY = "Tell us about this campaign. We save as you go, so you can leave and come back.";
+export const CREATE_HEADING = "Create Advert";
+export const CREATE_BODY =
+  "Choose your profile, write your script, approve it, then we film it. We save as you go.";
+export const SIMPLE_WIZARD_STEPS = [
+  { id: "profile", label: "Profile" },
+  { id: "script", label: "Script" },
+  { id: "approve", label: "Approve" },
+  { id: "generate", label: "Generate" },
+] as const;
 export const STUDIO_HEADING = "Create your next advert";
 export const STUDIO_BODY =
   "Start with a business advert, or make a short viral video starring you. Concept work is free. One Ad Credit starts one new commercial.";
@@ -29,3 +36,27 @@ export const WIZARD_STEPS = [
 ] as const;
 
 export type WizardStepId = (typeof WIZARD_STEPS)[number]["id"];
+export type SimpleWizardStepId = (typeof SIMPLE_WIZARD_STEPS)[number]["id"];
+
+export function resolveSimpleWizardStep(input: {
+  requested?: string;
+  profileReady: boolean;
+  conceptApproved: boolean;
+  hasConcept: boolean;
+  briefReady: boolean;
+}): number {
+  const requested = SIMPLE_WIZARD_STEPS.findIndex((step) => step.id === input.requested);
+  if (requested >= 0) {
+    return requested;
+  }
+  if (input.conceptApproved) {
+    return 3;
+  }
+  if (input.hasConcept || input.briefReady) {
+    return 2;
+  }
+  if (input.profileReady) {
+    return 1;
+  }
+  return 0;
+}

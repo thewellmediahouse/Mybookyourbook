@@ -21,7 +21,7 @@ export function IdentityActions({
     setError(null);
     const confirmMessage =
       scope === "all"
-        ? "Remove your private identity references from this studio?"
+        ? "Remove your Reference Profile files from this studio?"
         : scope === "video"
           ? "Remove the reference video?"
           : "Remove the three identity photos?";
@@ -47,16 +47,16 @@ export function IdentityActions({
     <div className="mt-10 flex flex-col gap-3">
       <div className="flex flex-wrap gap-3">
         <Button type="button" variant="outline" onClick={() => document.getElementById("identity-capture")?.scrollIntoView()}>
-          Update Identity
+          Update profile
         </Button>
         <Button type="button" variant="outline" disabled={!hasVideo || pending} onClick={() => document.getElementById("identity-capture")?.scrollIntoView()}>
-          Replace Video
+          Replace video
         </Button>
         <Button type="button" variant="outline" disabled={!hasPhotos || pending} onClick={() => document.getElementById("identity-capture")?.scrollIntoView()}>
-          Replace Photos
+          Replace photos
         </Button>
         <Button type="button" variant="outline" disabled={!hasAnything || pending} onClick={() => void remove("all")}>
-          Delete AI Identity
+          Delete Reference Profile
         </Button>
       </div>
       {error ? <p className="text-sm text-danger">{error}</p> : null}

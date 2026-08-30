@@ -12,21 +12,21 @@ export const metadata: Metadata = { title: "Help" };
 const ARTICLES = [
   {
     title: "Getting Started",
-    body: "Brief us about your business, show us who you are, approve the concept, then receive your commercial.",
+    body: "Choose your profile, write your script, approve it, then we film it.",
     href: "/how-it-works",
     linkLabel: "How it works",
   },
   {
     title: "Creating a Good Reference Video",
     body: "Record or upload about 8 to 15 seconds, facing the camera in a quiet, well-lit room. Do not send video files by email.",
-    href: "/dashboard/identity",
-    linkLabel: "Your AI Identity",
+    href: "/dashboard/profile",
+    linkLabel: "Reference Profile",
   },
   {
     title: "Taking Reference Photos",
     body: "We need three stills: front, about 45° left, and about 45° right. Face clear, shoulders visible, no sunglasses or filters.",
-    href: "/dashboard/identity",
-    linkLabel: "Your AI Identity",
+    href: "/dashboard/profile",
+    linkLabel: "Reference Profile",
   },
   {
     title: "Understanding Ad Credits",

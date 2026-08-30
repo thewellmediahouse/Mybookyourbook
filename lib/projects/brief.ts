@@ -163,3 +163,11 @@ export function requireExplicitAspectRatio(value: string | null | undefined): As
 export function nextContextSlot(used: string[]): (typeof CONTEXT_SLOTS)[number] | null {
   return CONTEXT_SLOTS.find((slot) => !used.includes(slot)) ?? null;
 }
+
+export function titleFromPrompt(prompt: string): string {
+  const first = prompt.trim().split(/\n/)[0]?.trim() ?? "";
+  if (!first) {
+    return "";
+  }
+  return first.length > 72 ? `${first.slice(0, 72).trimEnd()}…` : first;
+}

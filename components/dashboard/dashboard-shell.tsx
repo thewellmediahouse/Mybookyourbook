@@ -16,7 +16,6 @@ export function DashboardShell({
   activeId,
   brands,
   activeBrandId,
-  unreadCount,
   creditBalance,
 }: {
   children: ReactNode;
@@ -24,7 +23,6 @@ export function DashboardShell({
   activeId: string;
   brands: { id: string; name: string }[];
   activeBrandId: string | null;
-  unreadCount: number;
   creditBalance: number;
 }) {
   return (
@@ -40,14 +38,14 @@ export function DashboardShell({
           </div>
         ) : null}
         <div className="mt-6 flex-1 overflow-y-auto">
-          <DashboardDesktopNav unreadCount={unreadCount} creditBalance={creditBalance} />
+          <DashboardDesktopNav creditBalance={creditBalance} />
         </div>
         <div className="mt-6 flex flex-col gap-2 border-t border-border pt-4">
           <Link
             href="/dashboard/settings/profile"
             className="inline-flex min-h-11 items-center rounded-md px-3 text-sm text-muted transition-colors hover:bg-surface hover:text-foreground"
           >
-            Profile
+            Account
           </Link>
           <SignOutButton className="justify-start" />
         </div>

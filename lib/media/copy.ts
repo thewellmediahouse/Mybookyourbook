@@ -1,6 +1,6 @@
 export const LIBRARY_HEADING = "Media Library";
 export const LIBRARY_BODY =
-  "Save logos, products, places, and campaign photos to reuse in future commercials. Your AI Identity stays private and is not listed here.";
+  "Save logos, products, places, and campaign photos to reuse in future commercials. Your Reference Profile stays private and is not listed here.";
 
 export const LIBRARY_VIEWER_REASON =
   "Viewers can look at saved files but cannot add or remove them.";

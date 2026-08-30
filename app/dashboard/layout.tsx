@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { requireStudio } from "@/lib/dashboard/studio";
-import { getUnreadNotificationCount } from "@/lib/dashboard/summary";
 import { getWalletBalance } from "@/lib/credits/ledger";
 
 export const dynamic = "force-dynamic";
@@ -14,10 +13,7 @@ export const metadata: Metadata = {
 
 export default async function DashboardLayout({ children }: { children: ReactNode }) {
   const studio = await requireStudio();
-  const [unreadCount, creditBalance] = await Promise.all([
-    getUnreadNotificationCount(studio.db, studio.userId, studio.active.workspaceId),
-    getWalletBalance(studio.db, studio.active.workspaceId),
-  ]);
+  const creditBalance = await getWalletBalance(studio.db, studio.active.workspaceId);
 
   return (
     <DashboardShell
@@ -25,7 +21,6 @@ export default async function DashboardLayout({ children }: { children: ReactNod
       activeId={studio.active.workspaceId}
       brands={studio.active.businesses}
       activeBrandId={studio.activeBrandId}
-      unreadCount={unreadCount}
       creditBalance={creditBalance}
     >
       {children}

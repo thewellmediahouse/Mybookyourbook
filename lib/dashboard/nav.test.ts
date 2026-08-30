@@ -7,15 +7,11 @@ test("desktop navigation labels match the spec", () => {
     DESKTOP_NAV.map((item) => item.label),
     [
       "Overview",
-      "Ad Studio",
-      "Commercials",
-      "Brands",
-      "AI Identity",
-      "Media Library",
-      "Credits",
+      "Create Advert",
+      "My Adverts",
+      "Reference Profile",
+      "Buy Credits",
       "Billing",
-      "Notifications",
-      "Team",
       "Settings",
       "Help",
     ],
@@ -25,7 +21,7 @@ test("desktop navigation labels match the spec", () => {
 test("mobile navigation labels match the spec", () => {
   assert.deepEqual(
     MOBILE_NAV.map((item) => item.label),
-    ["Home", "Commercials", "Create", "Credits", "Account"],
+    ["Home", "Create", "Adverts", "Credits", "Settings"],
   );
 });
 

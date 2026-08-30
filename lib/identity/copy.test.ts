@@ -12,10 +12,10 @@ import {
 } from "./copy";
 
 test("identity page copy matches the spec", () => {
-  assert.equal(IDENTITY_HEADING, "Your AI Identity");
+  assert.equal(IDENTITY_HEADING, "Your Reference Profile");
   assert.equal(
     IDENTITY_BODY,
-    "These private references help Production30 maintain your appearance, voice and presentation across your commercials.",
+    "We use this profile every time we film you: your selfie video, face photos, logo, and extra photos or clips of your business.",
   );
   assert.equal(
     CONSENT_LIKENESS,

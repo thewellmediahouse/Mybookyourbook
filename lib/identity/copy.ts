@@ -1,6 +1,6 @@
-export const IDENTITY_HEADING = "Your AI Identity";
+export const IDENTITY_HEADING = "Your Reference Profile";
 export const IDENTITY_BODY =
-  "These private references help Production30 maintain your appearance, voice and presentation across your commercials.";
+  "We use this profile every time we film you: your selfie video, face photos, logo, and extra photos or clips of your business.";
 
 export const CONSENT_LIKENESS =
   "I confirm that I am the person shown and heard in these reference files, or that I have explicit permission from this person to use their likeness and voice for commercial advertising.";

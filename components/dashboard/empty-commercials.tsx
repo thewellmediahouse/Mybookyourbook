@@ -18,11 +18,11 @@ export function EmptyCommercials({
   return (
     <section className="mt-12 overflow-hidden rounded-2xl border border-border bg-surface">
       <div className="border-b border-border bg-surface-secondary px-6 py-8 sm:px-10">
-        <p className="text-[11px] font-semibold tracking-[0.22em] text-accent">AD STUDIO</p>
+        <p className="text-[11px] font-semibold tracking-[0.22em] text-accent">CREATE</p>
         <h2 className="mt-3 font-display text-3xl tracking-tight text-foreground">{EMPTY_HEADING}</h2>
         <p className="mt-4 max-w-2xl text-lg text-muted">{EMPTY_BODY}</p>
       </div>
-      <ol className="grid gap-px bg-border sm:grid-cols-3">
+      <ol className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
         {EMPTY_STEPS.map((step, index) => (
           <li key={step} className="bg-surface px-6 py-6">
             <p className="flex size-9 items-center justify-center rounded-full bg-accent text-sm font-semibold text-accent-foreground">

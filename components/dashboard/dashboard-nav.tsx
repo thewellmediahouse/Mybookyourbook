@@ -6,10 +6,8 @@ import { cn } from "@/lib/utils";
 import { DESKTOP_NAV, MOBILE_NAV, navItemActive } from "@/lib/dashboard/nav";
 
 export function DashboardDesktopNav({
-  unreadCount,
   creditBalance,
 }: {
-  unreadCount: number;
   creditBalance: number;
 }) {
   const pathname = usePathname();
@@ -18,7 +16,6 @@ export function DashboardDesktopNav({
     <nav aria-label="Studio" className="flex flex-1 flex-col gap-1">
       {DESKTOP_NAV.map((item) => {
         const active = navItemActive(pathname, item.href, item.exact);
-        const showUnread = item.href === "/dashboard/notifications" && unreadCount > 0;
         const showCredits = item.href === "/dashboard/credits";
         return (
           <Link
@@ -34,11 +31,6 @@ export function DashboardDesktopNav({
             <span>{item.label}</span>
             {showCredits ? (
               <span className="tabular-nums text-foreground">{creditBalance}</span>
-            ) : null}
-            {showUnread ? (
-              <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-accent-foreground">
-                {unreadCount}
-              </span>
             ) : null}
           </Link>
         );

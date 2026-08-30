@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-28 (video posters so stills are not waiting on MP4s)
+Last updated: 2026-08-30 (simple studio nav and Create Advert flow)
 
 ## Foundation
 - [x] Next.js
@@ -579,6 +579,12 @@ Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `51
 Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-seedance-2.5-face` when `REAPI_API_KEY` is set. `AI_PROVIDER_MODE` stays `mock`, so Enhancing Your Footage and Adding Your Brand do not call Topaz or the branding container. Mock enhancement now keeps the filmed file instead of swapping in the development fixture. Missing `REAPI_API_KEY` still fails with “Live filming is not connected yet.” and does not silently mock.
 
 Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — Simple studio: Overview, Create Advert, My Adverts, Reference Profile
+
+Desktop nav is only Overview, Create Advert, My Adverts, Reference Profile, Buy Credits, Billing, Settings, Help. Mobile is Home, Create, Adverts, Credits, Settings. Brands, Media Library, Notifications, and Team stay at their old URLs but are off the nav.
+
+Create Advert is a four-step path: choose a saved Reference Profile or upload selfie video, face photos, logo, and extra photos; write one script prompt with the existing type/style/platform/shape/CTA suggestions; approve the script; generate the video. A progress bar stays on the generate step and on the production page (Filming Your Commercial → Enhancing Your Footage → Adding Your Brand). `/dashboard/identity` redirects to `/dashboard/profile`.
 
 ### 2026-08-30 — Workers Builds must OpenNext-build
 

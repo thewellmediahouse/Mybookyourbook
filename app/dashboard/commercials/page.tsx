@@ -7,7 +7,7 @@ import { produceAvailability } from "@/lib/dashboard/produce";
 import { requireStudio } from "@/lib/dashboard/studio";
 import { listCommercials } from "@/lib/dashboard/summary";
 
-export const metadata: Metadata = { title: "Commercials" };
+export const metadata: Metadata = { title: "My Adverts" };
 
 export default async function CommercialsPage() {
   const studio = await requireStudio();

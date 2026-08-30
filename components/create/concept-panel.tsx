@@ -37,6 +37,7 @@ export function ConceptPanel({
   persist,
   onConcept,
   credits,
+  showProduce = true,
 }: {
   projectId: string | null;
   brief: {
@@ -53,6 +54,7 @@ export function ConceptPanel({
   persist: () => Promise<{ projectId?: string | null; error?: string }>;
   onConcept?: (concept: PublicCreativeConcept) => void;
   credits: number;
+  showProduce?: boolean;
 }) {
   const [concept, setConcept] = useState(initial);
   const [editing, setEditing] = useState(false);
@@ -233,12 +235,16 @@ export function ConceptPanel({
             {pending === "generate" ? CONCEPT_CREATING : CONCEPT_NEW}
           </Button>
           {concept.approved ? (
-            credits < 1 ? (
-              <DisabledAction label={CONCEPT_APPROVE} reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)} />
+            showProduce ? (
+              credits < 1 ? (
+                <DisabledAction label={PRODUCE_COMMERCIAL} reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)} />
+              ) : (
+                <Button type="button" busy={pending === "produce"} onClick={() => void onProduce()}>
+                  {pending === "produce" ? PRODUCING : PRODUCE_COMMERCIAL}
+                </Button>
+              )
             ) : (
-              <Button type="button" busy={pending === "produce"} onClick={() => void onProduce()}>
-                {pending === "produce" ? PRODUCING : PRODUCE_COMMERCIAL}
-              </Button>
+              <p className="self-center text-sm text-muted">Script approved. Choose Next to generate the video.</p>
             )
           ) : (
             <Button type="button" busy={pending === "approve"} onClick={() => void onApprove()}>

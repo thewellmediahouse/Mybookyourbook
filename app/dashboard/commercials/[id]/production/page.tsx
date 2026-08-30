@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageIntro } from "@/components/dashboard/page-intro";
+import { ProductionProgressBar } from "@/components/production/progress-bar";
 import { ProductionRefresh } from "@/components/production/refresh";
 import { ProductionTimeline } from "@/components/production/timeline";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,7 @@ export default async function ProductionStatusPage({
       <ProductionRefresh active={!done} />
       <PageIntro kicker="PRODUCTION" title={access.project.title} description={label} />
       <p className="mt-6 max-w-2xl text-muted">{LEAVE_PAGE}</p>
+      <ProductionProgressBar jobStatus={status} />
       <ProductionTimeline state={timelineState(job?.status ?? null)} />
       {status === "COMPLETE" ? (
         <div className="mt-10 flex flex-wrap gap-3">

@@ -40,14 +40,14 @@ export default async function AccountSettingsPage() {
           </div>
         </section>
         <section>
-          <h2 className="font-display text-2xl text-foreground">Delete AI Identity</h2>
+          <h2 className="font-display text-2xl text-foreground">Delete Reference Profile</h2>
           <p className="mt-3 max-w-md text-sm text-muted">
-            Identity removal lives on Your AI Identity, with a confirmation before anything is
+            Profile removal lives on Reference Profile, with a confirmation before anything is
             deleted.
           </p>
           <div className="mt-4">
             <Button asChild variant="outline">
-              <a href="/dashboard/identity">Your AI Identity</a>
+              <a href="/dashboard/profile">Reference Profile</a>
             </Button>
           </div>
         </section>

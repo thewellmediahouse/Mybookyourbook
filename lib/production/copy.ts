@@ -3,7 +3,7 @@ export const PRODUCING = "Starting production…";
 export const LEAVE_PAGE =
   "You can leave this page. We'll notify you when your commercial is ready.";
 export const IDENTITY_REQUIRED =
-  "Show us who you are in AI Identity before we can film this commercial.";
+  "Add your selfie video and face photos to Reference Profile before we can film this commercial.";
 export const CONSENT_REQUIRED =
   "Confirm your identity consent before we can film this commercial.";
 export const CONCEPT_REQUIRED = "Approve a concept before we can film this commercial.";
@@ -25,6 +25,44 @@ export const TIMELINE = [
 ] as const;
 
 export type TimelineId = (typeof TIMELINE)[number]["id"];
+
+export const CUSTOMER_PROGRESS = [
+  { id: "concept", label: "Script approved", percent: 15 },
+  { id: "production", label: "Filming Your Commercial", percent: 40 },
+  { id: "enhancement", label: "Enhancing Your Footage", percent: 65 },
+  { id: "branding", label: "Adding Your Brand", percent: 85 },
+  { id: "delivery", label: "Ready", percent: 100 },
+] as const;
+
+export function productionProgressPercent(jobStatus: string | null): number {
+  if (!jobStatus) {
+    return 15;
+  }
+  const state = timelineState(jobStatus);
+  if (jobStatus === "COMPLETE") {
+    return 100;
+  }
+  if (jobStatus === "FAILED" || jobStatus === "CANCELLED") {
+    return 0;
+  }
+  const current = CUSTOMER_PROGRESS.find((item) => state[item.id] === "current");
+  return current?.percent ?? 15;
+}
+
+export function productionProgressLabel(jobStatus: string | null): string {
+  if (!jobStatus) {
+    return "Ready to film";
+  }
+  if (jobStatus === "COMPLETE") {
+    return "Your commercial is ready.";
+  }
+  if (jobStatus === "FAILED" || jobStatus === "CANCELLED") {
+    return "We could not finish this commercial.";
+  }
+  const state = timelineState(jobStatus);
+  const current = CUSTOMER_PROGRESS.find((item) => state[item.id] === "current");
+  return current?.label ?? "Filming Your Commercial";
+}
 
 export function timelineState(
   jobStatus: string | null,

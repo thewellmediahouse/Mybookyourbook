@@ -9,10 +9,10 @@ Production30 produces a 30-second 1080p business commercial starring the custome
 Customer path:
 
 ```text
-Tell us about your business
-→ Show us who you are
-→ Approve your commercial idea
-→ Production30 produces it
+Choose your Reference Profile
+→ Write your script
+→ Approve it
+→ Production30 films it (progress stays on screen)
 → Receive a polished 1080p business advert
 ```
 

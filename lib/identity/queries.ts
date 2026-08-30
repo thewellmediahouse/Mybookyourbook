@@ -21,6 +21,13 @@ export type IdentityBundle = {
   assets: Partial<Record<IdentityRole, IdentityAssetView>>;
 };
 
+export function isReferenceProfileReady(bundle: IdentityBundle | null): boolean {
+  if (!bundle?.consented) {
+    return false;
+  }
+  return IDENTITY_SLOTS.every((slot) => Boolean(bundle.assets[slot]));
+}
+
 export async function getIdentityBundle(
   db: Db,
   workspaceId: string,

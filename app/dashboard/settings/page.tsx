@@ -5,7 +5,7 @@ import { PageIntro } from "@/components/dashboard/page-intro";
 export const metadata: Metadata = { title: "Settings" };
 
 const SETTINGS_LINKS = [
-  { href: "/dashboard/settings/profile", label: "Profile", body: "Name, timezone, and country." },
+  { href: "/dashboard/settings/profile", label: "Account details", body: "Name, timezone, and country." },
   {
     href: "/dashboard/settings/security",
     label: "Security",
