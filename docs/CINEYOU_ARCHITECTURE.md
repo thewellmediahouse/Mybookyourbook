@@ -126,7 +126,7 @@ open-next.config.ts
 
 Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `RAPYD_ACCESS_KEY`, `RAPYD_SECRET_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
 
-Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`. Do not set `PAYMENTS_MODE=live`, `RAPYD_MODE=live`, or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
+Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`, `RAPYD_WEBHOOK_URL=https://production30.thewellmedia.com/api/webhooks/rapyd`. Do not set `PAYMENTS_MODE=live`, `RAPYD_MODE=live`, or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
 
 ## Tenancy
 
@@ -162,7 +162,7 @@ Uploads: auth → authorize workspace → short-lived signed PUT (10–20 min) w
 
 `CONCEPT_AI_MODE=mock|live` controls Commercial Concept only. `live` calls OpenAI Responses. Missing `OPENAI_API_KEY` must not silently mock. When unset, concept mode follows `AI_PROVIDER_MODE`.
 
-`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified Rapyd payment (`status` is `CLO` and `paid` is `true` on `GET /v1/payments/{payment_id}` with signed Collect headers, plus amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` without sandbox Rapyd credentials uses the mock adapter and makes no HTTP calls. Live Rapyd credentials in test mode are refused. Sandbox Rapyd is refused when `PAYMENTS_MODE=live`.
+`PAYMENTS_MODE=test|live` is independent. Credits are granted only after a verified Rapyd payment (`status` is `CLO` and `paid` is `true` on `GET /v1/payments/{payment_id}` with signed Collect headers, plus amount/currency/plan checks). Redirect query params never grant credits. `PAYMENTS_MODE=test` with no provider mode uses the mock adapter and makes no HTTP calls. `RAPYD_MODE=sandbox` without keys closes Buy Credits instead of mocking. Live Rapyd credentials in test mode are refused. Sandbox Rapyd is refused when `PAYMENTS_MODE=live`.
 
 ## OpenNext + Workflows + Containers
 

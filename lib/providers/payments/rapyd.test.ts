@@ -9,6 +9,7 @@ import {
   parseRapydPayment,
   rapydAmountFromMinor,
   rapydApiUrl,
+  rapydCheckoutCustomerMessage,
   rapydCountry,
   rapydPaymentToWebhookEvent,
   rapydPublicReturnUrl,
@@ -224,6 +225,48 @@ test("Rapyd confirm retrieves the payment and rejects a bad payment id", async (
   });
   assert.equal(view?.amountMinor, 599);
   assert.equal(view?.paid, true);
+});
+
+test("Rapyd checkout maps route permission to an honest closed-account message", async () => {
+  assert.match(
+    rapydCheckoutCustomerMessage({
+      status: { error_code: "ROUTE_PERMISSION_ERROR", status: "ERROR" },
+    }),
+    /not enabled/,
+  );
+  const provider = createRapydProvider({
+    accessKey: ACCESS,
+    secretKey: SECRET,
+    mode: "sandbox",
+    appUrl: "https://example.com",
+    fetchImpl: async () =>
+      new Response(
+        JSON.stringify({
+          status: {
+            error_code: "ROUTE_PERMISSION_ERROR",
+            status: "ERROR",
+            message: "Contact Client Support.",
+          },
+        }),
+        { status: 400 },
+      ),
+  });
+  await assert.rejects(
+    () =>
+      provider.createCheckout({
+        email: "owner@example.com",
+        amountMinor: 59900,
+        currency: "ZAR",
+        reference: "cy.ref",
+        callbackUrl: "https://example.com/dashboard/billing",
+        metadata: { workspaceId: "ws", planId: "plan", paymentId: "pay" },
+        country: "ZA",
+      }),
+    (error: unknown) =>
+      error instanceof PaymentError &&
+      error.code === "PROVIDER" &&
+      error.message.includes("not enabled"),
+  );
 });
 
 test("Rapyd checkout parser requires SUCCESS envelope and checkout_ id", () => {

@@ -20,6 +20,7 @@ export function VideoRail({
             <VideoCard
               key={clip.id}
               src={clip.src}
+              poster={clip.poster}
               title={clip.title}
               subtitle={clip.subtitle}
               className="aspect-video w-[min(82vw,26rem)] shrink-0 snap-start shadow-[0_20px_50px_rgba(0,16,56,0.35)] sm:w-[28rem]"

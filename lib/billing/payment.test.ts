@@ -123,6 +123,20 @@ test("payment mode never uses live Rapyd or Payoneer in test, and live does not 
   assert.equal(
     getPaymentsSetup({
       PAYMENTS_MODE: "test",
+      RAPYD_MODE: "sandbox",
+    }).checkoutAvailable,
+    false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
+      PAYONEER_MODE: "sandbox",
+    }).checkoutAvailable,
+    false,
+  );
+  assert.equal(
+    getPaymentsSetup({
+      PAYMENTS_MODE: "test",
       PAYONEER_MODE: "live",
       PAYONEER_USERNAME: "merchant",
       PAYONEER_TOKEN: "live-token-must-not-run",

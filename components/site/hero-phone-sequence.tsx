@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { PhoneStage } from "@/components/site/phone-stage";
 import { StaticGraphic } from "@/components/site/static-graphic";
-import { HOME_ICONS, HOME_UI, HOME_VIDEOS } from "@/lib/site/home";
+import { HOME_ICONS, HOME_IMAGES, HOME_UI, HOME_VIDEOS } from "@/lib/site/home";
 import { cn } from "@/lib/utils";
 
 type ActiveClip = "first" | "second";
@@ -93,6 +93,7 @@ export function HeroPhoneSequence() {
       <div className="flex items-end justify-center gap-2 sm:gap-4">
         <PhoneStage
           src={HOME_VIDEOS.heroSelfie}
+          poster={HOME_IMAGES.heroSelfie}
           alt="A short vertical advert playing on a phone"
           media="video"
           priority
@@ -113,14 +114,15 @@ export function HeroPhoneSequence() {
 
         <PhoneStage
           src={HOME_VIDEOS.heroFinishedAd}
+          poster={HOME_IMAGES.heroFinishedAd}
           alt="A finished professional advert playing on a phone"
           media="video"
-          priority
           label="FINISHED AD"
           videoRef={secondRef}
           muted={false}
           loop={false}
           autoPlay={false}
+          preload="none"
           onEnded={finishSequence}
           className={cn(active === "first" && "opacity-55")}
         />

@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-28 (signup confirmation mail; remote user table emptied)
+Last updated: 2026-08-28 (video posters so stills are not waiting on MP4s)
 
 ## Foundation
 - [x] Next.js
@@ -552,11 +552,23 @@ How it works, Examples, Plans, Contact, legal, and auth now use the same navy sa
 
 Verification: `npm run check`, `npm run lint`, homepage/contrast tests. Not deployed.
 
+### 2026-08-28 — Video stills were waiting on the MP4
+
+Public `<video>` tags had no poster. The homepage phones used `preload="auto"` on both clips (2.4 MB + 9.2 MB). Example cards used `preload="metadata"` on 1–11 MB files, and `hero.mp4` had its index at the end so the browser had to read most of the file before a first frame. Stills now use the existing hero webps and JPEG first frames (`/examples/posters/`). The second phone does not preload until it plays. `hero.mp4` was remuxed with `+faststart`.
+
 ### 2026-08-28 — Signup confirmation mail and empty user table
 
 Signing up with an email that already had a verified account returned a generic success and then asked for the email again, with no message sent. All customer rows were removed from remote D1 `cineyou-production` (plans kept). Signup now goes to a Thank you screen that names the inbox and does not show a second email field. Confirmation mail is sent on signup (and again if they try to sign in before confirming). Welcome mail waits until the address is confirmed. Signing up again with a confirmed address sends a sign-in reminder instead of silence.
 
 Verification: `npm run check`, auth/email tests. Worker `cineyou` version `c4f82786-97d8-4618-bccd-58dcb186f63e` with `--containers-rollout none`. Live `/verify-email?email=` shows Thank you and does not ask for the email again.
+
+### 2026-08-30 — Rapyd sandbox Buy Credits never reached Collect
+
+Live Worker `cineyou` had `RAPYD_MODE=sandbox` but no `RAPYD_ACCESS_KEY` / `RAPYD_SECRET_KEY`. That fell through to the mock adapter, so Buy Credits looked open, redirected home, and sat on “We're confirming your payment…” — credits only grant after a signed webhook plus `GET /v1/payments/{id}` with `CLO` and `paid`. Mock never calls Rapyd.
+
+Local sandbox keys authenticate (`GET /v1/data/countries` SUCCESS) but `POST /v1/checkout` returns official `ROUTE_PERMISSION_ERROR` for both ZA/ZAR and US/USD. Collect hosted checkout is not enabled on this Rapyd sandbox account. `RAPYD_MODE=sandbox` without keys now closes Buy Credits instead of mocking. Failed checkout shows “Card checkout is not enabled on this payment account yet” and logs `[production30:payments]` status/`error_code` only. `RAPYD_WEBHOOK_URL` var is `https://production30.thewellmedia.com/api/webhooks/rapyd`. Keys uploaded as Worker secrets. Owner must enable Collect in the Rapyd Client Portal and set that same webhook URL there.
+
+Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `5167beab-3ff1-4be0-a572-c81cfc757b04` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`. `AI_PROVIDER_MODE` stays `mock`. Pre-existing lint on `hero-phone-sequence.tsx` was not part of this change.
 
 ### 2026-08-25 — Legal pages (working copy)
 

@@ -44,6 +44,7 @@ export function WorkTabs() {
       <div id="work-tab-panel" role="tabpanel" aria-labelledby={`work-tab-${step.number}`}>
         <VideoCard
           src={clip.src}
+          poster={clip.poster}
           title={step.title}
           subtitle={step.body}
           className="aspect-[16/10] min-h-[18rem] rounded-[1.75rem] shadow-[0_24px_60px_rgba(17,26,49,0.16)]"

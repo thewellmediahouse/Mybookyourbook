@@ -30,6 +30,8 @@ const CHECKOUT_CURRENCY =
   "Card payment can take South African rand or US dollar plans. That currency is not available yet.";
 const CHECKOUT_AMOUNT = "That amount cannot be charged.";
 const PROVIDER_UNAVAILABLE = "We couldn't start checkout. Try again.";
+const CHECKOUT_ACCOUNT_CLOSED =
+  "Card checkout is not enabled on this payment account yet. No charge was made.";
 const CONFIRM_FAILED = "We couldn't confirm that payment event.";
 
 export type RapydCheckoutRequest = {
@@ -226,6 +228,36 @@ export function buildRapydCheckoutRequest(input: {
     body.cancel_checkout_url = cancel;
   }
   return body;
+}
+
+export function readRapydStatus(payload: unknown): { errorCode: string } {
+  const status = asRecord(asRecord(payload).status);
+  return {
+    errorCode: (readString(status.error_code) ?? readString(status.response_code) ?? "").toUpperCase(),
+  };
+}
+
+export function rapydCheckoutCustomerMessage(payload: unknown): string {
+  const { errorCode } = readRapydStatus(payload);
+  if (errorCode === "ROUTE_PERMISSION_ERROR" || errorCode === "UNAUTHORIZED_API_CALL") {
+    return CHECKOUT_ACCOUNT_CLOSED;
+  }
+  if (
+    errorCode.includes("COUNTRY") ||
+    errorCode.includes("CURRENCY") ||
+    errorCode.includes("PAYMENT_METHOD")
+  ) {
+    return CHECKOUT_CURRENCY;
+  }
+  return PROVIDER_UNAVAILABLE;
+}
+
+function logRapydCheckoutFailure(httpStatus: number, payload: unknown): void {
+  const { errorCode } = readRapydStatus(payload);
+  console.error("[production30:payments]", {
+    httpStatus,
+    error_code: errorCode || null,
+  });
 }
 
 export function parseRapydCheckout(payload: unknown): { redirectUrl: string; checkoutId: string } | null {
@@ -457,12 +489,20 @@ export function createRapydProvider(options: RapydProviderOptions): PaymentProvi
       } catch {
         throw new PaymentError("PROVIDER", PROVIDER_UNAVAILABLE);
       }
-      if (!response.ok) {
-        throw new PaymentError("PROVIDER", PROVIDER_UNAVAILABLE);
+      let payload: unknown = {};
+      try {
+        payload = (await response.json()) as unknown;
+      } catch {
+        payload = {};
       }
-      const checkout = parseRapydCheckout((await response.json()) as unknown);
+      if (!response.ok) {
+        logRapydCheckoutFailure(response.status, payload);
+        throw new PaymentError("PROVIDER", rapydCheckoutCustomerMessage(payload));
+      }
+      const checkout = parseRapydCheckout(payload);
       if (!checkout) {
-        throw new PaymentError("PROVIDER", PROVIDER_UNAVAILABLE);
+        logRapydCheckoutFailure(response.status, payload);
+        throw new PaymentError("PROVIDER", rapydCheckoutCustomerMessage(payload));
       }
       return {
         authorizationUrl: checkout.redirectUrl,

@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils";
 
 export function VideoCard({
   src,
+  poster,
   title,
   subtitle,
   className,
   autoPlay = true,
 }: {
   src: string;
+  poster?: string;
   title?: string;
   subtitle?: string;
   className?: string;
@@ -50,11 +52,12 @@ export function VideoCard({
       <video
         ref={ref}
         src={src}
+        poster={poster}
         className="absolute inset-0 size-full object-cover transition duration-700 group-hover:scale-[1.03]"
         muted
         loop
         playsInline
-        preload="metadata"
+        preload={poster ? "none" : "metadata"}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-overlay via-overlay/25 to-transparent" />
       {title ? (

@@ -42,6 +42,7 @@ export default function ExamplesPage() {
                 <VideoCard
                   key={clip.id}
                   src={clip.src}
+                  poster={clip.poster}
                   title={clip.title}
                   subtitle={clip.subtitle}
                   className="aspect-video min-h-0 rounded-[1.75rem] shadow-[0_20px_50px_rgba(0,16,56,0.35)]"
@@ -55,6 +56,7 @@ export default function ExamplesPage() {
                 <VideoCard
                   key={clip.id}
                   src={clip.src}
+                  poster={clip.poster}
                   title={clip.title}
                   subtitle={clip.subtitle}
                   className="aspect-video min-h-0 rounded-[1.75rem] shadow-[0_20px_50px_rgba(0,16,56,0.35)]"

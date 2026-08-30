@@ -163,19 +163,29 @@ export function getPaymentsSetup(env: PaymentsEnv): PaymentsSetup {
         rapydWebhookUrl: webhookUrl,
       });
     }
-    if (hasRapyd && rapydMode === "sandbox") {
-      return {
-        mode,
-        adapter: "rapyd",
-        checkoutAvailable: true,
-        webhookSecret: null,
+    if (rapydMode === "sandbox") {
+      if (hasRapyd) {
+        return {
+          mode,
+          adapter: "rapyd",
+          checkoutAvailable: true,
+          webhookSecret: null,
+          ...emptyPayfast(),
+          ...emptyPayoneer(),
+          rapydMode,
+          rapydAccessKey: accessKey,
+          rapydSecretKey: secretKey,
+          rapydWebhookUrl: webhookUrl,
+        };
+      }
+      return unavailable(mode, "rapyd", {
         ...emptyPayfast(),
         ...emptyPayoneer(),
         rapydMode,
         rapydAccessKey: accessKey,
         rapydSecretKey: secretKey,
         rapydWebhookUrl: webhookUrl,
-      };
+      });
     }
     if (hasRapyd && rapydMode == null) {
       return unavailable(mode, "rapyd", {
@@ -196,18 +206,27 @@ export function getPaymentsSetup(env: PaymentsEnv): PaymentsSetup {
         payoneerToken: token,
       });
     }
-    if (hasPayoneer && payoneerMode === "sandbox") {
-      return {
-        mode,
-        adapter: "payoneer",
-        checkoutAvailable: true,
-        webhookSecret: null,
+    if (payoneerMode === "sandbox") {
+      if (hasPayoneer) {
+        return {
+          mode,
+          adapter: "payoneer",
+          checkoutAvailable: true,
+          webhookSecret: null,
+          ...emptyPayfast(),
+          ...emptyRapyd(),
+          payoneerMode,
+          payoneerUsername: username,
+          payoneerToken: token,
+        };
+      }
+      return unavailable(mode, "payoneer", {
         ...emptyPayfast(),
         ...emptyRapyd(),
         payoneerMode,
         payoneerUsername: username,
         payoneerToken: token,
-      };
+      });
     }
     if (hasPayoneer && payoneerMode == null) {
       return unavailable(mode, "payoneer", {

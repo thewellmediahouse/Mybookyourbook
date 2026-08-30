@@ -18,6 +18,8 @@ export function PhoneStage({
   muted = true,
   loop = true,
   autoPlay = true,
+  poster,
+  preload,
   onEnded,
 }: {
   src: string;
@@ -32,6 +34,8 @@ export function PhoneStage({
   muted?: boolean;
   loop?: boolean;
   autoPlay?: boolean;
+  poster?: string;
+  preload?: "none" | "metadata" | "auto";
   onEnded?: () => void;
 }) {
   return (
@@ -47,13 +51,14 @@ export function PhoneStage({
             <video
               ref={videoRef}
               src={src}
+              poster={poster}
               className="absolute inset-0 h-full w-full object-cover"
               style={{ objectPosition }}
               autoPlay={autoPlay}
               muted={muted}
               loop={loop}
               playsInline
-              preload={priority ? "auto" : "metadata"}
+              preload={preload ?? (priority ? "auto" : "metadata")}
               onEnded={onEnded}
               aria-label={alt}
             />
