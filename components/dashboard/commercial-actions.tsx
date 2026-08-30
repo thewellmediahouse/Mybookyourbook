@@ -89,7 +89,7 @@ export function CommercialActions({
             type="button"
             variant="outline"
             disabled={pending}
-            onClick={() => void run(() => duplicateCommercialAction(projectId))}
+            onClick={() => run(() => duplicateCommercialAction(projectId))}
           >
             {DUPLICATE}
           </Button>
@@ -137,7 +137,7 @@ export function CommercialActions({
               type="button"
               variant="outline"
               disabled={pending}
-              onClick={() => void run(() => createFormatVersionAction(projectId, "9:16"))}
+              onClick={() => run(() => createFormatVersionAction(projectId, "9:16"))}
             >
               {CREATE_VERTICAL}
             </Button>
@@ -149,7 +149,7 @@ export function CommercialActions({
               type="button"
               variant="outline"
               disabled={pending}
-              onClick={() => void run(() => createFormatVersionAction(projectId, "16:9"))}
+              onClick={() => run(() => createFormatVersionAction(projectId, "16:9"))}
             >
               {CREATE_LANDSCAPE}
             </Button>
@@ -189,7 +189,7 @@ export function CommercialActions({
               type="button"
               variant="outline"
               disabled={pending}
-              onClick={() => void run(() => archiveCommercialAction(projectId))}
+              onClick={() => run(() => archiveCommercialAction(projectId))}
             >
               {ARCHIVE}
             </Button>
@@ -205,7 +205,7 @@ export function CommercialActions({
                 if (!window.confirm(DELETE_PERMANENT_WARNING)) {
                   return;
                 }
-                void run(() => deleteCommercialAction(projectId));
+                return run(() => deleteCommercialAction(projectId));
               }}
             >
               {DELETE}

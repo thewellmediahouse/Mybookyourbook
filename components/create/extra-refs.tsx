@@ -36,6 +36,7 @@ export function ExtraRefsUploader({
   const pickForAdvert = Boolean(ensureProject && onSelected);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [workingId, setWorkingId] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const chosen = new Set(selected.map((item) => item.assetId));
 
@@ -109,6 +110,7 @@ export function ExtraRefsUploader({
     }
     setError(null);
     const existing = selected.find((item) => item.assetId === assetId);
+    setWorkingId(assetId);
     setPending(true);
     try {
       const id = await withProject();
@@ -136,6 +138,7 @@ export function ExtraRefsUploader({
       }
       onSelected([...selected, { id: result.referenceId, assetId }]);
     } finally {
+      setWorkingId(null);
       setPending(false);
     }
   }
@@ -176,13 +179,18 @@ export function ExtraRefsUploader({
                 <button
                   type="button"
                   disabled={pending || !canWrite || !pickForAdvert}
-                  onClick={() => void toggleSaved(item.id)}
+                  onClick={() => toggleSaved(item.id)}
                   className={cn(
                     "w-full rounded-lg border bg-surface p-3 text-left",
                     on ? "border-accent" : "border-border",
                     !pickForAdvert ? "cursor-default" : undefined,
                   )}
                 >
+                  {workingId === item.id ? (
+                    <span className="mb-2 inline-flex">
+                      <Spinner className="size-4" />
+                    </span>
+                  ) : null}
                   <MediaPreview
                     src={`/api/media/assets/${item.id}/play`}
                     mimeType={item.mimeType}

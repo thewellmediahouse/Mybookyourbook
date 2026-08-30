@@ -59,7 +59,7 @@ export function ProfileForm({
       </p>
       {state.error ? <p className="text-sm text-danger">{state.error}</p> : null}
       {state.message ? <p className="text-sm text-success">{state.message}</p> : null}
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" busy={pending}>
         {pending ? "Saving…" : "Save profile"}
       </Button>
     </form>

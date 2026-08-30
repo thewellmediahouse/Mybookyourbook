@@ -438,7 +438,7 @@ export function CreateWizard({
           </Button>
         ) : null}
         {step < BRIEF_STEPS.length - 1 ? (
-          <Button type="button" onClick={() => void goNext()}>
+          <Button type="button" onClick={() => goNext()}>
             Continue
           </Button>
         ) : null}
@@ -614,8 +614,8 @@ function ReferencesStep({
                 type="button"
                 variant="outline"
                 className="mt-3"
-                disabled={pending}
-                onClick={() => void onRemove(item.id)}
+                busy={pending}
+                onClick={() => onRemove(item.id)}
               >
                 Remove
               </Button>
@@ -641,8 +641,8 @@ function ReferencesStep({
                   type="button"
                   variant="outline"
                   className="mt-2"
-                  disabled={pending}
-                  onClick={() => void onAttach(item.id)}
+                  busy={pending}
+                  onClick={() => onAttach(item.id)}
                 >
                   Use photo
                 </Button>

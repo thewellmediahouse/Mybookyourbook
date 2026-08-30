@@ -158,7 +158,7 @@ function StudioVideoCard({
                     size="sm"
                     busy={pending}
                     className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038]"
-                    onClick={() => void remove()}
+                    onClick={() => remove()}
                   >
                     {DELETE_PERMANENT_CONFIRM}
                   </Button>

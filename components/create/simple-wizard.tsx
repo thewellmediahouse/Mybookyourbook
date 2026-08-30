@@ -514,7 +514,7 @@ export function SimpleCreateWizard({
               reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)}
             />
           ) : (
-            <Button type="button" busy={producing} onClick={() => void onProduce()}>
+            <Button type="button" busy={producing} onClick={() => onProduce()}>
               {producing ? PRODUCING : PRODUCE_COMMERCIAL}
             </Button>
           )}
@@ -530,7 +530,7 @@ export function SimpleCreateWizard({
           </Button>
         ) : null}
         {step < SIMPLE_WIZARD_STEPS.length - 1 ? (
-          <Button type="button" onClick={() => void goNext()}>
+          <Button type="button" onClick={() => goNext()}>
             Next
           </Button>
         ) : null}

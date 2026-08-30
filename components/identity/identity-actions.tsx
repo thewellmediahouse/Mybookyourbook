@@ -55,7 +55,7 @@ export function IdentityActions({
         <Button type="button" variant="outline" disabled={!hasPhotos || pending} onClick={() => document.getElementById("identity-capture")?.scrollIntoView()}>
           Replace photos
         </Button>
-        <Button type="button" variant="outline" disabled={!hasAnything || pending} onClick={() => void remove("all")}>
+        <Button type="button" variant="outline" disabled={!hasAnything} busy={pending} onClick={() => remove("all")}>
           Delete Reference Profile
         </Button>
       </div>

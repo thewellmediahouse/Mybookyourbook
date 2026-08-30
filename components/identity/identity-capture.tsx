@@ -205,7 +205,7 @@ function PhotoCapture({
       <div className="mt-4 flex flex-wrap gap-3">
         {cameraLive ? (
           <>
-            <Button type="button" disabled={!cameraReady || pending} onClick={() => void snapPhoto()}>
+            <Button type="button" disabled={!cameraReady} busy={pending} onClick={() => snapPhoto()}>
               Capture photo
             </Button>
             <Button type="button" variant="outline" disabled={pending} onClick={stopCamera}>
@@ -219,7 +219,7 @@ function PhotoCapture({
               variant="outline"
               disabled={pending}
               busy={requesting}
-              onClick={() => void startCamera()}
+              onClick={() => startCamera()}
             >
               Take photo
             </Button>
@@ -425,7 +425,7 @@ function VideoCapture({
             Stop
           </Button>
         ) : (
-          <Button type="button" busy={pending} onClick={() => void startRecording()}>
+          <Button type="button" busy={pending} onClick={() => startRecording()}>
             Record Now
           </Button>
         )}

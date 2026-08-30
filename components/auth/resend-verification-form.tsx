@@ -43,7 +43,7 @@ export function ResendVerificationForm({
           variant="outline"
           busy={pending}
           className="rounded-full"
-          onClick={() => void sendTo(knownEmail)}
+          onClick={() => sendTo(knownEmail)}
         >
           {pending ? "Sending…" : "Send the message again"}
         </Button>

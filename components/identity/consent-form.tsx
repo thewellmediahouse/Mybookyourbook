@@ -57,7 +57,7 @@ export function IdentityConsentForm() {
         <ConsentBox checked={adult} onChange={setAdult} label={CONSENT_ADULT} />
       </ul>
       {error ? <p className="mt-4 text-sm text-danger">{error}</p> : null}
-      <Button type="button" className="mt-6" disabled={!ready} busy={pending} onClick={() => void onSubmit()}>
+      <Button type="button" className="mt-6" disabled={!ready} busy={pending} onClick={() => onSubmit()}>
         {pending ? "Saving…" : "Save consent"}
       </Button>
     </div>

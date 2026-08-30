@@ -208,8 +208,8 @@ function LibraryCard({ item, canWrite }: { item: LibraryItemView; canWrite: bool
           type="button"
           variant="outline"
           className="mt-4"
-          disabled={pending}
-          onClick={() => void onRemove()}
+          busy={pending}
+          onClick={() => onRemove()}
         >
           Remove
         </Button>

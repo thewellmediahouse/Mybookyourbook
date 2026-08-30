@@ -194,7 +194,7 @@ export function ConceptPanel({
       {!ready.ready ? <p className="text-muted">{ready.reason}</p> : null}
       {!concept ? (
         <div>
-          <Button type="button" disabled={!ready.ready} busy={pending === "generate"} onClick={() => void onGenerate()}>
+          <Button type="button" disabled={!ready.ready} busy={pending === "generate"} onClick={() => onGenerate()}>
             {CONCEPT_CREATE}
           </Button>
         </div>
@@ -207,7 +207,7 @@ export function ConceptPanel({
             setDraft(concept);
             setEditing(false);
           }}
-          onSave={() => void onSaveEdits()}
+          onSave={() => onSaveEdits()}
         />
       ) : (
         <ConceptReadout concept={concept} />
@@ -230,7 +230,7 @@ export function ConceptPanel({
             variant="outline"
             disabled={!ready.ready}
             busy={pending === "generate"}
-            onClick={() => void onGenerate()}
+            onClick={() => onGenerate()}
           >
             {pending === "generate" ? CONCEPT_CREATING : CONCEPT_NEW}
           </Button>
@@ -239,7 +239,7 @@ export function ConceptPanel({
               credits < 1 ? (
                 <DisabledAction label={PRODUCE_COMMERCIAL} reason={produceHoldReason(credits, PRODUCE_UNAVAILABLE)} />
               ) : (
-                <Button type="button" busy={pending === "produce"} onClick={() => void onProduce()}>
+                <Button type="button" busy={pending === "produce"} onClick={() => onProduce()}>
                   {pending === "produce" ? PRODUCING : PRODUCE_COMMERCIAL}
                 </Button>
               )
@@ -247,7 +247,7 @@ export function ConceptPanel({
               <p className="self-center text-sm text-muted">Script approved. Choose Next to generate the video.</p>
             )
           ) : (
-            <Button type="button" busy={pending === "approve"} onClick={() => void onApprove()}>
+            <Button type="button" busy={pending === "approve"} onClick={() => onApprove()}>
               {pending === "approve" ? CONCEPT_APPROVING : CONCEPT_APPROVE}
             </Button>
           )}

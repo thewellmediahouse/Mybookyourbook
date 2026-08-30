@@ -5,6 +5,7 @@ import { useState } from "react";
 import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { putWithProgress, type UploadPlan } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { LOGO_FORMAT_ERROR, LOGO_MAX_BYTES, isAllowedLogoMime, logoAcceptAttribute } from "@/lib/r2/mime";
 
 export function LogoUploader({
@@ -127,10 +128,13 @@ export function LogoUploader({
             onChange={(event) => void onFile(event.target.files?.[0])}
           />
           {progress !== null && pending ? (
-            <p className="text-sm text-muted">Uploading {progress}%</p>
+            <p className="inline-flex items-center gap-2 text-sm text-muted">
+              <Spinner className="size-4" />
+              Uploading {progress}%
+            </p>
           ) : null}
           {logoAssetId || preview ? (
-            <Button type="button" variant="outline" disabled={pending} onClick={() => void onRemove()}>
+            <Button type="button" variant="outline" busy={pending} onClick={() => onRemove()}>
               Remove logo
             </Button>
           ) : null}

@@ -180,7 +180,7 @@ export function AdStudio({
             </div>
           </div>
           <div className="mt-4 flex flex-wrap gap-3">
-            <Button type="button" variant="outline" busy={busy} onClick={() => void readWebsite()}>
+            <Button type="button" variant="outline" busy={busy} onClick={() => readWebsite()}>
               Read website
             </Button>
             <Button type="submit" busy={busy} disabled={!websiteUrl.trim()}>

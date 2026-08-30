@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (logo PNG JPEG WebP only)
+Last updated: 2026-08-30 (button loading wheels)
 
 ## Foundation
 - [x] Next.js
@@ -617,6 +617,10 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — Buttons show a loading wheel while they work
+
+Studio buttons now show the spinner while a form is submitting or while a click is still running (Next, Produce, upload, save, sign in, and the rest). Disabled “cannot do this” buttons stay still. Laptop promoted Worker `cineyou` `be371e5d-2228-405a-9c1c-9f9c562359f2` (tag `button-loading`) at 100%. Branding container not rebuilt.
 
 ### 2026-08-30 — Logo files are PNG, JPEG, or WebP only
 
