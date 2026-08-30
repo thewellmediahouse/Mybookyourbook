@@ -5,17 +5,47 @@ export class ObjectKeyError extends Error {
   }
 }
 
+const GENERATED_ID_REQUIRED = "We could not save that file. Try again.";
+
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+/** Better Auth user ids are 32-character tokens without dashes. App ids are UUIDs. */
+const ENTITY_ID_RE = /^[A-Za-z0-9_-]{16,128}$/;
+
+export function isGeneratedObjectId(value: string): boolean {
+  return UUID_RE.test(value);
+}
+
+export function isGeneratedEntityId(value: string): boolean {
+  if (isGeneratedObjectId(value)) {
+    return true;
+  }
+  if (value.includes(".") || value.includes("/") || value.includes("\\")) {
+    return false;
+  }
+  return ENTITY_ID_RE.test(value);
+}
+
+function requireEntityIds(...values: string[]) {
+  if (values.some((value) => !isGeneratedEntityId(value))) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
+  }
+}
+
+function requireObjectId(value: string) {
+  if (!isGeneratedObjectId(value)) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
+  }
+}
 
 export function workspacePrefix(workspaceId: string): string {
   return `workspaces/${workspaceId}/`;
 }
 
 export function logoObjectKey(workspaceId: string, businessId: string, objectId: string): string {
-  if (!UUID_RE.test(workspaceId) || !UUID_RE.test(businessId) || !UUID_RE.test(objectId)) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
-  }
+  requireEntityIds(workspaceId, businessId);
+  requireObjectId(objectId);
   return `workspaces/${workspaceId}/brands/${businessId}/logo/${objectId}`;
 }
 
@@ -44,8 +74,8 @@ export function assertLogoObjectKey(
     throw new ObjectKeyError("That file does not belong to this brand.");
   }
   const objectId = objectKey.slice(expectedPrefix.length);
-  if (!UUID_RE.test(objectId) || objectId.includes("/")) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
+  if (!isGeneratedObjectId(objectId) || objectId.includes("/")) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
   }
 }
 
@@ -68,9 +98,8 @@ export function identityObjectKey(
   role: IdentityRole,
   objectId: string,
 ): string {
-  if (!UUID_RE.test(workspaceId) || !UUID_RE.test(userId) || !UUID_RE.test(objectId)) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
-  }
+  requireEntityIds(workspaceId, userId);
+  requireObjectId(objectId);
   return `workspaces/${workspaceId}/users/${userId}/identity/${IDENTITY_FOLDERS[role]}/${objectId}`;
 }
 
@@ -86,8 +115,8 @@ export function assertIdentityObjectKey(
     throw new ObjectKeyError("That file does not belong to this identity.");
   }
   const objectId = objectKey.slice(expectedPrefix.length);
-  if (!UUID_RE.test(objectId) || objectId.includes("/")) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
+  if (!isGeneratedObjectId(objectId) || objectId.includes("/")) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
   }
 }
 
@@ -111,9 +140,8 @@ export function libraryObjectKey(
   role: LibraryRole,
   objectId: string,
 ): string {
-  if (!UUID_RE.test(workspaceId) || !UUID_RE.test(businessId) || !UUID_RE.test(objectId)) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
-  }
+  requireEntityIds(workspaceId, businessId);
+  requireObjectId(objectId);
   return `workspaces/${workspaceId}/brands/${businessId}/assets/${LIBRARY_FOLDERS[role]}/${objectId}`;
 }
 
@@ -129,8 +157,8 @@ export function assertLibraryObjectKey(
     throw new ObjectKeyError("That file does not belong to this library.");
   }
   const objectId = objectKey.slice(expectedPrefix.length);
-  if (!UUID_RE.test(objectId) || objectId.includes("/")) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
+  if (!isGeneratedObjectId(objectId) || objectId.includes("/")) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
   }
 }
 
@@ -139,9 +167,8 @@ export function projectReferenceObjectKey(
   projectId: string,
   objectId: string,
 ): string {
-  if (!UUID_RE.test(workspaceId) || !UUID_RE.test(projectId) || !UUID_RE.test(objectId)) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
-  }
+  requireEntityIds(workspaceId, projectId);
+  requireObjectId(objectId);
   return `workspaces/${workspaceId}/projects/${projectId}/references/${objectId}`;
 }
 
@@ -156,8 +183,8 @@ export function assertProjectReferenceObjectKey(
     throw new ObjectKeyError("That file does not belong to this commercial.");
   }
   const objectId = objectKey.slice(expectedPrefix.length);
-  if (!UUID_RE.test(objectId) || objectId.includes("/")) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
+  if (!isGeneratedObjectId(objectId) || objectId.includes("/")) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
   }
 }
 
@@ -176,9 +203,8 @@ export function productionObjectKey(
   kind: ProductionAssetKind,
   objectId: string,
 ): string {
-  if (!UUID_RE.test(workspaceId) || !UUID_RE.test(projectId) || !UUID_RE.test(objectId)) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
-  }
+  requireEntityIds(workspaceId, projectId);
+  requireObjectId(objectId);
   return `workspaces/${workspaceId}/projects/${projectId}/${PRODUCTION_FOLDERS[kind]}/${objectId}`;
 }
 
@@ -194,7 +220,7 @@ export function assertProductionObjectKey(
     throw new ObjectKeyError("That file does not belong to this commercial.");
   }
   const objectId = objectKey.slice(expectedPrefix.length);
-  if (!UUID_RE.test(objectId) || objectId.includes("/")) {
-    throw new ObjectKeyError("Object keys must use generated ids, not filenames.");
+  if (!isGeneratedObjectId(objectId) || objectId.includes("/")) {
+    throw new ObjectKeyError(GENERATED_ID_REQUIRED);
   }
 }

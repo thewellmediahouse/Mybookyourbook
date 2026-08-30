@@ -44,6 +44,22 @@ test("filenames and path tricks are rejected", () => {
   assert.throws(() => assertWorkspaceObjectKey(`workspaces/${workspaceId}/../secret`, workspaceId));
   assert.throws(() => assertWorkspaceObjectKey("/workspaces/x", workspaceId));
   assert.throws(() => logoObjectKey(workspaceId, "logo.png", newId()));
+  assert.throws(() => identityObjectKey(workspaceId, "video.mp4", "IDENTITY_VIDEO", newId()));
+  assert.throws(() => identityObjectKey(workspaceId, newId(), "IDENTITY_VIDEO", "clip.mp4"));
+});
+
+test("identity keys accept Better Auth user ids", () => {
+  const workspaceId = newId();
+  const userId = "a1b2c3d4e5f678901234567890abcdef";
+  const objectId = newId();
+  const key = identityObjectKey(workspaceId, userId, "IDENTITY_VIDEO", objectId);
+  assert.equal(
+    key,
+    `workspaces/${workspaceId}/users/${userId}/identity/reference-video/${objectId}`,
+  );
+  assert.doesNotThrow(() =>
+    assertIdentityObjectKey(key, workspaceId, userId, "IDENTITY_VIDEO"),
+  );
 });
 
 test("identity keys stay under the workspace and user prefix", () => {

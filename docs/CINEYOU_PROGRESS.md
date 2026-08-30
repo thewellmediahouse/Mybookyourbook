@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (studio Worker 444c56b4 live)
+Last updated: 2026-08-30 (reference video upload keys)
 
 ## Foundation
 - [x] Next.js
@@ -591,6 +591,10 @@ GitHub Deploy Worker failed on `wrangler deploy` after OpenNext succeeded: lefto
 ### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
 
 `CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. Run 8 got swap on `/mnt/opennext.swap`, then OpenNext was cancelled after ~3 minutes (`The operation was canceled.`). A 6 GB Node heap on the 7 GB runner likely evicted the job. Heap is now 4 GB and Node is pinned to 24.
+
+### 2026-08-30 — Reference video upload rejected generated user ids
+
+Better Auth `user.id` on live D1 is a 32-character token with no dashes. Identity object keys required UUID-shaped workspace, user, and object ids, so Record/Upload Reference video failed with an internal “generated ids” error. Entity ids (workspace, user, brand, commercial) now accept UUIDs or 16–128 character tokens without dots or slashes. Object ids stay UUIDs so filenames cannot become keys. Customer-facing copy is “We could not save that file. Try again.”
 
 ### 2026-08-30 — Simple studio: Overview, Create Advert, My Adverts, Reference Profile
 
