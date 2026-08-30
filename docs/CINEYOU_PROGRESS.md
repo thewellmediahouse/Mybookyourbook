@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (GitHub cannot OpenNext-build cineyou)
+Last updated: 2026-08-30 (OpenNext was calling npm run build recursively)
 
 ## Foundation
 - [x] Next.js
@@ -580,9 +580,9 @@ Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-see
 
 Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
 
-### 2026-08-30 — GitHub cannot finish the OpenNext build
+### 2026-08-30 — OpenNext was calling itself
 
-Runs 7–9 all died in OpenNext: missing token (fixed), swap on `/swapfile` (fixed), then the build was cancelled after ~3.5 minutes even with swap and a 4 GB heap (`The operation was canceled.` / exit 143). GitHub-hosted `ubuntu-latest` (~7 GB) cannot complete `opennextjs-cloudflare build` for this app. The Action now typechecks only. Production deploy is `npm run deploy` from a larger machine, or Cloudflare Workers Builds (Worker `cineyou` still has zero Builds). Do not run OpenNext on the free GitHub runner.
+`npm run build` had been set to `opennextjs-cloudflare build`. OpenNext then runs `npm run build` to compile Next.js, so the process nested until GitHub cancelled it (~3.5 minutes) and a local run filled the disk (`ENOSPC`). `build` is `next build` again. OpenNext is `npm run cf:build` / `npm run deploy`. The Action runs `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
 
 ### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
 
@@ -596,7 +596,7 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
-`npm run build` is now `opennextjs-cloudflare build` so a dashboard build that runs `npm run build` produces `.open-next/worker.js`. `npm run cf:deploy` is `wrangler deploy --containers-rollout none` so git deploys do not rebuild the branding container. GitHub Action uses those scripts.
+`npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
 
 ### 2026-08-25 — Legal pages (working copy)
 

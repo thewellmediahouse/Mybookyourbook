@@ -1,13 +1,12 @@
 name: Deploy Worker
 
+# OpenNext on Workers. Git push must OpenNext-build, then deploy Worker cineyou.
 # Official: https://opennext.js.org/cloudflare/howtos/dev-deploy
 # Official: https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
 #
-# GitHub-hosted ubuntu-latest has ~7 GB RAM. opennextjs-cloudflare build is
-# cancelled here every time after ~3.5 minutes (exit 143 / "operation canceled").
-# Do not run OpenNext on this runner. Deploy from a machine with more RAM:
-#   npm run deploy
-# or connect Worker cineyou to Cloudflare Workers Builds.
+# Do not use `npm run build` here. That script is `next build`. OpenNext itself
+# calls `npm run build`. Pointing `build` at `opennextjs-cloudflare build`
+# recurses until the runner is killed.
 
 on:
   push:
@@ -19,15 +18,27 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  CLOUDFLARE_ACCOUNT_ID: 9664d6a341ee02a3dc21db99dc992c61
+  NEXT_PUBLIC_APP_URL: https://production30.thewellmedia.com
+  NEXT_PUBLIC_APP_NAME: Production30
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
-  verify:
+  deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 60
     permissions:
       contents: read
     steps:
+      - name: Require CLOUDFLARE_API_TOKEN
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error::GitHub secret CLOUDFLARE_API_TOKEN is missing. Create a Cloudflare API token with Edit Cloudflare Workers, then add it as a repository secret. Do not use wrangler login — Actions cannot use OAuth."
+            exit 1
+          fi
+
       - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
@@ -38,5 +49,10 @@ jobs:
       - name: Install
         run: npm ci
 
-      - name: Typecheck
-        run: npm run check
+      - name: OpenNext build
+        run: npx opennextjs-cloudflare build
+
+      - name: Deploy cineyou
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npm run cf:deploy

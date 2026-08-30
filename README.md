@@ -69,7 +69,9 @@ PAYMENTS_MODE=test
 | `npm run dev` | Next.js local dev (Node). Bindings via `initOpenNextCloudflareForDev`. |
 | `npm run check` | TypeScript (`tsc --noEmit`) |
 | `npm run lint` | ESLint |
-| `npm run build` | OpenNext Worker bundle (also what Workers Builds should run) |
+| `npm run build` | Next.js production build (`next build`) |
+| `npm run cf:build` | OpenNext Worker bundle |
+| `npm run deploy` | OpenNext build, then publish Worker `cineyou` |
 | `npm run preview` | OpenNext build + Cloudflare Workers preview runtime (`http://127.0.0.1:8787`) |
 | `npm run preview:smoke` | Hit public pages, login redirect, and unauthenticated produce against a running preview |
 | `npm run deploy` | OpenNext build + deploy Worker `cineyou` (skips branding container rebuild) |
@@ -104,8 +106,8 @@ Worker name: `cineyou`. Live host: **https://production30.thewellmedia.com** (al
 
 **Git push does not update that host by itself.** `.open-next/` is gitignored. A push must run OpenNext, then deploy Worker `cineyou` — not a Cloudflare Pages project and not a bare `wrangler deploy`.
 
-- **GitHub Actions (in this repo):** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) typechecks on `main`. It does **not** run OpenNext. GitHub-hosted runners (~7 GB) cancel `opennextjs-cloudflare build` after about 3.5 minutes. Ship the Worker from a machine with more RAM: `npm run deploy` (`--containers-rollout none`). Or connect Worker `cineyou` to [Workers Builds](https://developers.cloudflare.com/workers/ci-cd/builds/) (build `npm run build`, deploy `npm run cf:deploy`). Official: [OpenNext deploy](https://opennext.js.org/cloudflare/howtos/dev-deploy).
-- **Workers Builds (dashboard):** Worker `cineyou` → Settings → Builds. Build command `npm run build`. Deploy command `npm run cf:deploy`. Add build vars `NEXT_PUBLIC_APP_URL=https://production30.thewellmedia.com` and `NEXT_PUBLIC_APP_NAME=Production30`. Official: [OpenNext Workers Builds](https://opennext.js.org/cloudflare/howtos/dev-deploy). Use **either** Actions **or** Workers Builds, not both.
+- **GitHub Actions (in this repo):** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on `main`. Add repository secret **`CLOUDFLARE_API_TOKEN`**. The Action runs `npx opennextjs-cloudflare build` then `npm run cf:deploy`. Do **not** set the build command to `npm run build` — OpenNext already calls that for `next build`. Official: [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/).
+- **Workers Builds (dashboard):** Worker `cineyou` → Settings → Builds. Build command `npx @opennextjs/cloudflare build`. Deploy command `npm run cf:deploy`. Add build vars `NEXT_PUBLIC_APP_URL=https://production30.thewellmedia.com` and `NEXT_PUBLIC_APP_NAME=Production30`. Official: [OpenNext Workers Builds](https://opennext.js.org/cloudflare/howtos/dev-deploy). Use **either** Actions **or** Workers Builds, not both.
 - Do not Git-connect this repo as **Pages**. That is the old Astro preview path and will not deploy OpenNext.
 
 Bindings:
@@ -156,7 +158,7 @@ npm run preview:smoke
 
 ## Tests
 
-`npm test` discovers every `lib/**/*.test.ts` file (auth, isolation, pipeline, billing, security, bundle scan). D1-backed tests use the local Wrangler persist DB and run one at a time. After `npm run build`, `CINEYOU_REQUIRE_BUNDLE=1 npm run test:bundle` fails if `.next/static` is missing or contains known secret values. `npm run ci` is the local CI-equivalent: typecheck, lint, schema verify, tests, production build, then the required bundle scan.
+`npm test` discovers every `lib/**/*.test.ts` file (auth, isolation, pipeline, billing, security, bundle scan). D1-backed tests use the local Wrangler persist DB and run one at a time. After `npm run cf:build`, `CINEYOU_REQUIRE_BUNDLE=1 npm run test:bundle` fails if `.next/static` is missing or contains known secret values. `npm run ci` is the local CI-equivalent: typecheck, lint, schema verify, tests, OpenNext build, then the required bundle scan.
 
 ## Production checklist
 
