@@ -45,7 +45,7 @@ export function DashboardMobileNav({ creditBalance }: { creditBalance: number })
   return (
     <nav
       aria-label="Studio mobile"
-      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-5 border-t border-border bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-border bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       {MOBILE_NAV.map((item) => {
         const active = navItemActive(pathname, item.href, item.exact);

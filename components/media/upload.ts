@@ -74,9 +74,16 @@ export async function uploadSignedFile(input: {
       ...input.extraComplete,
     }),
   });
-  const completeBody = (await complete.json()) as { error?: string; assetId?: string };
+  const completeBody = (await complete.json()) as {
+    error?: string;
+    assetId?: string;
+    referenceId?: string;
+  };
   if (!complete.ok) {
     throw new Error(completeBody.error ?? "We couldn't finish that upload.");
   }
-  return { assetId: typeof completeBody.assetId === "string" ? completeBody.assetId : null };
+  return {
+    assetId: typeof completeBody.assetId === "string" ? completeBody.assetId : null,
+    referenceId: typeof completeBody.referenceId === "string" ? completeBody.referenceId : null,
+  };
 }

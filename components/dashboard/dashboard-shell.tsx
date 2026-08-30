@@ -28,7 +28,7 @@ export function DashboardShell({
   return (
     <div className="flex min-h-full flex-1 bg-background">
       <aside className="sticky top-0 hidden h-svh w-64 shrink-0 flex-col border-r border-border px-4 py-6 lg:flex">
-        <Link href="/dashboard" aria-label="Production30 studio">
+        <Link href="/dashboard/create" aria-label="Production30 studio">
           <SiteLogo priority className="h-10 w-auto" />
         </Link>
         {workspaces.length > 1 || brands.length > 1 ? (
@@ -53,7 +53,7 @@ export function DashboardShell({
       <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
         <header className="flex flex-col gap-3 border-b border-border px-4 py-3 lg:hidden">
           <div className="flex items-center justify-between gap-4">
-            <Link href="/dashboard" aria-label="Production30 studio">
+            <Link href="/dashboard/create" aria-label="Production30 studio">
               <SiteLogo className="h-9 w-auto" />
             </Link>
           </div>

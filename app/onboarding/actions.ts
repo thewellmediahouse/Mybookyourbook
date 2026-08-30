@@ -36,7 +36,7 @@ export async function completeOnboarding(
   const db = await getDb();
 
   if (await userHasWorkspace(db, session.user.id)) {
-    redirect("/dashboard");
+    redirect("/dashboard/create");
   }
 
   const firstName = String(formData.get("firstName") ?? "").trim();
@@ -112,7 +112,7 @@ export async function completeOnboarding(
     return { error: error instanceof Error ? error.message : "We couldn't finish setup. Try again." };
   }
 
-  redirect("/dashboard");
+  redirect("/dashboard/create");
 }
 
 export async function previewWebsiteImport(formData: FormData) {

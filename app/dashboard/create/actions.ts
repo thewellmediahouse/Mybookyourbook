@@ -104,18 +104,18 @@ export async function startStudioAction(
 export async function attachLibraryReferenceAction(input: {
   projectId: string;
   assetId: string;
-}): Promise<{ error?: string }> {
+}): Promise<{ error?: string; referenceId?: string }> {
   try {
     const ctx = await requireDraftEditor(input.projectId);
     if (!ctx.access) {
       return { error: "We couldn't add that file." };
     }
-    await attachProjectReference(ctx.db, {
+    const attached = await attachProjectReference(ctx.db, {
       projectId: input.projectId,
       assetId: input.assetId,
       workspaceId: ctx.access.workspace.id,
     });
-    return {};
+    return { referenceId: attached.referenceId };
   } catch (error) {
     return { error: error instanceof Error ? error.message : "We couldn't add that file." };
   }

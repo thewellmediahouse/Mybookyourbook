@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { deleteCommercialAction } from "@/app/dashboard/commercials/[id]/actions";
 import { Button } from "@/components/ui/button";
 import { productionProgressLabel, productionProgressPercent, DOWNLOAD_COMMERCIAL } from "@/lib/production/copy";
@@ -97,18 +97,14 @@ function StudioVideoCard({
   }
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-border bg-surface">
+    <article className="group overflow-hidden rounded-2xl border border-border bg-surface">
       <div className={cn("relative w-full overflow-hidden bg-surface-secondary", shape)}>
         {ready ? (
-          <video
-            className="h-full w-full object-cover"
-            controls
-            poster={item.thumbnailAssetId ? `/api/assets/${item.thumbnailAssetId}` : undefined}
+          <StudioPreview
+            title={item.title}
             src={`/api/assets/${item.finalAssetId}`}
-            preload="metadata"
-          >
-            Your commercial is ready.
-          </video>
+            poster={item.thumbnailAssetId ? `/api/assets/${item.thumbnailAssetId}` : undefined}
+          />
         ) : producing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
             <span
@@ -136,6 +132,65 @@ function StudioVideoCard({
             )}
           </Link>
         )}
+        {!producing && (ready || canDelete) ? (
+          <div
+            className={cn(
+              "absolute inset-x-0 bottom-0 flex flex-col bg-[#001038] p-3 transition-opacity",
+              confirmDelete
+                ? "pointer-events-auto opacity-100"
+                : "pointer-events-auto opacity-100 [@media(hover:hover)]:pointer-events-none [@media(hover:hover)]:opacity-0 [@media(hover:hover)]:group-hover:pointer-events-auto [@media(hover:hover)]:group-hover:opacity-100 [@media(hover:hover)]:group-focus-within:pointer-events-auto [@media(hover:hover)]:group-focus-within:opacity-100",
+            )}
+          >
+            {confirmDelete ? (
+              <div className="space-y-3">
+                <p className="text-sm text-[#F4F6FB]">{DELETE_PERMANENT_WARNING}</p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={pending}
+                    onClick={() => {
+                      setConfirmDelete(false);
+                      setError(null);
+                    }}
+                  >
+                    {KEEP_VIDEO}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    busy={pending}
+                    className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038]"
+                    onClick={() => void remove()}
+                  >
+                    {DELETE_PERMANENT_CONFIRM}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {ready ? (
+                  <Button asChild size="sm">
+                    <a href={`/api/assets/${item.finalAssetId}?download=1`}>{DOWNLOAD_COMMERCIAL}</a>
+                  </Button>
+                ) : null}
+                {canDelete ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-[#F4F6FB] bg-transparent text-[#F4F6FB] hover:bg-[#001038]"
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    {DELETE}
+                  </Button>
+                ) : null}
+              </div>
+            )}
+            {error ? <p className="mt-2 text-sm text-[#F4F6FB]">{error}</p> : null}
+          </div>
+        ) : null}
       </div>
       <div className="p-4">
         <p className="truncate text-foreground">{item.title}</p>
@@ -143,55 +198,55 @@ function StudioVideoCard({
           {item.businessName}
           {producing ? ` · ${percent}%` : ""}
         </p>
-        {!producing && (ready || canDelete) ? (
-          confirmDelete ? (
-            <div className="mt-4 space-y-3">
-              <p className="text-sm text-muted">{DELETE_PERMANENT_WARNING}</p>
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={pending}
-                  onClick={() => {
-                    setConfirmDelete(false);
-                    setError(null);
-                  }}
-                >
-                  {KEEP_VIDEO}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  busy={pending}
-                  onClick={() => void remove()}
-                >
-                  {DELETE_PERMANENT_CONFIRM}
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {ready ? (
-                <Button asChild size="sm">
-                  <a href={`/api/assets/${item.finalAssetId}?download=1`}>{DOWNLOAD_COMMERCIAL}</a>
-                </Button>
-              ) : null}
-              {canDelete ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  {DELETE}
-                </Button>
-              ) : null}
-            </div>
-          )
-        ) : null}
-        {error ? <p className="mt-2 text-sm text-danger">{error}</p> : null}
       </div>
     </article>
+  );
+}
+
+function StudioPreview({
+  title,
+  src,
+  poster,
+}: {
+  title: string;
+  src: string;
+  poster?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) {
+      return;
+    }
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          void node.play().catch(() => undefined);
+        } else {
+          node.pause();
+        }
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [src]);
+
+  return (
+    <video
+      ref={ref}
+      className="h-full w-full object-cover"
+      src={src}
+      poster={poster}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+      disablePictureInPicture
+      aria-label={`${title} preview`}
+    >
+      Your commercial is ready.
+    </video>
   );
 }

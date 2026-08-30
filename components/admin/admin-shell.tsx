@@ -18,7 +18,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
           </Suspense>
         </div>
         <div className="mt-6 border-t border-border pt-4">
-          <Link href="/dashboard" className="inline-flex min-h-11 items-center px-3 text-sm text-muted">
+          <Link href="/dashboard/create" className="inline-flex min-h-11 items-center px-3 text-sm text-muted">
             Back to studio
           </Link>
           <SignOutButton className="justify-start" />

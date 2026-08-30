@@ -20,7 +20,7 @@ export function LoginForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
-  const afterSignIn = next || "/dashboard";
+  const afterSignIn = next || "/dashboard/create";
   const signupHref = next ? `/signup?next=${encodeURIComponent(next)}` : "/signup";
 
   async function onSubmit(formData: FormData) {

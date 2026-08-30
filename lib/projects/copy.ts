@@ -1,6 +1,6 @@
 export const CREATE_HEADING = "Create Advert";
 export const CREATE_BODY =
-  "Choose your profile, write your script, approve it, then we film it. We save as you go.";
+  "Choose who to film and any extra photos, write your script, approve it, then we film it. We save as you go.";
 export const SIMPLE_WIZARD_STEPS = [
   { id: "profile", label: "Profile" },
   { id: "script", label: "Script" },
@@ -44,19 +44,20 @@ export function resolveSimpleWizardStep(input: {
   conceptApproved: boolean;
   hasConcept: boolean;
   briefReady: boolean;
+  freshStart?: boolean;
 }): number {
   const requested = SIMPLE_WIZARD_STEPS.findIndex((step) => step.id === input.requested);
   if (requested >= 0) {
     return requested;
+  }
+  if (input.freshStart) {
+    return 0;
   }
   if (input.conceptApproved) {
     return 3;
   }
   if (input.hasConcept || input.briefReady) {
     return 2;
-  }
-  if (input.profileReady) {
-    return 1;
   }
   return 0;
 }

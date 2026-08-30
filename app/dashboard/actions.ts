@@ -20,5 +20,5 @@ export async function switchWorkspace(formData: FormData) {
     httpOnly: true,
   });
   jar.delete(ACTIVE_BRAND_COOKIE);
-  redirect("/dashboard");
+  redirect("/dashboard/create");
 }

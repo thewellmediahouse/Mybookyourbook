@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
   const session = await requireUser();
   const db = await getDb();
   if (await userHasWorkspace(db, session.user.id)) {
-    redirect("/dashboard");
+    redirect("/dashboard/create");
   }
 
   const [profile] = await db

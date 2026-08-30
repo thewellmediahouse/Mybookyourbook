@@ -17,8 +17,14 @@ test("anonymous visitors are sent to login from the dashboard", () => {
   assert.equal(new URL(response.headers.get("location") ?? "").pathname, "/login");
 });
 
-test("a session cookie is enough for the dashboard cookie check to pass through", () => {
+test("a session cookie on Overview is sent to Studio", () => {
   const response = proxy(request("/dashboard", "better-auth.session_token=test"));
+  assert.equal(response.status, 307);
+  assert.equal(new URL(response.headers.get("location") ?? "").pathname, "/dashboard/create");
+});
+
+test("a session cookie is enough for the studio cookie check to pass through", () => {
+  const response = proxy(request("/dashboard/create", "better-auth.session_token=test"));
   assert.equal(response.status, 200);
 });
 
@@ -31,5 +37,5 @@ test("anonymous visitors are sent to login from admin", () => {
 test("signed-in visitors are sent away from login", () => {
   const response = proxy(request("/login", "better-auth.session_token=test"));
   assert.equal(response.status, 307);
-  assert.equal(new URL(response.headers.get("location") ?? "").pathname, "/dashboard");
+  assert.equal(new URL(response.headers.get("location") ?? "").pathname, "/dashboard/create");
 });

@@ -90,6 +90,7 @@ export default async function CreateAdvertPage({
     conceptApproved: Boolean(concept?.approved),
     hasConcept: Boolean(concept),
     briefReady,
+    freshStart: params.new === "1",
   });
 
   const commercials = (await listCommercials(studio.db, studio.active.workspaceId)).filter(

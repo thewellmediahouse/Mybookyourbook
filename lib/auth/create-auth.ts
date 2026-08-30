@@ -179,7 +179,7 @@ export function createAuth(db: Db, env: AuthRuntimeEnv, options: CreateAuthOptio
           firstName: parts.firstName,
           idempotencyKey: welcomeEventKey(user.id),
           appUrl: baseURL,
-          actionUrl: "/dashboard",
+          actionUrl: "/dashboard/create",
         }).catch(() => undefined);
         dispatch(task);
         await task;

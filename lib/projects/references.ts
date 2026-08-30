@@ -110,6 +110,7 @@ export async function completeProjectReferenceAsset(
   }
   const now = new Date();
   const assetId = newId();
+  const referenceId = newId();
   await db.insert(assets).values({
     id: assetId,
     workspaceId: input.workspaceId,
@@ -126,11 +127,11 @@ export async function completeProjectReferenceAsset(
     updatedAt: now,
   });
   await db.insert(projectReferences).values({
-    id: newId(),
+    id: referenceId,
     projectId: input.projectId,
     assetId,
     mappingSlot: slot,
     createdAt: now,
   });
-  return { assetId, mappingSlot: slot };
+  return { assetId, mappingSlot: slot, referenceId };
 }

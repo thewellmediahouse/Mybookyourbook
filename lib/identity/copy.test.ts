@@ -15,7 +15,7 @@ test("identity page copy matches the spec", () => {
   assert.equal(IDENTITY_HEADING, "Your Reference Profile");
   assert.equal(
     IDENTITY_BODY,
-    "We use this profile every time we film you: your selfie video, face photos, logo, and extra photos or clips of your business.",
+    "Save a selfie video, face photos, logo, and extra photos here. Each new advert asks which files to use, or lets you upload new ones.",
   );
   assert.equal(
     CONSENT_LIKENESS,

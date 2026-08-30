@@ -1,6 +1,6 @@
 export const IDENTITY_HEADING = "Your Reference Profile";
 export const IDENTITY_BODY =
-  "We use this profile every time we film you: your selfie video, face photos, logo, and extra photos or clips of your business.";
+  "Save a selfie video, face photos, logo, and extra photos here. Each new advert asks which files to use, or lets you upload new ones.";
 
 export const CONSENT_LIKENESS =
   "I confirm that I am the person shown and heard in these reference files, or that I have explicit permission from this person to use their likeness and voice for commercial advertising.";

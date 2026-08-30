@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { attachLibraryReferenceAction, saveBriefAction } from "@/app/dashboard/create/actions";
+import { saveBriefAction } from "@/app/dashboard/create/actions";
 import { ExtraRefsUploader } from "@/components/create/extra-refs";
 import { ConceptPanel } from "@/components/create/concept-panel";
 import { LogoUploader } from "@/components/brand/logo-uploader";
 import { DisabledAction } from "@/components/dashboard/disabled-action";
 import { IdentityCapture } from "@/components/identity/identity-capture";
 import { IdentityConsentForm } from "@/components/identity/consent-form";
+import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +21,6 @@ import {
   AD_STYLES,
   ADVERTISING_TYPES,
   ASPECT_RATIOS,
-  CONTEXT_REFERENCE_LIMIT,
   CTA_TYPES,
   DEFAULT_DURATION,
   DURATIONS,
@@ -71,7 +71,7 @@ export function SimpleCreateWizard({
 }) {
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
-  const [mode, setMode] = useState<"saved" | "upload">(profileReady ? "saved" : "upload");
+  const [mode, setMode] = useState<"saved" | "upload" | null>(null);
   const [brief, setBrief] = useState(initial);
   const [locked, setLocked] = useState(briefLocked);
   const [approved, setApproved] = useState(Boolean(concept?.approved));
@@ -150,30 +150,9 @@ export function SimpleCreateWizard({
       setBrief((item) => ({ ...item, projectId: result.projectId ?? item.projectId }));
       router.replace(`/dashboard/create?project=${result.projectId}`);
     }
-    if (result.projectId) {
-      await attachSavedExtras(result.projectId, currentBrief);
-    }
     setStatus("saved");
     setError(null);
     return result;
-  }
-
-  async function attachSavedExtras(projectId: string, currentBrief: WizardBrief) {
-    const attached = new Set(currentBrief.references.map((item) => item.assetId));
-    let remaining = CONTEXT_REFERENCE_LIMIT - attached.size;
-    for (const item of library) {
-      if (remaining <= 0) {
-        break;
-      }
-      if (attached.has(item.id)) {
-        continue;
-      }
-      const result = await attachLibraryReferenceAction({ projectId, assetId: item.id });
-      if (!result.error) {
-        attached.add(item.id);
-        remaining -= 1;
-      }
-    }
   }
 
   function setPrompt(value: string) {
@@ -188,6 +167,10 @@ export function SimpleCreateWizard({
   async function goNext() {
     setError(null);
     if (current?.id === "profile") {
+      if (!mode) {
+        setError("Choose a saved Reference Profile, or upload new photos and video for this advert.");
+        return;
+      }
       if (!profileReady) {
         setError(IDENTITY_REQUIRED);
         return;
@@ -278,61 +261,79 @@ export function SimpleCreateWizard({
         <section className="mt-8 flex flex-col gap-6">
           <h2 className="font-display text-2xl text-foreground">Who should we film?</h2>
           <p className="text-muted">
-            Use your saved Reference Profile, or upload a selfie video, face photos, logo, and extra
-            photos of your business.
+            We do not assume your saved profile. Choose it for this advert, or upload a new selfie
+            video and face photos.
           </p>
-          {profileReady ? (
-            <div className="grid gap-3 sm:grid-cols-2">
-              <ChoiceCard
-                selected={mode === "saved"}
-                title="Use my saved profile"
-                body="We will film you from the selfie video, photos, and logo already on your Reference Profile."
-                onClick={() => setMode("saved")}
-              />
-              <ChoiceCard
-                selected={mode === "upload"}
-                title="Upload new files"
-                body="Replace your selfie video, photos, logo, or extra photos for this advert."
-                onClick={() => setMode("upload")}
-              />
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ChoiceCard
+              selected={mode === "saved"}
+              disabled={!profileReady}
+              title="Use a saved Reference Profile"
+              body={
+                profileReady
+                  ? "Film this advert with the selfie video and face photos you already uploaded."
+                  : "No saved profile yet. Upload new files, or finish Reference Profile first."
+              }
+              onClick={() => setMode("saved")}
+            />
+            <ChoiceCard
+              selected={mode === "upload"}
+              title="Upload new photos or video"
+              body="Add a new selfie video and face photos for this advert. You can still pick extra photos below."
+              onClick={() => setMode("upload")}
+            />
+          </div>
+          {mode === "saved" && profileReady ? (
+            <SavedProfilePreview assets={identityAssets} />
+          ) : null}
+          {mode === "upload" ? (
+            !consented ? (
+              <IdentityConsentForm />
+            ) : (
+              <div id="identity-capture">
+                <IdentityCapture
+                  firstName={firstName}
+                  businessName={businessName}
+                  assets={identityAssets}
+                />
+              </div>
+            )
+          ) : null}
+          {brand && mode ? (
+            <div>
+              <h3 className="font-display text-xl text-foreground">Logo</h3>
+              <div className="mt-4">
+                <LogoUploader
+                  businessId={brand.id}
+                  logoAssetId={brand.logoAssetId}
+                  canEdit={canEditBrand}
+                />
+              </div>
             </div>
           ) : null}
-          {mode === "saved" && profileReady ? (
-            <p className="rounded-lg border border-border bg-surface p-5 text-muted">
-              Your Reference Profile is ready. Choose Next to write the script.
-            </p>
-          ) : (
-            <>
-              {!consented ? (
-                <IdentityConsentForm />
-              ) : (
-                <div id="identity-capture">
-                  <IdentityCapture
-                    firstName={firstName}
-                    businessName={businessName}
-                    assets={identityAssets}
-                  />
-                </div>
-              )}
-              {brand ? (
-                <div>
-                  <h3 className="font-display text-xl text-foreground">Logo</h3>
-                  <div className="mt-4">
-                    <LogoUploader
-                      businessId={brand.id}
-                      logoAssetId={brand.logoAssetId}
-                      canEdit={canEditBrand}
-                    />
-                  </div>
-                </div>
-              ) : null}
-              <ExtraRefsUploader
-                canWrite={extrasWrite.allowed}
-                writeReason={extrasWrite.allowed ? null : extrasWrite.reason}
-                items={library}
-              />
-            </>
-          )}
+          <ExtraRefsUploader
+            canWrite={extrasWrite.allowed}
+            writeReason={extrasWrite.allowed ? null : extrasWrite.reason}
+            items={library}
+            projectId={brief.projectId}
+            selected={brief.references.map((item) => ({ id: item.id, assetId: item.assetId }))}
+            ensureProject={async () => {
+              const saved = await persist();
+              return saved.projectId ?? briefRef.current.projectId;
+            }}
+            onSelected={(next) =>
+              patch(
+                {
+                  references: next.map((item) => ({
+                    id: item.id,
+                    assetId: item.assetId,
+                    source: "library" as const,
+                  })),
+                },
+                false,
+              )
+            }
+          />
         </section>
       ) : null}
 
@@ -493,13 +494,53 @@ export function SimpleCreateWizard({
   );
 }
 
+function SavedProfilePreview({
+  assets,
+}: {
+  assets: Partial<Record<IdentityRole, { assetId: string; mimeType: string }>>;
+}) {
+  const slots: Array<{ role: IdentityRole; label: string }> = [
+    { role: "IDENTITY_VIDEO", label: "Selfie video" },
+    { role: "IDENTITY_FRONT", label: "Front" },
+    { role: "IDENTITY_LEFT", label: "Left" },
+    { role: "IDENTITY_RIGHT", label: "Right" },
+  ];
+  return (
+    <div className="rounded-lg border border-border bg-surface p-5">
+      <p className="text-muted">These saved files will be used if you choose Next.</p>
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+        {slots.map((slot) => {
+          const asset = assets[slot.role];
+          return (
+            <li key={slot.role} className="rounded-md border border-border p-3">
+              <p className="mb-2 text-sm text-foreground">{slot.label}</p>
+              {asset ? (
+                <MediaPreview
+                  src={privateAssetSrc(asset.assetId)}
+                  mimeType={asset.mimeType}
+                  alt=""
+                  className="max-h-36 w-full rounded-md bg-surface-secondary object-contain"
+                />
+              ) : (
+                <p className="text-sm text-muted">Missing</p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 function ChoiceCard({
   selected,
+  disabled,
   title,
   body,
   onClick,
 }: {
   selected: boolean;
+  disabled?: boolean;
   title: string;
   body: string;
   onClick: () => void;
@@ -508,9 +549,11 @@ function ChoiceCard({
     <button
       type="button"
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         "rounded-2xl border p-5 text-left",
         selected ? "border-accent bg-surface" : "border-border bg-surface",
+        disabled ? "cursor-not-allowed opacity-60" : undefined,
       )}
     >
       <p className="font-medium text-foreground">{title}</p>

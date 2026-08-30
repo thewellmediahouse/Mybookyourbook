@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (light branded emails)
+Last updated: 2026-08-30 (choose refs per advert)
 
 ## Foundation
 - [x] Next.js
@@ -617,6 +617,14 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — Choose references for each advert
+
+Studio no longer assumes the saved Reference Profile. A new advert starts on “Who should we film?” — pick the saved profile, or upload a new selfie video and face photos. Extra photos are optional: upload new ones for this advert, or tap saved extras to include them. We do not auto-attach every library photo.
+
+### 2026-08-30 — Studio is home; looping video previews
+
+Overview is gone. `/dashboard`, login, onboarding finish, workspace switch, and the logo all open Studio. Finished cards play a muted looping preview (no player chrome). Hover (or tap on a phone) shows Download and Delete on a navy bar. Delete still warns that the commercial is permanently gone.
 
 ### 2026-08-30 — Light branded transactional emails
 

@@ -53,7 +53,17 @@ test("simple create flow opens on the next unfinished step", () => {
       hasConcept: false,
       briefReady: false,
     }),
-    1,
+    0,
+  );
+  assert.equal(
+    resolveSimpleWizardStep({
+      freshStart: true,
+      profileReady: true,
+      conceptApproved: true,
+      hasConcept: true,
+      briefReady: true,
+    }),
+    0,
   );
   assert.equal(
     resolveSimpleWizardStep({

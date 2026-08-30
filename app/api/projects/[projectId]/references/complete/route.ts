@@ -43,7 +43,11 @@ export async function POST(
       mimeType,
       sizeBytes: stored.size ?? sizeBytes,
     });
-    return NextResponse.json({ ok: true, assetId: completed.assetId });
+    return NextResponse.json({
+      ok: true,
+      assetId: completed.assetId,
+      referenceId: completed.referenceId,
+    });
   } catch (error) {
     return fromCaught(error);
   }
