@@ -4,7 +4,7 @@ import { requireBrandEditor } from "@/lib/api/auth";
 import { getDb } from "@/lib/db/client";
 import { newId } from "@/lib/id";
 import { logoObjectKey } from "@/lib/r2/keys";
-import { LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
+import { LOGO_FORMAT_ERROR, LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
 import { planLogoUpload } from "@/lib/r2/plan";
 import { assertRateLimit } from "@/lib/security/rate-limit";
 
@@ -22,7 +22,7 @@ export async function POST(
     const mimeType = normalizeLogoMime(String(body.mimeType ?? ""));
     const sizeBytes = Number(body.sizeBytes ?? 0);
     if (!mimeType) {
-      return jsonError("Use a PNG, JPEG, WebP, or SVG logo.", 400);
+      return jsonError(LOGO_FORMAT_ERROR, 400);
     }
     if (!Number.isFinite(sizeBytes) || sizeBytes <= 0 || sizeBytes > LOGO_MAX_BYTES) {
       return jsonError("That logo is too large. Keep it under 5 MB.", 400);

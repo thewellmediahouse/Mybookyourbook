@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fromCaught, jsonError } from "@/lib/api/http";
 import { requireStudioLibraryWrite } from "@/lib/api/media";
 import { newId } from "@/lib/id";
-import { libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
+import { libraryFormatError, libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
 import { parseLibraryRole } from "@/lib/media/slots";
 import { libraryObjectKey } from "@/lib/r2/keys";
 import { planObjectUpload } from "@/lib/r2/plan";
@@ -26,10 +26,7 @@ export async function POST(request: Request) {
     const mimeType = normalizeLibraryMime(String(body.mimeType ?? ""), role);
     const sizeBytes = Number(body.sizeBytes ?? 0);
     if (!mimeType) {
-      return jsonError(
-        role === "logo" ? "Use a PNG, JPEG, WebP, or SVG logo." : "Use a PNG, JPEG, or WebP photo.",
-        400,
-      );
+      return jsonError(libraryFormatError(role), 400);
     }
     const max = libraryMaxBytes(mimeType);
     if (!Number.isFinite(sizeBytes) || sizeBytes <= 0 || sizeBytes > max) {

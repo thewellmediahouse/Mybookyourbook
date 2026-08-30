@@ -9,6 +9,8 @@ import {
 import { IDENTITY_REFERENCE_MAP } from "@/lib/identity/slots";
 import {
   CONTEXT_SLOTS,
+  DURATION_CHOICE,
+  isDuration,
   requireExplicitAspectRatio,
   type AspectRatio,
 } from "@/lib/projects/brief";
@@ -23,14 +25,26 @@ export {
 export const IDENTITY_INSTRUCTION =
   "The primary presenter must remain the same adult person represented by @Image1, @Image2, @Image3 and @Video1. Preserve recognisable facial structure, hairstyle, age, skin appearance and body proportions consistently throughout the commercial. Use @Video1 as the primary reference for natural speaking style, facial movement, voice/accent where supported, mannerisms and presentation.";
 
+export const LOGO_REFERENCE_TAG = "@Image4";
+export const LOGO_REFERENCE_INSTRUCTION =
+  "Show the supplied brand mark from @Image4 as a graphic when it fits naturally (a sign, product, vehicle, or printed mark). Use that exact mark. Do not invent letters, a different logo, or extra writing.";
+
 /** Internal mapping only. Never shown to customers. Identity uses @Image1–3 and @Video1. */
+export function contextReferenceTag(
+  slot: (typeof CONTEXT_SLOTS)[number],
+  includeLogo: boolean,
+): string {
+  const index = CONTEXT_SLOTS.indexOf(slot);
+  return `@Image${(includeLogo ? 5 : 4) + index}`;
+}
+
 export const CONTEXT_REFERENCE_MAP: Record<(typeof CONTEXT_SLOTS)[number], string> = {
-  CONTEXT_1: "@Image4",
-  CONTEXT_2: "@Image5",
-  CONTEXT_3: "@Image6",
-  CONTEXT_4: "@Image7",
-  CONTEXT_5: "@Image8",
-  CONTEXT_6: "@Image9",
+  CONTEXT_1: contextReferenceTag("CONTEXT_1", false),
+  CONTEXT_2: contextReferenceTag("CONTEXT_2", false),
+  CONTEXT_3: contextReferenceTag("CONTEXT_3", false),
+  CONTEXT_4: contextReferenceTag("CONTEXT_4", false),
+  CONTEXT_5: contextReferenceTag("CONTEXT_5", false),
+  CONTEXT_6: contextReferenceTag("CONTEXT_6", false),
 };
 
 export type SeedancePromptInput = {
@@ -40,11 +54,12 @@ export type SeedancePromptInput = {
   durationSeconds: number;
   style: string;
   contextSlots?: string[];
+  includeLogo?: boolean;
   /** Ignored. Prompt generation must not rewrite approved spoken words. */
   draftScript?: string;
 };
 
-function mappingBlock(contextSlots: string[]): string {
+function mappingBlock(contextSlots: string[], includeLogo: boolean): string {
   const lines = [
     "Reference mapping:",
     `${IDENTITY_REFERENCE_MAP.IDENTITY_FRONT} = identity front`,
@@ -52,9 +67,12 @@ function mappingBlock(contextSlots: string[]): string {
     `${IDENTITY_REFERENCE_MAP.IDENTITY_RIGHT} = identity right`,
     `${IDENTITY_REFERENCE_MAP.IDENTITY_VIDEO} = presenter video`,
   ];
+  if (includeLogo) {
+    lines.push(`${LOGO_REFERENCE_TAG} = brand mark`);
+  }
   const used = CONTEXT_SLOTS.filter((slot) => contextSlots.includes(slot));
   for (const slot of used) {
-    lines.push(`${CONTEXT_REFERENCE_MAP[slot]} = campaign context`);
+    lines.push(`${contextReferenceTag(slot, includeLogo)} = campaign context`);
   }
   return lines.join("\n");
 }
@@ -92,20 +110,21 @@ export function buildSeedancePrompt(input: SeedancePromptInput): string {
   }
   const aspectRatio: AspectRatio = requireExplicitAspectRatio(input.aspectRatio);
   const durationSeconds = input.durationSeconds;
-  if (durationSeconds !== 15 && durationSeconds !== 20 && durationSeconds !== 30) {
-    throw new Error("Choose 15, 20, or 30 seconds.");
+  if (!isDuration(durationSeconds)) {
+    throw new Error(DURATION_CHOICE);
   }
   const style = input.style.trim();
   if (!style) {
     throw new Error("Choose a visual style.");
   }
   const contextSlots = input.contextSlots ?? [];
+  const includeLogo = Boolean(input.includeLogo);
   const scenes = [...input.scenes].sort((a, b) => a.startSecond - b.startSecond);
 
   return [
     IDENTITY_INSTRUCTION,
     "",
-    mappingBlock(contextSlots),
+    mappingBlock(contextSlots, includeLogo),
     "",
     `Aspect ratio: ${aspectRatio}`,
     `Duration: ${durationSeconds} seconds`,
@@ -115,6 +134,7 @@ export function buildSeedancePrompt(input: SeedancePromptInput): string {
     approvedScript,
     "",
     ...scenes.flatMap((scene) => [sceneBlock(scene, style, approvedScript), ""]),
+    ...(includeLogo ? [LOGO_REFERENCE_INSTRUCTION] : []),
     NO_GENERATED_TEXT_INSTRUCTION,
     BACKGROUND_SIGNAGE_INSTRUCTION,
     NO_SMALL_CTA_INSTRUCTION,

@@ -22,7 +22,6 @@ import {
   ADVERTISING_TYPES,
   ASPECT_RATIOS,
   CTA_TYPES,
-  DEFAULT_DURATION,
   DURATIONS,
   PLATFORMS,
   recommendedAspectRatio,
@@ -478,7 +477,7 @@ export function SimpleCreateWizard({
                 </Chip>
               ))}
             </div>
-            <p className="mt-2 text-sm text-muted">The main commercial we produce is {DEFAULT_DURATION} seconds.</p>
+            <p className="mt-2 text-sm text-muted">We film the length you pick.</p>
           </fieldset>
         </section>
       ) : null}

@@ -10,7 +10,7 @@ import { MediaPreview } from "@/components/media/preview";
 import { uploadSignedFile } from "@/components/media/upload";
 import { Spinner } from "@/components/ui/spinner";
 import { CONTEXT_REFERENCE_LIMIT } from "@/lib/projects/brief";
-import { libraryAcceptAttribute, LIBRARY_MAX_BYTES } from "@/lib/media/mime";
+import { libraryAcceptAttribute, libraryFormatError, LIBRARY_MAX_BYTES, normalizeLibraryMime } from "@/lib/media/mime";
 import { cn } from "@/lib/utils";
 
 export type ExtraRefSelection = { id: string; assetId: string };
@@ -53,6 +53,10 @@ export function ExtraRefsUploader({
     }
     if (pickForAdvert && selected.length >= CONTEXT_REFERENCE_LIMIT) {
       setError("You can add up to 6 extra photos for this advert.");
+      return;
+    }
+    if (!normalizeLibraryMime(file.type, "campaign")) {
+      setError(libraryFormatError("campaign"));
       return;
     }
     if (file.size > LIBRARY_MAX_BYTES) {

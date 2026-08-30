@@ -1,7 +1,7 @@
 import type { LibraryRole } from "@/lib/r2/keys";
+import { LOGO_FORMAT_ERROR } from "@/lib/r2/mime";
 
 export const LIBRARY_MAX_BYTES = 8 * 1024 * 1024;
-export const LIBRARY_LOGO_SVG_MAX_BYTES = 5 * 1024 * 1024;
 
 export function normalizeLibraryMime(value: string, role: LibraryRole): string | null {
   const mime = value.trim().toLowerCase().split(";")[0]?.trim() ?? "";
@@ -9,25 +9,21 @@ export function normalizeLibraryMime(value: string, role: LibraryRole): string |
   if (mapped === "image/png" || mapped === "image/jpeg" || mapped === "image/webp") {
     return mapped;
   }
-  if (role === "logo" && mapped === "image/svg+xml") {
-    return mapped;
-  }
   return null;
 }
 
-export function libraryMaxBytes(mimeType: string): number {
-  return mimeType === "image/svg+xml" ? LIBRARY_LOGO_SVG_MAX_BYTES : LIBRARY_MAX_BYTES;
+export function libraryMaxBytes(_mimeType: string): number {
+  return LIBRARY_MAX_BYTES;
 }
 
-export function libraryAcceptAttribute(role: LibraryRole): string {
-  if (role === "logo") {
-    return "image/png,image/jpeg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg";
-  }
+export function libraryAcceptAttribute(_role: LibraryRole): string {
   return "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp";
 }
 
-export function libraryTooLargeMessage(mimeType: string): string {
-  return mimeType === "image/svg+xml"
-    ? "That logo is too large. Keep it under 5 MB."
-    : "That photo is too large. Keep it under 8 MB.";
+export function libraryTooLargeMessage(_mimeType: string): string {
+  return "That photo is too large. Keep it under 8 MB.";
+}
+
+export function libraryFormatError(role: LibraryRole): string {
+  return role === "logo" ? LOGO_FORMAT_ERROR : "Use a PNG, JPEG, or WebP photo.";
 }

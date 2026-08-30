@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { fromCaught, jsonError } from "@/lib/api/http";
 import { requireStudioLibraryWrite } from "@/lib/api/media";
-import { libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
+import { libraryFormatError, libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
 import { parseLibraryRole } from "@/lib/media/slots";
 import { getMediaBucket, putWorkspaceObject } from "@/lib/r2/bucket";
 import { libraryObjectKey } from "@/lib/r2/keys";
@@ -22,10 +22,7 @@ export async function PUT(
     }
     const mimeType = normalizeLibraryMime(request.headers.get("content-type") ?? "", role);
     if (!mimeType) {
-      return jsonError(
-        role === "logo" ? "Use a PNG, JPEG, WebP, or SVG logo." : "Use a PNG, JPEG, or WebP photo.",
-        400,
-      );
+      return jsonError(libraryFormatError(role), 400);
     }
     const body = await request.arrayBuffer();
     if (body.byteLength === 0 || body.byteLength > libraryMaxBytes(mimeType)) {

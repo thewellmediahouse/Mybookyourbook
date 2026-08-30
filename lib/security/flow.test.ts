@@ -56,6 +56,12 @@ test("PNG magic bytes are required; random bytes are rejected", () => {
   assert.equal(looksLikePng(PNG), true);
   assert.doesNotThrow(() => assertAllowedUploadBytes(PNG, "image/png"));
   assert.throws(() => assertAllowedUploadBytes(new Uint8Array([1, 2, 3, 4]), "image/png"));
+  assert.throws(() =>
+    assertAllowedUploadBytes(
+      new TextEncoder().encode("<svg xmlns='http://www.w3.org/2000/svg'></svg>"),
+      "image/svg+xml",
+    ),
+  );
 });
 
 test("NEXT_PUBLIC_ env in .env.example is not a secret", () => {

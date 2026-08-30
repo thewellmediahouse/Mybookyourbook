@@ -3,7 +3,7 @@ import { fromCaught, jsonError } from "@/lib/api/http";
 import { requireBrandEditor } from "@/lib/api/auth";
 import { getMediaBucket, putWorkspaceObject } from "@/lib/r2/bucket";
 import { logoObjectKey } from "@/lib/r2/keys";
-import { LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
+import { LOGO_FORMAT_ERROR, LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
 import { assertAllowedUploadBytes } from "@/lib/r2/sniff";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export async function PUT(
     const editor = await requireBrandEditor(businessId);
     const mimeType = normalizeLogoMime(request.headers.get("content-type") ?? "");
     if (!mimeType) {
-      return jsonError("Use a PNG, JPEG, WebP, or SVG logo.", 400);
+      return jsonError(LOGO_FORMAT_ERROR, 400);
     }
     const body = await request.arrayBuffer();
     if (body.byteLength === 0 || body.byteLength > LOGO_MAX_BYTES) {

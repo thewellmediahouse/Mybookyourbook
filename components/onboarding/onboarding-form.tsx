@@ -132,7 +132,7 @@ export function OnboardingForm({
           </div>
         </div>
         <p className="text-sm text-muted">
-          Upload the logo after your studio opens. PNG, JPEG, WebP, or SVG. We keep the original file.
+          Upload the logo after your studio opens. PNG, JPEG, or WebP only. We keep the original file.
         </p>
         <div className="flex flex-col gap-2">
           <Label htmlFor="phone">Phone (optional)</Label>

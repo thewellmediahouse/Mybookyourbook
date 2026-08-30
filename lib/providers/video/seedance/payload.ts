@@ -5,7 +5,35 @@ export const SEEDANCE_MODEL_ID = "doubao-seedance-2.5-face";
 export const REAPI_API_BASE = "https://reapi.ai/api/v1";
 export const REAPI_VIDEOS_URL = `${REAPI_API_BASE}/videos/generations`;
 export const SEEDANCE_RESOLUTION = "480p" as const;
+/** Official reAPI Seedance 2.5 `duration` is 4–30 seconds (fetched 2026-08-30). */
+export const SEEDANCE_DURATION_MIN = 4;
+export const SEEDANCE_DURATION_MAX = 30;
 export const SEEDANCE_DURATION = 30 as const;
+
+export function officialFilmingDuration(seconds: number): number {
+  if (!Number.isInteger(seconds) || seconds < SEEDANCE_DURATION_MIN || seconds > SEEDANCE_DURATION_MAX) {
+    throw new Error("DURATION_UNSUPPORTED");
+  }
+  return seconds;
+}
+
+/** Official reAPI `image_urls` stills (fetched 2026-08-30). SVG is not accepted. */
+export const REAPI_REFERENCE_IMAGE_MIMES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/bmp",
+  "image/tiff",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+] as const;
+
+export function isReapiReferenceImageMime(mimeType: string | null | undefined): boolean {
+  const mime = (mimeType ?? "").toLowerCase().split(";")[0]?.trim() ?? "";
+  return (REAPI_REFERENCE_IMAGE_MIMES as readonly string[]).includes(mime);
+}
 
 /** Official `size` enum except `adaptive`. Production30 never sends `adaptive` or `auto`. */
 export const REAPI_SIZES = ["21:9", "16:9", "4:3", "1:1", "3:4", "9:16"] as const;
@@ -34,7 +62,7 @@ export function seedanceSubmitBody(input: VideoSubmitInput): Record<string, unkn
     model: SEEDANCE_MODEL_ID,
     prompt: input.prompt,
     resolution: SEEDANCE_RESOLUTION,
-    duration: SEEDANCE_DURATION,
+    duration: officialFilmingDuration(input.durationSeconds),
     size: reapiSize(input.aspectRatio),
     generate_audio: true,
     output_format: "mp4",

@@ -33,6 +33,17 @@ const sampleBrief: CreativeBrief = {
   strategy: resolveAdStrategy("law"),
 };
 
+test("mock concept covers a 10 second timeline", async () => {
+  const concept = await createMockCreativeDirector().generateConcept({
+    ...sampleBrief,
+    durationSeconds: 10,
+  });
+  assert.deepEqual(
+    parseCreativeConcept(concept).scenes.map((scene) => `${scene.startSecond}–${scene.endSecond}`),
+    ["0–3", "3–7", "7–10"],
+  );
+});
+
 test("mock concept passes Zod and covers a 30 second timeline", async () => {
   const concept = await createMockCreativeDirector().generateConcept(sampleBrief);
   const parsed = parseCreativeConcept(concept);

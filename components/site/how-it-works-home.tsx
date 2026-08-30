@@ -38,7 +38,7 @@ export function HowItWorksHome() {
         <div className="mt-14 hidden overflow-x-auto md:block">
           <StaticGraphic
             src={HOME_UI.studioToolbar}
-            alt="Studio preview: Advert or Viral, topic chips, and 15, 20 or 30 second duration with 30 seconds selected"
+            alt="Studio preview: Advert or Viral, topic chips, and 10, 15, 20 or 30 second duration with 30 seconds selected"
             className="h-auto min-w-[46rem] w-full"
           />
         </div>

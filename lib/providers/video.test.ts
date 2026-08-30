@@ -5,7 +5,7 @@ import {
   createReapiVideoProvider,
   createVideoGenerationProvider,
   REAPI_VIDEOS_URL,
-  SEEDANCE_DURATION,
+  isReapiReferenceImageMime,
   SEEDANCE_MODEL_ID,
   SEEDANCE_RESOLUTION,
   seedanceSubmitBody,
@@ -22,7 +22,7 @@ function jsonResponse(body: unknown, status = 200) {
   });
 }
 
-test("live Seedance payload is 480p, 30s, audio, and official size", () => {
+test("live Seedance payload is 480p, chosen duration, audio, and official size", () => {
   const body = seedanceSubmitBody({
     prompt: "Presenter speaks to camera.",
     aspectRatio: "9:16",
@@ -32,7 +32,21 @@ test("live Seedance payload is 480p, 30s, audio, and official size", () => {
   });
   assert.equal(body.model, SEEDANCE_MODEL_ID);
   assert.equal(body.resolution, SEEDANCE_RESOLUTION);
-  assert.equal(body.duration, SEEDANCE_DURATION);
+  assert.equal(body.duration, 15);
+  assert.equal(seedanceSubmitBody({
+    prompt: "Presenter speaks to camera.",
+    aspectRatio: "9:16",
+    durationSeconds: 10,
+    imageUrls: [],
+    videoUrls: [],
+  }).duration, 10);
+  assert.throws(() => seedanceSubmitBody({
+    prompt: "x",
+    aspectRatio: "9:16",
+    durationSeconds: 3,
+    imageUrls: [],
+    videoUrls: [],
+  }));
   assert.equal(body.generate_audio, true);
   assert.equal(body.output_format, "mp4");
   assert.equal(body.omni_reference_task_type, "reference");
@@ -42,6 +56,8 @@ test("live Seedance payload is 480p, 30s, audio, and official size", () => {
   assert.deepEqual(body.video_urls, ["https://signed.example/voice.mp4"]);
   assert.equal("bitrate_mode" in body, false);
   assert.equal("content_filter" in body, false);
+  assert.equal(isReapiReferenceImageMime("image/png"), true);
+  assert.equal(isReapiReferenceImageMime("image/svg+xml"), false);
   assert.throws(() => seedanceSubmitBody({
     prompt: "x",
     aspectRatio: "auto",

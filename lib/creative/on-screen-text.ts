@@ -1,10 +1,10 @@
 /** Filming cannot spell. Any letters in the take become unreadable marks. */
 
 export const PLAIN_SURFACES =
-  "Plain surfaces only. No writing, letters, numbers, logos, buttons, or call-to-action graphics.";
+  "Plain surfaces only. No writing, letters, numbers, invented logos, buttons, or call-to-action graphics.";
 
 export const NO_GENERATED_TEXT_INSTRUCTION =
-  "Never generate any written characters — not large, not small, not decorative, not blurry, not in the background, and not as a call to action. No subtitles, captions, lower thirds, end cards, logos, prices, phone numbers, websites, labels, signs, buttons, interface text, banners, watermarks, posters, menus, packaging type, or handwritten notes. The camera cannot spell. Small writing and small call-to-action graphics become unreadable marks. The presenter speaks the call to action. Branding and exact written information are added later, never filmed.";
+  "Never generate any written characters — not large, not small, not decorative, not blurry, not in the background, and not as a call to action. No subtitles, captions, lower thirds, end cards, invented logos, prices, phone numbers, websites, labels, signs, buttons, interface text, banners, watermarks, posters, menus, packaging type, or handwritten notes. The camera cannot spell. Small writing and small call-to-action graphics become unreadable marks. The presenter speaks the call to action. A supplied brand mark may appear as a graphic without new letters. Exact written information is added later.";
 
 export const BACKGROUND_SIGNAGE_INSTRUCTION =
   "If a wall, window, screen, product, street, or shopfront would normally show writing, keep it blank, turned away, covered, or fully out of focus so no letters can be read or guessed.";
@@ -13,7 +13,7 @@ export const NO_SMALL_CTA_INSTRUCTION =
   "Do not film a small call to action, a tiny button, a badge, a lower-third, a title card, or any graphic with words. A call to action is spoken only.";
 
 export const SCENE_NO_WRITING_LINE =
-  "Written text in this shot: none. No letters, numbers, logos, buttons, captions, or call-to-action graphics.";
+  "Written text in this shot: none. No letters, numbers, invented logos, buttons, captions, or call-to-action graphics.";
 
 const ON_SCREEN_WRITING = [
   /\b(subtitles?|captions?|lower[- ]thirds?|end[- ]cards?|title cards?|watermarks?)\b/i,

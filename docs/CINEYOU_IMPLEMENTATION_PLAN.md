@@ -138,7 +138,7 @@ A phase is not complete because UI exists. Frontend, backend, authorization, val
 
 **External services:** R2; optional fetch for website import behind abstraction.
 
-**Security:** Signed PUT; MIME allowlist SVG/PNG/WebP/JPEG; workspace-scoped keys.
+**Security:** Signed PUT; MIME allowlist PNG/WebP/JPEG only; workspace-scoped keys.
 
 **Tests:** Upload requires auth; cannot write another workspace prefix.
 

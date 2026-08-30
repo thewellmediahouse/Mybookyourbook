@@ -50,7 +50,7 @@ const ARTICLES = [
   },
   {
     title: "Why Branding Is Added Afterwards",
-    body: "Your logo and on-screen text are applied after the commercial is filmed, so spelling and placement stay exact.",
+    body: "Your logo must be a PNG, JPEG, or WebP. We use that picture when we film. Exact written words are still added afterwards so spelling stays exact.",
   },
   {
     title: "Downloading Your Video",

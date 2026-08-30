@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { creativeVersions, projects } from "@/lib/db/schema";
 import { getProjectBrief } from "@/lib/projects/queries";
-import { buildApprovedFilmingPrompt } from "./prompt";
+import { buildApprovedFilmingPrompt, filmingIncludeLogo } from "./prompt";
 import { getCreativeVersion, getLatestCreativeVersion } from "./queries";
 import { toPublicConcept } from "./public";
 
@@ -30,6 +30,7 @@ export async function approveConcept(
       aspectRatio: brief.aspectRatio,
       durationSeconds: brief.duration,
       style: brief.style,
+      includeLogo: await filmingIncludeLogo(db, brief.businessId),
     });
     await db
       .update(creativeVersions)

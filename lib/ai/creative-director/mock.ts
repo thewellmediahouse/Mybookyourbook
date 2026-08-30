@@ -1,6 +1,13 @@
 import type { CreativeBrief, ConceptScene, CreativeConcept, CreativeDirectorProvider } from "./types";
 
 function sceneWindows(durationSeconds: number): Array<[number, number]> {
+  if (durationSeconds <= 10) {
+    return [
+      [0, 3],
+      [3, 7],
+      [7, 10],
+    ];
+  }
   if (durationSeconds <= 15) {
     return [
       [0, 5],

@@ -1,10 +1,10 @@
 export const LOGO_MAX_BYTES = 5 * 1024 * 1024;
+export const LOGO_FORMAT_ERROR = "Use a PNG, JPEG, or WebP logo.";
 
 const ALLOWED: Record<string, true> = {
   "image/png": true,
   "image/jpeg": true,
   "image/webp": true,
-  "image/svg+xml": true,
 };
 
 export function normalizeLogoMime(value: string): string | null {
@@ -20,5 +20,5 @@ export function isAllowedLogoMime(value: string): boolean {
 }
 
 export function logoAcceptAttribute(): string {
-  return "image/png,image/jpeg,image/webp,image/svg+xml,.png,.jpg,.jpeg,.webp,.svg";
+  return "image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp";
 }

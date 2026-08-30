@@ -501,7 +501,7 @@ Fields: company name, logo, primary brand colour, secondary brand colour, taglin
 
 Logo lives in R2.
 
-Accept: SVG, PNG, WebP, high-quality JPEG. Keep original version.
+Accept: PNG, WebP, or JPEG only. Keep original version. No SVG.
 
 ---
 
@@ -996,7 +996,7 @@ Recommend: 9:16 Vertical, 16:9 Landscape, 1:1 Square. Allow override. Never use 
 
 # SECTION AN — DURATION
 
-Primary commercial: **30 seconds**. Architecture supports 15, 20, 30 seconds. Main marketed product is 30 seconds.
+Primary commercial: **30 seconds**. Architecture supports 10, 15, 20, 30 seconds. Main marketed product is 30 seconds.
 
 ---
 
@@ -1167,7 +1167,7 @@ Initial provider: Seedance 2.5 via reAPI.
 
 Target model: `doubao-seedance-2.5-face`
 
-Required production settings: `resolution = 480p`, `duration = 30 seconds`, `generate_audio = true`, `size = explicit customer format`.
+Required production settings: `resolution = 480p`, `duration` from the chosen length (10, 15, 20, or 30 seconds; official range 4–30), `generate_audio = true`, `size = explicit customer format`.
 
 Use `image_urls` and `video_urls` according to current official API.
 

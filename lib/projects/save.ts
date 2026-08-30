@@ -6,6 +6,7 @@ import { businesses, projects } from "@/lib/db/schema";
 import { newId } from "@/lib/id";
 import {
   DEFAULT_DURATION,
+  DURATION_CHOICE,
   isAdStyle,
   isAdvertisingType,
   isAspectRatio,
@@ -111,7 +112,7 @@ export async function updateDraftBrief(
     throw new Error("Choose 9:16, 16:9, or 1:1. We do not pick the shape for you.");
   }
   if (patch.duration !== undefined && !isDuration(patch.duration)) {
-    throw new Error("Choose 15, 20, or 30 seconds.");
+    throw new Error(DURATION_CHOICE);
   }
 
   const toneJson =
@@ -175,7 +176,7 @@ export function briefReadyForConcept(input: {
     return { ready: false, reason: "Choose 9:16, 16:9, or 1:1. We do not pick the shape for you." };
   }
   if (!isDuration(input.duration)) {
-    return { ready: false, reason: "Choose 15, 20, or 30 seconds." };
+    return { ready: false, reason: DURATION_CHOICE };
   }
   return { ready: true };
 }

@@ -5,10 +5,13 @@ import {
   BACKGROUND_SIGNAGE_INSTRUCTION,
   CONTEXT_REFERENCE_MAP,
   IDENTITY_INSTRUCTION,
+  LOGO_REFERENCE_INSTRUCTION,
+  LOGO_REFERENCE_TAG,
   NO_GENERATED_TEXT_INSTRUCTION,
   NO_SMALL_CTA_INSTRUCTION,
   SCENE_NO_WRITING_LINE,
   buildSeedancePrompt,
+  contextReferenceTag,
 } from "./video/seedance/prompt-builder";
 import { PLAIN_SURFACES } from "@/lib/creative/on-screen-text";
 import type { ConceptScene } from "@/lib/ai/creative-director";
@@ -110,6 +113,34 @@ test("prompt builder always includes the no-generated-text instruction", () => {
   assert.match(prompt, /Aspect ratio: 16:9/);
   assert.match(prompt, /Duration: 15 seconds/);
   assert.doesNotMatch(prompt, /@Image4/);
+});
+
+test("prompt builder accepts 10 seconds and maps a brand mark before extras", () => {
+  const prompt = buildSeedancePrompt({
+    approvedScript: "Call us today.",
+    scenes: [
+      {
+        startSecond: 0,
+        endSecond: 10,
+        visual: "Presenter to camera.",
+        presenterAction: null,
+        camera: "Steady shot.",
+        dialogue: "Call us today.",
+        audio: null,
+      },
+    ],
+    aspectRatio: "9:16",
+    durationSeconds: 10,
+    style: "Social",
+    contextSlots: ["CONTEXT_1"],
+    includeLogo: true,
+  });
+  assert.match(prompt, /Duration: 10 seconds/);
+  assert.match(prompt, new RegExp(`${LOGO_REFERENCE_TAG} = brand mark`));
+  assert.match(prompt, /@Image5 = campaign context/);
+  assert.doesNotMatch(prompt, /@Image4 = campaign context/);
+  assert.equal(contextReferenceTag("CONTEXT_1", true), "@Image5");
+  assert.ok(prompt.includes(LOGO_REFERENCE_INSTRUCTION));
 });
 
 test("prompt builder will not rewrite dialogue that is not in the approved script", () => {

@@ -9,6 +9,7 @@ import { ObjectKeyError } from "@/lib/r2/keys";
 import { logoObjectKey } from "@/lib/r2/keys";
 import { deleteWorkspaceObject, getWorkspaceObject, putWorkspaceObject } from "@/lib/r2/bucket";
 import { getBrandLogoAsset } from "@/lib/businesses/queries";
+import { FIXTURE_IMAGE_MIME, FIXTURE_JPEG } from "@/lib/providers/video/fixture";
 
 async function insertPerson(db: ReturnType<typeof createDb>, email: string, name: string) {
   const id = newId();
@@ -60,16 +61,16 @@ test("logo round-trip stores bytes in R2 and metadata only in D1", async (t) => 
 
   const objectId = newId();
   const key = logoObjectKey(studio.workspaceId, studio.businessId, objectId);
-  const bytes = new TextEncoder().encode("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+  const bytes = FIXTURE_JPEG;
   await putWorkspaceObject(bucket, {
     workspaceId: studio.workspaceId,
     objectKey: key,
     body: bytes,
-    mimeType: "image/svg+xml",
+    mimeType: FIXTURE_IMAGE_MIME,
   });
   const stored = await getWorkspaceObject(bucket, studio.workspaceId, key);
   assert.ok(stored);
-  assert.equal(await stored.text(), "<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+  assert.equal((await stored.arrayBuffer()).byteLength, bytes.byteLength);
 
   await assert.rejects(
     () =>
@@ -77,7 +78,7 @@ test("logo round-trip stores bytes in R2 and metadata only in D1", async (t) => 
         workspaceId: studio.workspaceId,
         objectKey: logoObjectKey(other.workspaceId, other.businessId, newId()),
         body: bytes,
-        mimeType: "image/svg+xml",
+        mimeType: FIXTURE_IMAGE_MIME,
       }),
     (error: unknown) => error instanceof ObjectKeyError,
   );
@@ -87,13 +88,13 @@ test("logo round-trip stores bytes in R2 and metadata only in D1", async (t) => 
     businessId: studio.businessId,
     ownerUserId: owner,
     objectKey: key,
-    mimeType: "image/svg+xml",
+    mimeType: FIXTURE_IMAGE_MIME,
     sizeBytes: bytes.byteLength,
   });
   const logo = await getBrandLogoAsset(db, studio.businessId);
   assert.equal(logo?.assetId, completed.assetId);
   assert.equal(logo?.r2ObjectKey, key);
-  assert.equal(logo?.mimeType, "image/svg+xml");
+  assert.equal(logo?.mimeType, FIXTURE_IMAGE_MIME);
 
   await deleteWorkspaceObject(bucket, studio.workspaceId, key);
 });

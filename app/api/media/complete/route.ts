@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { fromCaught, jsonError } from "@/lib/api/http";
 import { requireStudioLibraryWrite } from "@/lib/api/media";
 import { completeLibraryAsset } from "@/lib/media/complete";
-import { libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
+import { libraryFormatError, libraryMaxBytes, libraryTooLargeMessage, normalizeLibraryMime } from "@/lib/media/mime";
 import { parseLibraryRole } from "@/lib/media/slots";
 import { getMediaBucket, headWorkspaceObject } from "@/lib/r2/bucket";
 import { assertLibraryObjectKey } from "@/lib/r2/keys";
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const objectKey = String(body.objectKey ?? "");
     const sizeBytes = Number(body.sizeBytes ?? 0);
     if (!mimeType) {
-      return jsonError("That file type is not allowed.", 400);
+      return jsonError(libraryFormatError(role), 400);
     }
     assertLibraryObjectKey(objectKey, ctx.workspaceId, ctx.businessId, role);
     if (!Number.isFinite(sizeBytes) || sizeBytes <= 0 || sizeBytes > libraryMaxBytes(mimeType)) {

@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (studio wizard)
+Last updated: 2026-08-30 (logo PNG JPEG WebP only)
 
 ## Foundation
 - [x] Next.js
@@ -617,6 +617,14 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — Logo files are PNG, JPEG, or WebP only
+
+Brand and library logo uploads no longer accept SVG (or GIF, PDF, or any other type). The file picker, signed PUT, binding PUT, complete, and byte sniff all reject anything except PNG, JPEG, and WebP. Those files are sent as the filming brand mark. Laptop promoted Worker `cineyou` `3068741a-e4e6-4b2e-ae80-e1113128420c` (tag `logo-png-only`) at 100%. Branding container not rebuilt.
+
+### 2026-08-30 — Chosen length and logo as filming reference
+
+Studio lengths are 10, 15, 20, or 30 seconds. Filming now sends that integer as official `duration` (range 4–30). It no longer hardcodes 30. A PNG, JPEG, or WebP brand logo is signed into `image_urls` after the three identity photos (`@Image4`); extras shift to `@Image5–10`. The filming prompt tells the job to show that exact mark and not invent letters. Laptop promoted Worker `cineyou` `b1a0b29d-c573-4f2a-8f41-59c5aea67445` (tag `filming-duration-logo`) at 100% on https://production30.thewellmedia.com. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`.
 
 ### 2026-08-30 — Choose references for each advert
 

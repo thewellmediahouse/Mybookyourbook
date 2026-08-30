@@ -32,8 +32,8 @@ const FACTS = [
   },
   {
     icon: HOME_ICONS.duration,
-    title: "15s, 20s or 30s",
-    body: "You choose the length. The main commercial we produce is 30 seconds.",
+    title: "10s, 15s, 20s or 30s",
+    body: "You choose the length. We film the length you pick.",
   },
 ] as const;
 

@@ -402,7 +402,7 @@ export function CreateWizard({
                 </button>
               ))}
             </div>
-            <p className="mt-2 text-sm text-muted">The main commercial we produce is 30 seconds.</p>
+            <p className="mt-2 text-sm text-muted">We film the length you pick.</p>
           </fieldset>
         </section>
       ) : null}

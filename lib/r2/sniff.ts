@@ -18,11 +18,6 @@ export function looksLikeWebp(bytes: Uint8Array) {
   return riff === "RIFF" && webp === "WEBP";
 }
 
-export function looksLikeSvg(bytes: Uint8Array) {
-  const head = new TextDecoder("utf-8", { fatal: false }).decode(bytes.slice(0, 256));
-  return /<svg[\s>]/i.test(head) || (/<\?xml/i.test(head) && /<svg[\s>]/i.test(head));
-}
-
 export function assertAllowedUploadBytes(bytes: Uint8Array, mimeType: string) {
   if (mimeType === "image/png" && looksLikePng(bytes)) {
     return;
@@ -31,9 +26,6 @@ export function assertAllowedUploadBytes(bytes: Uint8Array, mimeType: string) {
     return;
   }
   if (mimeType === "image/webp" && looksLikeWebp(bytes)) {
-    return;
-  }
-  if (mimeType === "image/svg+xml" && looksLikeSvg(bytes)) {
     return;
   }
   if (mimeType.startsWith("video/")) {

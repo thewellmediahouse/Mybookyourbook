@@ -5,7 +5,7 @@ import { completeLogoAsset } from "@/lib/businesses/logo";
 import { getDb } from "@/lib/db/client";
 import { getMediaBucket, headWorkspaceObject } from "@/lib/r2/bucket";
 import { assertLogoObjectKey } from "@/lib/r2/keys";
-import { LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
+import { LOGO_FORMAT_ERROR, LOGO_MAX_BYTES, normalizeLogoMime } from "@/lib/r2/mime";
 import { queueObjectCleanups } from "@/lib/security/cleanup";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +26,7 @@ export async function POST(
     const objectKey = String(body.objectKey ?? "");
     const sizeBytes = Number(body.sizeBytes ?? 0);
     if (!mimeType) {
-      return jsonError("Use a PNG, JPEG, WebP, or SVG logo.", 400);
+      return jsonError(LOGO_FORMAT_ERROR, 400);
     }
     assertLogoObjectKey(objectKey, editor.workspace.id, businessId);
     if (!Number.isFinite(sizeBytes) || sizeBytes <= 0 || sizeBytes > LOGO_MAX_BYTES) {

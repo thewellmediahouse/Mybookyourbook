@@ -1,12 +1,19 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
+import { getBrandLogoAsset } from "@/lib/businesses/queries";
 import { creativeVersions } from "@/lib/db/schema";
 import { ensureFilmingTextBan } from "@/lib/creative/on-screen-text";
+import { isReapiReferenceImageMime } from "@/lib/providers/video/seedance";
 import { buildSeedancePrompt } from "@/lib/providers/video/seedance/prompt-builder";
 import { CONTEXT_SLOTS } from "@/lib/projects/brief";
 import { getProjectBrief } from "@/lib/projects/queries";
 import { listProjectReferenceSlots } from "@/lib/projects/references";
 import { parseScenesJson } from "./public";
+
+export async function filmingIncludeLogo(db: Db, businessId: string): Promise<boolean> {
+  const logo = await getBrandLogoAsset(db, businessId);
+  return isReapiReferenceImageMime(logo?.mimeType);
+}
 
 export async function buildApprovedFilmingPrompt(
   db: Db,
@@ -17,6 +24,7 @@ export async function buildApprovedFilmingPrompt(
     aspectRatio: string;
     durationSeconds: number;
     style: string;
+    includeLogo?: boolean;
   },
 ) {
   const refs = await listProjectReferenceSlots(db, input.projectId);
@@ -30,6 +38,7 @@ export async function buildApprovedFilmingPrompt(
     durationSeconds: input.durationSeconds,
     style: input.style,
     contextSlots: [...contextSlots],
+    includeLogo: input.includeLogo,
   });
 }
 
@@ -60,6 +69,7 @@ export async function resolveFilmingPrompt(
         aspectRatio: brief.aspectRatio,
         durationSeconds: brief.duration,
         style: brief.style,
+        includeLogo: await filmingIncludeLogo(db, brief.businessId),
       });
     } catch {
       if (stored) {

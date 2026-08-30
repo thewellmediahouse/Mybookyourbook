@@ -8,7 +8,13 @@ import { uploadSignedFile } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
 import { formatStudioDate } from "@/lib/dashboard/format";
 import { BRAND_LOGO_CAPTION, BRAND_LOGO_CHANGE, BRAND_LOGO_HINT } from "@/lib/media/copy";
-import { libraryAcceptAttribute, libraryMaxBytes, libraryTooLargeMessage } from "@/lib/media/mime";
+import {
+  libraryAcceptAttribute,
+  libraryFormatError,
+  libraryMaxBytes,
+  libraryTooLargeMessage,
+  normalizeLibraryMime,
+} from "@/lib/media/mime";
 import { libraryRoleLabel } from "@/lib/media/slots";
 import type { LibraryRole } from "@/lib/r2/keys";
 
@@ -73,6 +79,10 @@ function LibraryUploader({
     setError(null);
     setMessage(null);
     if (!file) {
+      return;
+    }
+    if (!normalizeLibraryMime(file.type, role)) {
+      setError(libraryFormatError(role));
       return;
     }
     if (file.size > libraryMaxBytes(file.type || "image/jpeg")) {

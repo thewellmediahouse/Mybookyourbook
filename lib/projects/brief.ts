@@ -64,8 +64,9 @@ export const ASPECT_RATIOS = [
   { value: "1:1", label: "1:1 Square" },
 ] as const;
 
-export const DURATIONS = [15, 20, 30] as const;
+export const DURATIONS = [10, 15, 20, 30] as const;
 export const DEFAULT_DURATION = 30;
+export const DURATION_CHOICE = "Choose 10, 15, 20, or 30 seconds.";
 export const CONTEXT_REFERENCE_LIMIT = 6;
 
 export const CONTEXT_SLOTS = [

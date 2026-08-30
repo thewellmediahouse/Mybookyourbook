@@ -1,12 +1,18 @@
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import { getAuthBaseUrl } from "@/lib/auth/env";
+import { getBrandLogoAsset } from "@/lib/businesses/queries";
 import { assets, identityAssets, presenterIdentities, projects } from "@/lib/db/schema";
 import { normalizeIdentityVideoMime } from "@/lib/identity/mime";
 import { PHOTO_SLOTS } from "@/lib/identity/slots";
 import { listProjectReferenceSlots } from "@/lib/projects/references";
 import { CONTEXT_SLOTS } from "@/lib/projects/brief";
-import type { VideoSubmitInput } from "@/lib/providers/video/seedance";
+import {
+  isReapiReferenceImageMime,
+  officialFilmingDuration,
+  SEEDANCE_DURATION,
+  type VideoSubmitInput,
+} from "@/lib/providers/video/seedance";
 import { readR2S3Config } from "@/lib/r2/env";
 import { canUseProviderHrefs, providerObjectHref } from "@/lib/r2/provider-href";
 import { signR2Request } from "@/lib/r2/sign";
@@ -46,13 +52,23 @@ export async function buildVideoSubmitInput(
   },
 ): Promise<VideoSubmitInput> {
   const [project] = await db
-    .select({ aspectRatio: projects.aspectRatio })
+    .select({
+      aspectRatio: projects.aspectRatio,
+      duration: projects.duration,
+      businessId: projects.businessId,
+    })
     .from(projects)
     .where(eq(projects.id, input.projectId))
     .limit(1);
   const aspectRatio = project?.aspectRatio?.trim() || "";
   if (!aspectRatio) {
     throw new Error("ASPECT_MISSING");
+  }
+  let durationSeconds: number = SEEDANCE_DURATION;
+  try {
+    durationSeconds = officialFilmingDuration(project?.duration ?? SEEDANCE_DURATION);
+  } catch {
+    durationSeconds = SEEDANCE_DURATION;
   }
 
   const imageUrls: string[] = [];
@@ -95,6 +111,13 @@ export async function buildVideoSubmitInput(
     }
     videoUrls.push(await input.signGetUrl(video.objectKey));
 
+    if (project?.businessId) {
+      const logo = await getBrandLogoAsset(db, project.businessId);
+      if (logo?.r2ObjectKey && isReapiReferenceImageMime(logo.mimeType)) {
+        imageUrls.push(await input.signGetUrl(logo.r2ObjectKey));
+      }
+    }
+
     const context = await listProjectReferenceSlots(db, input.projectId);
     const bySlot = new Map(context.map((row) => [row.mappingSlot, row.r2ObjectKey]));
     for (const slot of CONTEXT_SLOTS) {
@@ -110,7 +133,7 @@ export async function buildVideoSubmitInput(
   return {
     prompt: input.prompt,
     aspectRatio,
-    durationSeconds: 30,
+    durationSeconds,
     imageUrls,
     videoUrls,
   };

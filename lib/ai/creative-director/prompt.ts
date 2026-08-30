@@ -15,7 +15,7 @@ export function systemPrompt(): string {
     "Do not describe signs, posters, captions, subtitles, lower thirds, end cards, title cards, buttons, badges, menus, price tags, packaging type, phone or laptop screens with readable apps, handwritten boards, or any small or large on-screen call to action.",
     "The camera cannot spell. Small written text and small call-to-action graphics come out as unreadable marks.",
     "Scene visuals are people, place, light, and action only. Blank or out-of-focus any surface that would normally show letters.",
-    "The presenter says the call to action. Exact logos and written details are added later, never filmed.",
+    "The presenter says the call to action. A supplied brand mark may appear as a graphic. Do not invent letters or a new logo. Exact written details are added later.",
   ].join(" ");
 }
 

@@ -7,9 +7,13 @@ export { createMockVideoProvider } from "./mock";
 export { createReapiVideoProvider } from "./reapi";
 export {
   seedanceSubmitBody,
+  officialFilmingDuration,
+  isReapiReferenceImageMime,
   SEEDANCE_MODEL_ID,
   SEEDANCE_RESOLUTION,
   SEEDANCE_DURATION,
+  SEEDANCE_DURATION_MIN,
+  SEEDANCE_DURATION_MAX,
   REAPI_API_BASE,
   REAPI_VIDEOS_URL,
 } from "./payload";

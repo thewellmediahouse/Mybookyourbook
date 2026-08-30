@@ -83,7 +83,7 @@ export const HOME_HERO = {
   primary: { href: "/signup", label: "Create a video that sells" },
   secondary: { href: "/examples", label: "See real examples" },
   headerCta: "Create my first video",
-  trust: ["AI-written sales script", "Ready for social media", "15s, 20s or 30s"] as const,
+  trust: ["AI-written sales script", "Ready for social media", "10s, 15s, 20s or 30s"] as const,
   chips: [
     { icon: HOME_ICONS.salesScript, label: "Sales script" },
     { icon: HOME_ICONS.duration, label: "30 sec" },

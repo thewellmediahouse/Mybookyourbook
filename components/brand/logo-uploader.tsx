@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MediaPreview, privateAssetSrc } from "@/components/media/preview";
 import { putWithProgress, type UploadPlan } from "@/components/media/upload";
 import { Button } from "@/components/ui/button";
-import { LOGO_MAX_BYTES, logoAcceptAttribute } from "@/lib/r2/mime";
+import { LOGO_FORMAT_ERROR, LOGO_MAX_BYTES, isAllowedLogoMime, logoAcceptAttribute } from "@/lib/r2/mime";
 
 export function LogoUploader({
   businessId,
@@ -27,6 +27,10 @@ export function LogoUploader({
     setError(null);
     setMessage(null);
     if (!file) {
+      return;
+    }
+    if (!isAllowedLogoMime(file.type)) {
+      setError(LOGO_FORMAT_ERROR);
       return;
     }
     if (file.size > LOGO_MAX_BYTES) {
@@ -134,6 +138,7 @@ export function LogoUploader({
       ) : (
         <p className="mt-3 text-sm text-muted">Only studio owners and admins can change the logo.</p>
       )}
+      <p className="mt-3 text-sm text-muted">PNG, JPEG, or WebP only. We use this picture when we film.</p>
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
       {message ? <p className="mt-3 text-sm text-success">{message}</p> : null}
     </div>
