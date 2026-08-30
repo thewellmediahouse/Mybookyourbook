@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (OpenNext was calling npm run build recursively)
+Last updated: 2026-08-30 (studio Worker 444c56b4 live)
 
 ## Foundation
 - [x] Next.js
@@ -579,6 +579,10 @@ Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `51
 Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-seedance-2.5-face` when `REAPI_API_KEY` is set. `AI_PROVIDER_MODE` stays `mock`, so Enhancing Your Footage and Adding Your Brand do not call Topaz or the branding container. Mock enhancement now keeps the filmed file instead of swapping in the development fixture. Missing `REAPI_API_KEY` still fails with “Live filming is not connected yet.” and does not silently mock.
 
 Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — Studio is live on cineyou 444c56b4
+
+GitHub Deploy Worker failed on `wrangler deploy` after OpenNext succeeded: leftover `.open-next/cloudflare/next-env.mjs` had duplicate `production` / `development` / `test` exports from the recursive build. A clean `npx opennextjs-cloudflare build` then `npm run cf:deploy` from this laptop uploaded Worker `cineyou` version `444c56b4-7592-4cb3-8cc8-e8252b268cd2` to https://production30.thewellmedia.com. Branding container was not rebuilt (`--containers-rollout none`).
 
 ### 2026-08-30 — OpenNext was calling itself
 
