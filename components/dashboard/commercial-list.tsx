@@ -21,11 +21,9 @@ export function CommercialList({
           <li key={item.id}>
             <Link
               href={
-                isCreateWizardStatus(item.status)
+                isCreateWizardStatus(item.status) || isInProductionStatus(item.status)
                   ? `/dashboard/create?project=${item.id}`
-                  : isInProductionStatus(item.status)
-                    ? `/dashboard/commercials/${item.id}/production`
-                    : `/dashboard/commercials/${item.id}`
+                  : `/dashboard/commercials/${item.id}`
               }
               className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-accent sm:flex-row sm:items-center"
             >

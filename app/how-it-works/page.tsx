@@ -11,7 +11,7 @@ import { HOME_ICONS } from "@/lib/site/home";
 export const metadata: Metadata = {
   title: "How it works",
   description:
-    "Tell Production30 about your business, show us who you are, approve the concept, and receive a Full-HD commercial.",
+    "Tell Production30 about your business, show us who you are, approve the concept, and receive a 30-second commercial starring you.",
 };
 
 const STEP_ICONS = [HOME_ICONS.offer, HOME_ICONS.play, HOME_ICONS.salesScript, HOME_ICONS.socialReady] as const;

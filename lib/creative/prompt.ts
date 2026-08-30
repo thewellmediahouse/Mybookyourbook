@@ -1,6 +1,10 @@
+import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
+import { creativeVersions } from "@/lib/db/schema";
+import { ensureFilmingTextBan } from "@/lib/creative/on-screen-text";
 import { buildSeedancePrompt } from "@/lib/providers/video/seedance/prompt-builder";
 import { CONTEXT_SLOTS } from "@/lib/projects/brief";
+import { getProjectBrief } from "@/lib/projects/queries";
 import { listProjectReferenceSlots } from "@/lib/projects/references";
 import { parseScenesJson } from "./public";
 
@@ -27,4 +31,44 @@ export async function buildApprovedFilmingPrompt(
     style: input.style,
     contextSlots: [...contextSlots],
   });
+}
+
+/** Rebuild with the current no-writing rules so older approved concepts cannot film small text. */
+export async function resolveFilmingPrompt(
+  db: Db,
+  input: { projectId: string; creativeVersionId: string },
+): Promise<string> {
+  const [version] = await db
+    .select({
+      approvedScript: creativeVersions.approvedScript,
+      spokenScript: creativeVersions.spokenScript,
+      scenesJson: creativeVersions.scenesJson,
+      seedancePrompt: creativeVersions.seedancePrompt,
+    })
+    .from(creativeVersions)
+    .where(eq(creativeVersions.id, input.creativeVersionId))
+    .limit(1);
+  const stored = version?.seedancePrompt?.trim() ?? "";
+  const approvedScript = version?.approvedScript?.trim() || version?.spokenScript?.trim() || "";
+  const brief = await getProjectBrief(db, input.projectId);
+  if (approvedScript && brief && version?.scenesJson) {
+    try {
+      return await buildApprovedFilmingPrompt(db, {
+        projectId: input.projectId,
+        approvedScript,
+        scenesJson: version.scenesJson,
+        aspectRatio: brief.aspectRatio,
+        durationSeconds: brief.duration,
+        style: brief.style,
+      });
+    } catch {
+      if (stored) {
+        return ensureFilmingTextBan(stored);
+      }
+    }
+  }
+  if (stored) {
+    return ensureFilmingTextBan(stored);
+  }
+  throw new Error("PROMPT_MISSING");
 }

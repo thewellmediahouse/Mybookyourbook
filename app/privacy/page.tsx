@@ -102,7 +102,7 @@ export default function PrivacyPage() {
       </p>
       <ul className="list-disc space-y-2 pl-5">
         <li>a video production partner (filming your commercial from the approved concept);</li>
-        <li>a footage enhancement partner (bringing the film up to Full HD);</li>
+        <li>a footage finishing partner;</li>
         <li>a finishing step that adds your brand details;</li>
         <li>cloud hosting and private storage;</li>
         <li>a payment provider;</li>

@@ -17,7 +17,7 @@ export const HOW_IT_WORKS_STEPS = [
   {
     number: "04",
     title: "Receive Your Advert",
-    body: "Your commercial is produced, enhanced, branded and delivered in Full HD.",
+    body: "Your commercial is produced, branded, and delivered ready to post.",
   },
 ] as const;
 
@@ -35,8 +35,8 @@ export const VALUE_PROPS = [
     body: "Not just random video generation.",
   },
   {
-    title: "Full-HD Delivery",
-    body: "Your footage is produced efficiently and professionally enhanced before delivery.",
+    title: "Ready to post",
+    body: "A 30-second commercial starring you, finished and ready for your social channels.",
   },
   {
     title: "Accurate Branding",
@@ -56,7 +56,7 @@ export const FAQS = [
   },
   {
     question: "What quality is delivered?",
-    answer: "Full HD 1080p after enhancement and finishing. Source filming is produced efficiently, then finished for delivery.",
+    answer: "A 30-second commercial starring you, ready to post on your social channels.",
   },
   {
     question: "Can I make another version?",

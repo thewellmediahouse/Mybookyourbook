@@ -163,11 +163,11 @@ export function ConceptPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: activeProjectId }),
       });
-      const payload = (await response.json()) as { productionPath?: string; error?: string };
-      if (!response.ok || !payload.productionPath) {
+      const payload = (await response.json()) as { projectId?: string; error?: string };
+      if (!response.ok) {
         throw new Error(payload.error || "We couldn't start filming.");
       }
-      window.location.href = payload.productionPath;
+      window.location.href = "/dashboard/create?new=1";
     } catch (caught) {
       onError(caught instanceof Error ? caught.message : "We couldn't start filming.");
       setPending("idle");

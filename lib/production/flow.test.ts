@@ -13,6 +13,7 @@ import {
   creditTransactions,
   notifications,
   productionEvents,
+  productionJobs,
   profiles,
   projects,
   user,
@@ -255,7 +256,7 @@ test("mock production spends one credit, writes R2, and resumes memoized steps",
   assert.equal(generationBeforeCreate, true);
   assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
   assert.equal(submits, 1);
-  assert.match(started.productionPath, /\/production$/);
+  assert.equal(started.productionPath, "/dashboard/create");
 
   const job = await getJobById(db, started.jobId);
   assert.equal(job?.status, "COMPLETE");
@@ -500,4 +501,79 @@ test("Topaz, branding, and R2 save failures refund once without vendor names", a
     );
     assert.equal(await getWalletBalance(db, studio.workspaceId), before);
   }
+});
+
+test("retry of a filmed job downloads the existing task and does not submit again", async (t) => {
+  const { getPlatformProxy } = await import("wrangler");
+  const proxy = await getPlatformProxy({ persist: true });
+  t.after(async () => {
+    await proxy.dispose();
+  });
+  const db = createDb(proxy.env.DB as D1Database);
+  const bucket = proxy.env.MEDIA_BUCKET as R2Bucket;
+  const stamp = Date.now() + 11;
+  const owner = await insertPerson(db, `reuse.${stamp}@cineyou.test`, "Owner Reuse");
+  const studio = await createWorkspaceForOwner(db, {
+    ownerUserId: owner,
+    name: `Reuse ${stamp}`,
+    type: "BUSINESS",
+    country: "ZA",
+    business: { name: `Reuse Films ${stamp}`, industry: "law firm" },
+  });
+  await db
+    .update(businesses)
+    .set({ industry: "law firm" })
+    .where(eq(businesses.id, studio.businessId));
+  await seedIdentity(db, bucket, studio.workspaceId, owner);
+  await grantCredits(db, {
+    workspaceId: studio.workspaceId,
+    amount: 1,
+    type: "PROMOTION",
+    idempotencyKey: `grant-${studio.workspaceId}-reuse`,
+  });
+  const projectId = await approveProject(db, {
+    owner,
+    workspaceId: studio.workspaceId,
+    businessId: studio.businessId,
+    title: "Reuse filmed take",
+  });
+  const existingTaskId = "task_01a053c9f4ae7049b057a41309c1e02c";
+  let submits = 0;
+  const { FIXTURE_MP4, FIXTURE_VIDEO_MIME } = await import("@/lib/providers/video/fixture");
+  const video = {
+    submit: async () => {
+      submits += 1;
+      throw new Error("must not submit a second filming job");
+    },
+    getStatus: async (id: string) => ({ id, status: "complete" as const }),
+    getResult: async (id: string) => ({ id, bytes: FIXTURE_MP4, mimeType: FIXTURE_VIDEO_MIME }),
+  };
+  const deps: PipelineDeps = {
+    db,
+    bucket,
+    video,
+    upscale: createMockUpscaleProvider(),
+    branding: createMockBrandingProvider(),
+  };
+  const started = await startProduction(
+    db,
+    { projectId, workspaceId: studio.workspaceId, userId: owner },
+    {
+      ...deps,
+      startWorkflow: async (params) => {
+        await db
+          .update(productionJobs)
+          .set({ videoProviderJobId: existingTaskId, videoProvider: "seedance" })
+          .where(eq(productionJobs.id, params.jobId));
+        await runCommercialProduction(deps, params, memoStep());
+        return { id: params.jobId };
+      },
+    },
+  );
+  assert.equal(submits, 0);
+  const job = await getJobById(db, started.jobId);
+  assert.equal(job?.status, "COMPLETE");
+  assert.equal(job?.videoProviderJobId, existingTaskId);
+  assert.ok(job?.sourceAssetId);
+  assert.ok(job?.finalAssetId);
 });

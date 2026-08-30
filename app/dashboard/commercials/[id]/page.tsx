@@ -13,7 +13,7 @@ import {
 import { getProjectThumbnailAssetId } from "@/lib/dashboard/summary";
 import { getDb } from "@/lib/db/client";
 import { businesses } from "@/lib/db/schema";
-import { DOWNLOAD_1080P } from "@/lib/production/copy";
+import { DOWNLOAD_COMMERCIAL } from "@/lib/production/copy";
 import { getPlayableFinalJob } from "@/lib/production/queries";
 import { isCreateWizardStatus, isInProductionStatus, projectStatusLabel } from "@/lib/projects/status";
 import { eq } from "drizzle-orm";
@@ -97,7 +97,7 @@ export default async function CommercialDetailPage({
       <div className="mt-8 flex flex-wrap gap-3">
         {finalAssetId ? (
           <Button asChild>
-            <a href={`/api/assets/${finalAssetId}?download=1`}>{DOWNLOAD_1080P}</a>
+            <a href={`/api/assets/${finalAssetId}?download=1`}>{DOWNLOAD_COMMERCIAL}</a>
           </Button>
         ) : null}
         {isCreateWizardStatus(access.project.status) ? (
@@ -109,11 +109,11 @@ export default async function CommercialDetailPage({
         ) : null}
         {isInProductionStatus(access.project.status) ? (
           <Button asChild>
-            <Link href={`/dashboard/commercials/${access.project.id}/production`}>View production</Link>
+            <Link href="/dashboard/create">View in studio</Link>
           </Button>
         ) : null}
         <Button asChild variant="outline">
-          <Link href="/dashboard/commercials">Back to commercials</Link>
+          <Link href="/dashboard/create">Back to studio</Link>
         </Button>
       </div>
       <CommercialActions

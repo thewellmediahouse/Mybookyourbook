@@ -1,5 +1,5 @@
 export function commercialDownloadFilename(businessName: string, campaignTitle: string): string {
-  return `production30-${slugPart(businessName, "studio")}-${slugPart(campaignTitle, "commercial")}-1080p.mp4`;
+  return `production30-${slugPart(businessName, "studio")}-${slugPart(campaignTitle, "commercial")}.mp4`;
 }
 
 export function contentDisposition(kind: "inline" | "attachment", filename?: string): string {
@@ -21,7 +21,7 @@ export function finalCommercialFilename(input: {
     return commercialDownloadFilename(input.businessName ?? "", input.campaignTitle ?? "");
   }
   if (input.mimeType.startsWith("video/")) {
-    return "production30-commercial-1080p.mp4";
+    return "production30-commercial.mp4";
   }
   return undefined;
 }

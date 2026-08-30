@@ -10,7 +10,6 @@ import { LogoUploader } from "@/components/brand/logo-uploader";
 import { DisabledAction } from "@/components/dashboard/disabled-action";
 import { IdentityCapture } from "@/components/identity/identity-capture";
 import { IdentityConsentForm } from "@/components/identity/consent-form";
-import { ProductionProgressBar } from "@/components/production/progress-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -239,11 +238,13 @@ export function SimpleCreateWizard({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ projectId: brief.projectId }),
       });
-      const payload = (await response.json()) as { productionPath?: string; error?: string };
-      if (!response.ok || !payload.productionPath) {
+      const payload = (await response.json()) as { projectId?: string; error?: string };
+      if (!response.ok) {
         throw new Error(payload.error || "We couldn't start filming.");
       }
-      window.location.href = payload.productionPath;
+      router.replace("/dashboard/create?new=1");
+      router.refresh();
+      setProducing(false);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "We couldn't start filming.");
       setProducing(false);
@@ -253,7 +254,7 @@ export function SimpleCreateWizard({
   const recommended = recommendedAspectRatio(brief.platform);
 
   return (
-    <div className="mt-10">
+    <div>
       <ol className="flex flex-wrap gap-2 text-xs tracking-[0.18em] text-muted">
         {SIMPLE_WIZARD_STEPS.map((item, index) => (
           <li key={item.id} className={index === step ? "text-accent" : undefined}>
@@ -456,10 +457,9 @@ export function SimpleCreateWizard({
         <section className="mt-8 flex flex-col gap-6">
           <h2 className="font-display text-2xl text-foreground">Generate video</h2>
           <p className="text-muted">
-            This uses 1 Ad Credit. You can leave the page after it starts. We will keep showing
-            progress until the commercial is ready.
+            This uses 1 Ad Credit. A loading card appears on the right and becomes your video when
+            filming finishes.
           </p>
-          <ProductionProgressBar jobStatus={null} />
           {!approved ? (
             <p className="text-muted">Approve the script first, then we can film.</p>
           ) : credits < 1 ? (

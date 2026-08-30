@@ -1,4 +1,9 @@
 import { z } from "zod";
+import {
+  NO_GENERATED_TEXT_INSTRUCTION,
+  neutralizeOnScreenWriting,
+  sanitizeFilmedSceneFields,
+} from "@/lib/creative/on-screen-text";
 import type { CreativeConcept } from "./types";
 
 const sceneSchema = z.object({
@@ -25,12 +30,17 @@ export function parseCreativeConcept(value: unknown): CreativeConcept {
   const parsed = creativeConceptSchema.parse(value);
   return {
     ...parsed,
-    scenes: parsed.scenes.map((scene) => ({
-      ...scene,
-      presenterAction: scene.presenterAction || null,
-      dialogue: scene.dialogue || null,
-      audio: scene.audio || null,
-    })),
+    generationPrompt: [neutralizeOnScreenWriting(parsed.generationPrompt), NO_GENERATED_TEXT_INSTRUCTION]
+      .filter(Boolean)
+      .join("\n\n"),
+    scenes: parsed.scenes.map((scene) =>
+      sanitizeFilmedSceneFields({
+        ...scene,
+        presenterAction: scene.presenterAction || null,
+        dialogue: scene.dialogue || null,
+        audio: scene.audio || null,
+      }),
+    ),
   };
 }
 
@@ -50,9 +60,19 @@ export const CREATIVE_CONCEPT_JSON_SCHEMA = {
     title: { type: "string" },
     hook: { type: "string" },
     strategy: { type: "string" },
-    spokenScript: { type: "string" },
-    callToAction: { type: "string" },
-    generationPrompt: { type: "string" },
+    spokenScript: {
+      type: "string",
+      description: "Full spoken wording the presenter says, including the call to action in speech.",
+    },
+    callToAction: {
+      type: "string",
+      description: "Spoken customer action only. Never an on-screen button, caption, or graphic.",
+    },
+    generationPrompt: {
+      type: "string",
+      description:
+        "Internal filming brief. People, place, light, and action only. Never ask for writing, signs with words, or a visual call to action.",
+    },
     scenes: {
       type: "array",
       minItems: 1,
@@ -71,7 +91,11 @@ export const CREATIVE_CONCEPT_JSON_SCHEMA = {
         properties: {
           startSecond: { type: "number" },
           endSecond: { type: "number" },
-          visual: { type: "string" },
+          visual: {
+            type: "string",
+            description:
+              "People, place, light, and action only. Never describe writing, signs with words, on-screen text, buttons, captions, or a visual call to action.",
+          },
           presenterAction: { type: ["string", "null"] },
           camera: { type: "string" },
           dialogue: { type: ["string", "null"] },

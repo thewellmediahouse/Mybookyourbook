@@ -7,23 +7,23 @@ import {
   finalCommercialFilename,
 } from "./filename";
 
-test("download filename is production30-business-campaign-1080p and strips unsafe characters", () => {
+test("download filename is production30-business-campaign and strips unsafe characters", () => {
   assert.equal(
     commercialDownloadFilename("Harbour Tours", "Summer Harbour"),
-    "production30-harbour-tours-summer-harbour-1080p.mp4",
+    "production30-harbour-tours-summer-harbour.mp4",
   );
   assert.equal(
     commercialDownloadFilename("A / B * Co?", "../secret"),
-    "production30-a-b-co-secret-1080p.mp4",
+    "production30-a-b-co-secret.mp4",
   );
-  assert.equal(commercialDownloadFilename("   ", ""), "production30-studio-commercial-1080p.mp4");
+  assert.equal(commercialDownloadFilename("   ", ""), "production30-studio-commercial.mp4");
 });
 
 test("download uses attachment Content-Disposition with the production30 filename", () => {
   const filename = commercialDownloadFilename("Harbour Tours", "Summer Harbour");
   assert.equal(
     contentDisposition("attachment", filename),
-    'attachment; filename="production30-harbour-tours-summer-harbour-1080p.mp4"',
+    'attachment; filename="production30-harbour-tours-summer-harbour.mp4"',
   );
   assert.equal(
     finalCommercialFilename({

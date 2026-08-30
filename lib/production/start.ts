@@ -127,7 +127,7 @@ export async function startProduction(
     throw error;
   }
 
-  return { jobId, attemptId, productionPath: `/dashboard/commercials/${input.projectId}/production` };
+  return { jobId, attemptId, projectId: input.projectId, productionPath: "/dashboard/create" };
 }
 
 export function inlineWorkflowStarter(deps: PipelineDeps): WorkflowStarter {

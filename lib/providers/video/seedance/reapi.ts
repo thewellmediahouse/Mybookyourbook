@@ -28,14 +28,18 @@ function taskId(payload: ReapiTaskResponse): string {
   return id || alt;
 }
 
-function mapTaskStatus(raw: string): ProviderStatus["status"] {
-  if (raw === "processing") {
-    return "processing";
-  }
-  if (raw === "completed") {
+function mapTaskStatus(raw: string, payload?: ReapiTaskResponse): ProviderStatus["status"] {
+  const status = raw.trim().toLowerCase();
+  if (status === "completed" || status === "complete" || status === "success" || status === "succeeded") {
     return "complete";
   }
-  return "failed";
+  if (status === "failed" || status === "error" || status === "canceled" || status === "cancelled") {
+    return "failed";
+  }
+  if (payload && firstHttpsVideoUrl(payload)) {
+    return "complete";
+  }
+  return "processing";
 }
 
 function firstHttpsVideoUrl(payload: ReapiTaskResponse): string {
@@ -92,7 +96,7 @@ export function createReapiVideoProvider(input: {
         throw new Error(CUSTOMER_UNAVAILABLE);
       }
       const raw = typeof payload.status === "string" ? payload.status : "processing";
-      const status = mapTaskStatus(raw);
+      const status = mapTaskStatus(raw, payload);
       if (status === "failed") {
         throw new Error(CUSTOMER_UNAVAILABLE);
       }
@@ -102,23 +106,24 @@ export function createReapiVideoProvider(input: {
     async getStatus(id: string): Promise<ProviderStatus> {
       try {
         const { httpStatus, payload } = await fetchTask(id);
-        if (httpStatus === 429) {
-          return { id, status: "processing" };
-        }
-        if (httpStatus !== 200) {
+        if (httpStatus === 401 || httpStatus === 403) {
           return { id, status: "failed", error: CUSTOMER_UNAVAILABLE };
         }
+        if (httpStatus === 429 || httpStatus !== 200) {
+          return { id, status: "processing" };
+        }
         const raw = typeof payload.status === "string" ? payload.status : "";
-        const status = mapTaskStatus(raw);
+        const status = mapTaskStatus(raw, payload);
         return { id, status, error: status === "failed" ? CUSTOMER_UNAVAILABLE : undefined };
       } catch {
-        return { id, status: "failed", error: CUSTOMER_UNAVAILABLE };
+        return { id, status: "processing" };
       }
     },
 
     async getResult(id: string): Promise<ProviderResult> {
       const { httpStatus, payload } = await fetchTask(id);
-      if (httpStatus !== 200 || mapTaskStatus(typeof payload.status === "string" ? payload.status : "") !== "complete") {
+      const raw = typeof payload.status === "string" ? payload.status : "";
+      if (httpStatus !== 200 || mapTaskStatus(raw, payload) !== "complete") {
         throw new Error(CUSTOMER_UNAVAILABLE);
       }
       const url = firstHttpsVideoUrl(payload);

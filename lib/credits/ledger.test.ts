@@ -14,6 +14,7 @@ import {
   refundTechnicalFailure,
   reserveGenerationCredit,
 } from "./ledger";
+import { reclaimRefundIfFilmingCharged } from "./filming-charge";
 
 async function insertPerson(db: ReturnType<typeof createDb>, email: string, name: string) {
   const id = newId();
@@ -147,13 +148,27 @@ test("technical refund returns once and a variation uses another credit", async 
   assert.equal(refundAgain.id, refund.id);
   assert.equal(await getWalletBalance(db, studio.workspaceId), 2);
 
+  const kept = await reclaimRefundIfFilmingCharged(db, {
+    workspaceId: studio.workspaceId,
+    generationIdempotencyKey: generationKey,
+  });
+  assert.ok(kept);
+  assert.equal(kept.amount, -1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+  const keptAgain = await reclaimRefundIfFilmingCharged(db, {
+    workspaceId: studio.workspaceId,
+    generationIdempotencyKey: generationKey,
+  });
+  assert.equal(keptAgain?.id, kept.id);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+
   const variation = await reserveGenerationCredit(db, {
     workspaceId: studio.workspaceId,
     projectId,
     attemptId: "job-2",
   });
   assert.notEqual(variation.id, first.id);
-  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
 
   await grantCredits(db, {
     workspaceId: studio.workspaceId,
@@ -161,7 +176,7 @@ test("technical refund returns once and a variation uses another credit", async 
     type: "PROMOTION",
     idempotencyKey: `grant-${studio.workspaceId}-2`,
   });
-  assert.equal(await getWalletBalance(db, studio.workspaceId), 1);
+  assert.equal(await getWalletBalance(db, studio.workspaceId), 0);
 });
 
 test("produce hold explains zero credits without spending", () => {

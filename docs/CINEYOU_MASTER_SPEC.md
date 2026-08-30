@@ -1125,15 +1125,21 @@ Then scene timing `0–5 seconds:` etc. Each scene describes: presenter, environ
 
 # SECTION AU — ABSOLUTE GENERATED TEXT RULE
 
-Every Seedance generation prompt must include:
+The camera cannot spell. Small writing and small call-to-action graphics become unreadable marks. Do not ask it to generate any letters.
 
-**Do not generate subtitles, captions, logos, prices, phone numbers, websites, labels, signs, interface text, banners, watermarks or other important readable written text. Do not invent written words. Important branding and written information will be applied accurately in post-production.**
+Every filming prompt must include:
 
-Where screens/signs appear:
+**Never generate any written characters — not large, not small, not decorative, not blurry, not in the background, and not as a call to action. No subtitles, captions, lower thirds, end cards, logos, prices, phone numbers, websites, labels, signs, buttons, interface text, banners, watermarks, posters, menus, packaging type, or handwritten notes. The presenter speaks the call to action. Branding and exact written information are added later, never filmed.**
 
-**Keep background signage non-prominent and avoid readable invented text.**
+Where a wall, window, screen, product, or shopfront would normally show writing:
 
-This is mandatory.
+**Keep it blank, turned away, covered, or fully out of focus so no letters can be read or guessed.**
+
+Also: **Do not film a small call to action, a tiny button, a badge, a lower-third, a title card, or any graphic with words.**
+
+Concept scenes must describe people, place, light, and action only. Spoken call to action is allowed. On-screen call to action is not.
+
+This is mandatory. Rebuild the filming prompt at produce time so older approved concepts pick up this rule.
 
 ---
 

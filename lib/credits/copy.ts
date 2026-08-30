@@ -3,6 +3,7 @@ export const NO_PRODUCTION_CREDITS =
 export const GENERATION_DESCRIPTION = "Filming your commercial";
 export const TECHNICAL_REFUND_DESCRIPTION =
   "This Ad Credit was returned because production could not be completed.";
+export const FILMING_CHARGED_DESCRIPTION = "Filming was completed, so this used your Ad Credit.";
 export const CREDIT_RETURNED = "We couldn't complete this production. Your Ad Credit has not been lost.";
 
 export function generationIdempotencyKey(projectId: string, attemptId: string): string {
@@ -11,6 +12,10 @@ export function generationIdempotencyKey(projectId: string, attemptId: string): 
 
 export function technicalRefundIdempotencyKey(generationKey: string): string {
   return `technical-refund:${generationKey}`;
+}
+
+export function filmingChargedIdempotencyKey(generationKey: string): string {
+  return `filming-charged:${generationKey}`;
 }
 
 export function creditTypeLabel(type: string): string {

@@ -6,8 +6,11 @@ import {
   CONTEXT_REFERENCE_MAP,
   IDENTITY_INSTRUCTION,
   NO_GENERATED_TEXT_INSTRUCTION,
+  NO_SMALL_CTA_INSTRUCTION,
+  SCENE_NO_WRITING_LINE,
   buildSeedancePrompt,
 } from "./video/seedance/prompt-builder";
+import { PLAIN_SURFACES } from "@/lib/creative/on-screen-text";
 import type { ConceptScene } from "@/lib/ai/creative-director";
 
 const scenes: ConceptScene[] = [
@@ -78,6 +81,9 @@ test("prompt builder maps identity, context, format, locked dialogue, and no-tex
   assert.ok(prompt.includes(IDENTITY_INSTRUCTION));
   assert.ok(prompt.includes(NO_GENERATED_TEXT_INSTRUCTION));
   assert.ok(prompt.includes(BACKGROUND_SIGNAGE_INSTRUCTION));
+  assert.ok(prompt.includes(NO_SMALL_CTA_INSTRUCTION));
+  assert.ok(prompt.includes(SCENE_NO_WRITING_LINE));
+  assert.doesNotMatch(prompt, /important readable written text/i);
   assert.doesNotMatch(prompt, /fifty percent off/i);
   assert.doesNotMatch(prompt, /Seedance|fal\.ai|Topaz|FFmpeg/i);
 });
@@ -128,4 +134,29 @@ test("prompt builder will not rewrite dialogue that is not in the approved scrip
       }),
     (error: unknown) => error instanceof Error && error.message.includes("approved script"),
   );
+});
+
+test("prompt builder strips small on-screen text and CTA requests from the filmed scene", () => {
+  const prompt = buildSeedancePrompt({
+    approvedScript: "Call us today.",
+    scenes: [
+      {
+        startSecond: 0,
+        endSecond: 15,
+        visual: "Hold a sign that says Call Now with a small text button.",
+        presenterAction: "Point at the on-screen CTA button.",
+        camera: "Steady shot.",
+        dialogue: "Call us today.",
+        audio: null,
+      },
+    ],
+    aspectRatio: "16:9",
+    durationSeconds: 15,
+    style: "Professional",
+  });
+  assert.ok(prompt.includes(PLAIN_SURFACES));
+  assert.ok(prompt.includes(NO_SMALL_CTA_INSTRUCTION));
+  assert.doesNotMatch(prompt, /Hold a sign that says Call Now/);
+  assert.doesNotMatch(prompt, /on-screen CTA button/);
+  assert.match(prompt, /Dialogue \(locked, do not rewrite\): Call us today\./);
 });

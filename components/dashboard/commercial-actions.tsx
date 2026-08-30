@@ -16,6 +16,7 @@ import {
   CREATE_VARIATION,
   CREATE_VERTICAL,
   DELETE,
+  DELETE_PERMANENT_WARNING,
   DUPLICATE,
   IN_PRODUCTION_LOCK,
   NEW_ASPECT_RATIO_NOTICE,
@@ -201,7 +202,7 @@ export function CommercialActions({
               variant="outline"
               disabled={pending}
               onClick={() => {
-                if (!window.confirm("Delete this commercial? You will not be able to open it again.")) {
+                if (!window.confirm(DELETE_PERMANENT_WARNING)) {
                   return;
                 }
                 void run(() => deleteCommercialAction(projectId));

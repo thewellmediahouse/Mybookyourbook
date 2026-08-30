@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (filming never reached reAPI)
+Last updated: 2026-08-30 (no filmed small text)
 
 ## Foundation
 - [x] Next.js
@@ -617,6 +617,22 @@ Create Advert is a four-step path: choose a saved Reference Profile or upload se
 ### 2026-08-30 — Workers Builds must OpenNext-build
 
 `npm run cf:build` is `opennextjs-cloudflare build`. `npm run build` stays `next build` because OpenNext invokes that. `npm run cf:deploy` is `wrangler deploy --containers-rollout none`. GitHub Action uses `npx opennextjs-cloudflare build` then `npm run cf:deploy`.
+
+### 2026-08-30 — No small filmed text or on-screen CTAs
+
+Filming at 480p cannot spell. Concepts and filming prompts now forbid all written characters, including tiny call-to-action graphics. Scene lines that ask for signs, captions, or on-screen buttons are stripped. The presenter says the call to action; exact branding is added later. Produce rebuilds the prompt so older approved concepts pick this up.
+
+### 2026-08-30 — Studio card download and delete
+
+Each finished video card has Download under the player and Delete. Delete asks first: the commercial will be permanently deleted and cannot be got back. Uses the existing workspace-scoped `deleteCommercialAction`. In-progress cards stay without download or delete.
+
+### 2026-08-30 — Studio board and filming Ad Credit
+
+Create Advert and My Adverts are one Studio page: wizard on the left, videos on the right. Generating shows a loading card with percent, then the finished file plays in that card. Customer copy no longer says 1080p (source filming is 480p; download is “Download”). Live filming that reAPI charged keeps the customer Ad Credit. `/dashboard/commercials` and the old production page redirect to Studio. Laptop promoted Worker `cineyou` `b4743bc9-0b43-4962-9cb3-067c2072c544`. The imported commercial’s refunded Ad Credit was taken back. Branding container not rebuilt.
+
+### 2026-08-30 — Frontend said filming failed after reAPI finished
+
+Job `deeb29b3` submitted `task_01a053c9f4ae7049b057a41309c1e02c`. Polls 0–48 were `processing`. Poll 49 mapped to `failed` (`CUSTOMER_UNAVAILABLE`) and the Ad Credit was refunded. reAPI then showed `completed` with `output.video_urls`. Official statuses are only `processing` / `completed` / `failed`; anything else (or a non-200 / network blip) was treated as failed and aborted the job before `getResult`. Adapter now fails only on official failure or 401/403; unknown / 5xx / network stay processing. Poll budget is 180 × 15s. Retry reuses `video_provider_job_id` so a second generation is not POSTed. Import then hit Workflows’ 1 MiB `step.do` limit when `seedance-result` stored the MP4 as JSON. Download now writes private R2 inside the save step. Laptop promoted Worker `cineyou` `199d7aa8-922b-4db1-9d7e-c1181f4f3c16`. Job `deeb29b3` imported the existing task (15.3 MB source, no second POST) and is `COMPLETE`. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`.
 
 ### 2026-08-25 — Legal pages (working copy)
 

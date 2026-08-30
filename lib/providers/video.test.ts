@@ -251,3 +251,34 @@ test("reAPI adapter treats rate limits as still processing", async () => {
   assert.equal(status.status, "processing");
   assert.equal(status.error, undefined);
 });
+
+test("reAPI adapter keeps polling on unknown status, aliases, and transient HTTP", async () => {
+  const cases: Array<{ body: unknown; http: number; expected: "processing" | "complete" | "failed" }> = [
+    { body: { id: TASK_ID, status: "queued" }, http: 200, expected: "processing" },
+    { body: { id: TASK_ID, status: "pending" }, http: 200, expected: "processing" },
+    { body: { id: TASK_ID, status: "running" }, http: 200, expected: "processing" },
+    { body: { id: TASK_ID, status: "" }, http: 200, expected: "processing" },
+    { body: { id: TASK_ID }, http: 200, expected: "processing" },
+    { body: { id: TASK_ID, status: "complete" }, http: 200, expected: "complete" },
+    { body: { id: TASK_ID, status: "SUCCESS" }, http: 200, expected: "complete" },
+    { body: { id: TASK_ID, status: "processing", output: { video_urls: [VIDEO_URL] } }, http: 200, expected: "complete" },
+    { body: { error: { code: 80002, message: "timeout" } }, http: 502, expected: "processing" },
+    { body: { id: TASK_ID, status: "failed" }, http: 200, expected: "failed" },
+  ];
+  for (const item of cases) {
+    const provider = createReapiVideoProvider({
+      apiKey: "rk_live_test_key",
+      fetchImpl: async () => jsonResponse(item.body, item.http),
+    });
+    const status = await provider.getStatus(TASK_ID);
+    assert.equal(status.status, item.expected, JSON.stringify(item.body));
+  }
+  const network = createReapiVideoProvider({
+    apiKey: "rk_live_test_key",
+    fetchImpl: async () => {
+      throw new Error("socket hang up");
+    },
+  });
+  const networkStatus = await network.getStatus(TASK_ID);
+  assert.equal(networkStatus.status, "processing");
+});

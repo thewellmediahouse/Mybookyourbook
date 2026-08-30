@@ -15,6 +15,10 @@ export const IN_PRODUCTION_LOCK =
   "Wait until production finishes before changing this commercial.";
 export const ARCHIVE = "Archive";
 export const DELETE = "Delete";
+export const DELETE_PERMANENT_WARNING =
+  "This commercial will be permanently deleted. You cannot get it back.";
+export const DELETE_PERMANENT_CONFIRM = "Delete permanently";
+export const KEEP_VIDEO = "Keep video";
 export const RENAME = "Rename";
 export const ARCHIVE_ONLY_FINISHED = "Archive is for finished commercials.";
 export const ALREADY_ARCHIVED = "This commercial is already archived.";

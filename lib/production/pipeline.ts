@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { assets, creativeVersions } from "@/lib/db/schema";
+import { assets, projects } from "@/lib/db/schema";
 import { refundTechnicalFailure } from "@/lib/credits/ledger";
 import { generationIdempotencyKey } from "@/lib/credits/copy";
+import { reclaimRefundIfFilmingCharged, shouldRefundAfterFilmingFailure } from "@/lib/credits/filming-charge";
 import { getBrand, getBrandLogoAsset } from "@/lib/businesses/queries";
-import { CUSTOMER_FAILURE, REFERENCE_VIDEO_FORMAT } from "./copy";
+import { CUSTOMER_FAILURE, CUSTOMER_FAILURE_CHARGED, REFERENCE_VIDEO_FORMAT } from "./copy";
 import { appendProductionEvent, setJobStatus } from "./events";
 import { insertProductionAsset } from "./assets";
 import { getJobById } from "./queries";
@@ -17,6 +18,7 @@ import type { UpscaleProvider } from "@/lib/providers/upscale/topaz";
 import type { VideoGenerationProvider } from "@/lib/providers/video/seedance";
 import { getIdentityBundle } from "@/lib/identity/queries";
 import { IDENTITY_SLOTS } from "@/lib/identity/slots";
+import { resolveFilmingPrompt } from "@/lib/creative/prompt";
 import { buildVideoSubmitInput } from "./references";
 import type { EmailQueueMessage } from "@/lib/notifications/messages";
 import { notifyProductionComplete, notifyProductionFailed } from "@/lib/notifications/notify";
@@ -50,7 +52,7 @@ export type PipelineDeps = {
   requireReferenceUrls?: boolean;
 };
 
-const SEEDANCE_STATUS_ATTEMPTS = 60;
+const SEEDANCE_STATUS_ATTEMPTS = 180;
 const TOPAZ_STATUS_ATTEMPTS = 120;
 const ENHANCE_UNAVAILABLE = "We couldn't enhance your footage right now. Please try again later.";
 
@@ -73,6 +75,12 @@ export async function failProductionJob(
   sink?: { appUrl: string; enqueueEmail?: (message: EmailQueueMessage) => Promise<void> },
 ) {
   const internal = toErrorMessage(error);
+  const customerMessage =
+    internal === "REFERENCE_VIDEO_FORMAT"
+      ? REFERENCE_VIDEO_FORMAT
+      : refunded
+        ? CUSTOMER_FAILURE
+        : CUSTOMER_FAILURE_CHARGED;
   await setJobStatus(db, {
     jobId: params.jobId,
     projectId: params.projectId,
@@ -81,7 +89,7 @@ export async function failProductionJob(
       failureType: "provider",
       failureCode: internal.slice(0, 80),
       internalFailureMessage: internal,
-      customerFailureMessage: internal === "REFERENCE_VIDEO_FORMAT" ? REFERENCE_VIDEO_FORMAT : CUSTOMER_FAILURE,
+      customerFailureMessage: customerMessage,
     },
   });
   await appendProductionEvent(db, { jobId: params.jobId, type: "FAILED", payload: { refunded } });
@@ -145,41 +153,51 @@ export async function runCommercialProduction(
         sourceAssetId: job?.sourceAssetId ?? null,
         enhancedAssetId: job?.enhancedAssetId ?? null,
         finalAssetId: job?.finalAssetId ?? null,
+        videoProviderJobId: job?.videoProviderJobId ?? null,
       };
     });
     if (prior.finalAssetId) {
       return { finalAssetId: prior.finalAssetId };
     }
 
-    const submitInput = await step.do(
-      "prepare-references",
-      async () => {
-        const [version] = await deps.db
-          .select({ seedancePrompt: creativeVersions.seedancePrompt })
-          .from(creativeVersions)
-          .where(eq(creativeVersions.id, params.creativeVersionId))
-          .limit(1);
-        if (!version?.seedancePrompt) {
-          throw new Error("PROMPT_MISSING");
-        }
-        return buildVideoSubmitInput(deps.db, {
-          projectId: params.projectId,
-          workspaceId: params.workspaceId,
-          userId: params.userId,
-          prompt: version.seedancePrompt,
-          signGetUrl: deps.signGetUrl,
-          requireReferenceUrls: deps.requireReferenceUrls,
-        });
-      },
-      { limit: 0 },
-    );
-
-    let sourceBytes: { bytes: number[]; mimeType: string } | null = null;
     let sourceAssetId = prior.sourceAssetId;
     let enhancedAssetId = prior.enhancedAssetId;
 
     if (!enhancedAssetId && !sourceAssetId) {
+      const submitInput = prior.videoProviderJobId
+        ? null
+        : await step.do(
+            "prepare-references",
+            async () => {
+              const prompt = await resolveFilmingPrompt(deps.db, {
+                projectId: params.projectId,
+                creativeVersionId: params.creativeVersionId,
+              });
+              return buildVideoSubmitInput(deps.db, {
+                projectId: params.projectId,
+                workspaceId: params.workspaceId,
+                userId: params.userId,
+                prompt,
+                signGetUrl: deps.signGetUrl,
+                requireReferenceUrls: deps.requireReferenceUrls,
+              });
+            },
+            { limit: 0 },
+          );
+
       const videoJobId = await step.do("submit-seedance", async () => {
+        const existing = (await getJobById(deps.db, params.jobId))?.videoProviderJobId;
+        if (existing) {
+          await setJobStatus(deps.db, {
+            jobId: params.jobId,
+            projectId: params.projectId,
+            status: "SEEDANCE_PROCESSING",
+          });
+          return existing;
+        }
+        if (!submitInput) {
+          throw new Error("PROMPT_MISSING");
+        }
         await setJobStatus(deps.db, {
           jobId: params.jobId,
           projectId: params.projectId,
@@ -200,66 +218,54 @@ export async function runCommercialProduction(
         return submitted.id;
       });
 
-      sourceBytes = await waitForSeedanceSource(deps, params, step, videoJobId);
+      await waitUntilComplete(deps, params, step, (id) => deps.video.getStatus(id), videoJobId, {
+        attempts: SEEDANCE_STATUS_ATTEMPTS,
+        statusPrefix: "seedance-status",
+        waitPrefix: "seedance-wait",
+        completeStatus: "SEEDANCE_COMPLETE",
+        completeEvent: "SEEDANCE_COMPLETE",
+        failedMessage: "SEEDANCE_FAILED",
+        timeoutMessage: "SEEDANCE_TIMEOUT",
+      });
 
       sourceAssetId = await step.do("save-source-r2", async () => {
-        const objectId = newId();
-        const objectKey = productionObjectKey(params.workspaceId, params.projectId, "source", objectId);
-        const bytes = Uint8Array.from(sourceBytes!.bytes);
-        await putWorkspaceObject(deps.bucket, {
-          workspaceId: params.workspaceId,
-          objectKey,
-          body: bytes,
-          mimeType: sourceBytes!.mimeType,
-        });
-        const assetId = await insertProductionAsset(deps.db, {
-          workspaceId: params.workspaceId,
-          userId: params.userId,
-          businessId: params.businessId,
-          projectId: params.projectId,
+        const result = await deps.video.getResult(videoJobId);
+        const assetId = await saveStageAsset(deps, params, {
           kind: "source",
-          objectKey,
-          mimeType: sourceBytes!.mimeType,
-          sizeBytes: bytes.byteLength,
+          bytes: result.bytes,
+          mimeType: result.mimeType,
+          nextStatus: "TOPAZ_PREPARING",
+          event: "SOURCE_SAVED",
         });
-        await setJobStatus(deps.db, {
-          jobId: params.jobId,
-          projectId: params.projectId,
-          status: "TOPAZ_PREPARING",
-          patch: { sourceAssetId: assetId },
+        await reclaimRefundIfFilmingCharged(deps.db, {
+          workspaceId: params.workspaceId,
+          generationIdempotencyKey: generationIdempotencyKey(params.projectId, params.attemptId),
         });
-        await appendProductionEvent(deps.db, { jobId: params.jobId, type: "SOURCE_SAVED" });
         return assetId;
-      });
-    } else if (!enhancedAssetId && sourceAssetId) {
-      sourceBytes = await step.do("load-source-r2", async () => {
-        const [row] = await deps.db
-          .select({ objectKey: assets.r2ObjectKey, mimeType: assets.mimeType })
-          .from(assets)
-          .where(eq(assets.id, sourceAssetId as string))
-          .limit(1);
-        if (!row?.objectKey) {
-          throw new Error("SOURCE_MISSING");
-        }
-        const object = await getWorkspaceObject(deps.bucket, params.workspaceId, row.objectKey);
-        if (!object) {
-          throw new Error("SOURCE_MISSING");
-        }
-        return { bytes: Array.from(new Uint8Array(await object.arrayBuffer())), mimeType: row.mimeType };
       });
     }
 
     if (!enhancedAssetId) {
-      if (!sourceBytes) {
+      if (!sourceAssetId) {
         throw new Error("SOURCE_MISSING");
       }
-      const source = sourceBytes;
+      const filmedId = sourceAssetId;
       const upscaleSubmit = await step.do("submit-topaz", async () => {
+        const source = await readAssetBytes(deps, params.workspaceId, filmedId);
+        const [project] = await deps.db
+          .select({ aspectRatio: projects.aspectRatio, duration: projects.duration })
+          .from(projects)
+          .where(eq(projects.id, params.projectId))
+          .limit(1);
+        const aspectRatio = project?.aspectRatio?.trim() || "";
+        if (!aspectRatio) {
+          throw new Error("ASPECT_MISSING");
+        }
         const created = await deps.upscale.create({
-          sourceBytes: Uint8Array.from(source.bytes),
+          sourceBytes: source.bytes,
           mimeType: source.mimeType,
-          aspectRatio: submitInput.aspectRatio,
-          durationSeconds: submitInput.durationSeconds,
+          aspectRatio,
+          durationSeconds: project?.duration ?? 30,
         });
         const accepted = await deps.upscale.accept(created.id);
         await setJobStatus(deps.db, {
@@ -277,7 +283,8 @@ export async function runCommercialProduction(
       });
 
       await step.do("upload-topaz", async () => {
-        await deps.upscale.upload(upscaleSubmit.id, Uint8Array.from(source.bytes), upscaleSubmit.uploadUrls);
+        const source = await readAssetBytes(deps, params.workspaceId, filmedId);
+        await deps.upscale.upload(upscaleSubmit.id, source.bytes, upscaleSubmit.uploadUrls);
         await deps.upscale.completeUpload(upscaleSubmit.id);
         await setJobStatus(deps.db, {
           jobId: params.jobId,
@@ -287,37 +294,26 @@ export async function runCommercialProduction(
         return true;
       });
 
-      const enhancedBytes = await waitForTopazEnhanced(deps, params, step, upscaleSubmit.id);
+      await waitUntilComplete(deps, params, step, (id) => deps.upscale.poll(id), upscaleSubmit.id, {
+        attempts: TOPAZ_STATUS_ATTEMPTS,
+        statusPrefix: "topaz-status",
+        waitPrefix: "topaz-wait",
+        completeStatus: "TOPAZ_COMPLETE",
+        completeEvent: "TOPAZ_COMPLETE",
+        failedMessage: ENHANCE_UNAVAILABLE,
+        timeoutMessage: ENHANCE_UNAVAILABLE,
+      });
 
       enhancedAssetId = await step.do("save-enhanced-r2", async () => {
-      const objectId = newId();
-      const objectKey = productionObjectKey(params.workspaceId, params.projectId, "enhanced", objectId);
-      const bytes = Uint8Array.from(enhancedBytes.bytes);
-      await putWorkspaceObject(deps.bucket, {
-        workspaceId: params.workspaceId,
-        objectKey,
-        body: bytes,
-        mimeType: enhancedBytes.mimeType,
+        const result = await deps.upscale.retrieve(upscaleSubmit.id);
+        return saveStageAsset(deps, params, {
+          kind: "enhanced",
+          bytes: result.bytes,
+          mimeType: result.mimeType,
+          nextStatus: "BRANDING",
+          event: "ENHANCED_SAVED",
+        });
       });
-      const assetId = await insertProductionAsset(deps.db, {
-        workspaceId: params.workspaceId,
-        userId: params.userId,
-        businessId: params.businessId,
-        projectId: params.projectId,
-        kind: "enhanced",
-        objectKey,
-        mimeType: enhancedBytes.mimeType,
-        sizeBytes: bytes.byteLength,
-      });
-      await setJobStatus(deps.db, {
-        jobId: params.jobId,
-        projectId: params.projectId,
-        status: "BRANDING",
-        patch: { enhancedAssetId: assetId },
-      });
-      await appendProductionEvent(deps.db, { jobId: params.jobId, type: "ENHANCED_SAVED" });
-      return assetId;
-    });
     }
 
     if (!enhancedAssetId) {
@@ -457,65 +453,106 @@ export async function runCommercialProduction(
     if (current?.status === "CANCELLED" || toErrorMessage(error) === "JOB_CANCELLED") {
       throw error;
     }
-    const refund = await refundTechnicalFailure(deps.db, {
-      workspaceId: params.workspaceId,
-      generationIdempotencyKey: generationIdempotencyKey(params.projectId, params.attemptId),
-    }).catch(() => null);
+    const refundCustomer = await shouldRefundAfterFilmingFailure(deps.video, current?.videoProviderJobId);
+    const refund = refundCustomer
+      ? await refundTechnicalFailure(deps.db, {
+          workspaceId: params.workspaceId,
+          generationIdempotencyKey: generationIdempotencyKey(params.projectId, params.attemptId),
+        }).catch(() => null)
+      : null;
     await failProductionJob(deps.db, params, error, Boolean(refund), sideEffectSink(deps));
     throw error;
   }
 }
 
-async function waitForSeedanceSource(
-  deps: PipelineDeps,
-  params: ProductionParams,
-  step: DurableStep,
-  videoJobId: string,
-) {
-  for (let attempt = 0; attempt < SEEDANCE_STATUS_ATTEMPTS; attempt += 1) {
-    const status = await step.do(`seedance-status-${attempt}`, async () => deps.video.getStatus(videoJobId));
-    if (status.status === "complete") {
-      const result = await step.do("seedance-result", async () => deps.video.getResult(videoJobId));
-      await setJobStatus(deps.db, {
-        jobId: params.jobId,
-        projectId: params.projectId,
-        status: "SEEDANCE_COMPLETE",
-      });
-      await appendProductionEvent(deps.db, { jobId: params.jobId, type: "SEEDANCE_COMPLETE" });
-      return { bytes: Array.from(result.bytes), mimeType: result.mimeType };
-    }
-    if (status.status === "failed") {
-      throw new Error(status.error ?? "SEEDANCE_FAILED");
-    }
-    await step.sleep(`seedance-wait-${attempt}`, "15 seconds");
+async function readAssetBytes(deps: PipelineDeps, workspaceId: string, assetId: string) {
+  const [row] = await deps.db
+    .select({ objectKey: assets.r2ObjectKey, mimeType: assets.mimeType })
+    .from(assets)
+    .where(eq(assets.id, assetId))
+    .limit(1);
+  if (!row?.objectKey) {
+    throw new Error("SOURCE_MISSING");
   }
-  throw new Error("SEEDANCE_TIMEOUT");
+  const object = await getWorkspaceObject(deps.bucket, workspaceId, row.objectKey);
+  if (!object) {
+    throw new Error("SOURCE_MISSING");
+  }
+  return { bytes: new Uint8Array(await object.arrayBuffer()), mimeType: row.mimeType };
 }
 
-async function waitForTopazEnhanced(
+async function saveStageAsset(
+  deps: PipelineDeps,
+  params: ProductionParams,
+  input: {
+    kind: "source" | "enhanced";
+    bytes: Uint8Array;
+    mimeType: string;
+    nextStatus: "TOPAZ_PREPARING" | "BRANDING";
+    event: "SOURCE_SAVED" | "ENHANCED_SAVED";
+  },
+) {
+  const objectId = newId();
+  const objectKey = productionObjectKey(params.workspaceId, params.projectId, input.kind, objectId);
+  await putWorkspaceObject(deps.bucket, {
+    workspaceId: params.workspaceId,
+    objectKey,
+    body: input.bytes,
+    mimeType: input.mimeType,
+  });
+  const assetId = await insertProductionAsset(deps.db, {
+    workspaceId: params.workspaceId,
+    userId: params.userId,
+    businessId: params.businessId,
+    projectId: params.projectId,
+    kind: input.kind,
+    objectKey,
+    mimeType: input.mimeType,
+    sizeBytes: input.bytes.byteLength,
+  });
+  await setJobStatus(deps.db, {
+    jobId: params.jobId,
+    projectId: params.projectId,
+    status: input.nextStatus,
+    patch: input.kind === "source" ? { sourceAssetId: assetId } : { enhancedAssetId: assetId },
+  });
+  await appendProductionEvent(deps.db, { jobId: params.jobId, type: input.event });
+  return assetId;
+}
+
+async function waitUntilComplete(
   deps: PipelineDeps,
   params: ProductionParams,
   step: DurableStep,
-  upscaleJobId: string,
+  poll: (id: string) => Promise<{ status: string; error?: string }>,
+  providerJobId: string,
+  options: {
+    attempts: number;
+    statusPrefix: string;
+    waitPrefix: string;
+    completeStatus: "SEEDANCE_COMPLETE" | "TOPAZ_COMPLETE";
+    completeEvent: "SEEDANCE_COMPLETE" | "TOPAZ_COMPLETE";
+    failedMessage: string;
+    timeoutMessage: string;
+  },
 ) {
-  for (let attempt = 0; attempt < TOPAZ_STATUS_ATTEMPTS; attempt += 1) {
-    const status = await step.do(`topaz-status-${attempt}`, async () => deps.upscale.poll(upscaleJobId));
+  for (let attempt = 0; attempt < options.attempts; attempt += 1) {
+    const status = await step.do(`${options.statusPrefix}-${attempt}`, async () => poll(providerJobId));
     if (status.status === "complete") {
-      const result = await step.do("topaz-result", async () => deps.upscale.retrieve(upscaleJobId));
       await setJobStatus(deps.db, {
         jobId: params.jobId,
         projectId: params.projectId,
-        status: "TOPAZ_COMPLETE",
+        status: options.completeStatus,
       });
-      await appendProductionEvent(deps.db, { jobId: params.jobId, type: "TOPAZ_COMPLETE" });
-      return { bytes: Array.from(result.bytes), mimeType: result.mimeType };
+      await appendProductionEvent(deps.db, { jobId: params.jobId, type: options.completeEvent });
+      return;
     }
     if (status.status === "failed") {
-      throw new Error(ENHANCE_UNAVAILABLE);
+      throw new Error(status.error ?? options.failedMessage);
     }
-    await step.sleep(`topaz-wait-${attempt}`, "15 seconds");
+    await step.sleep(`${options.waitPrefix}-${attempt}`, "15 seconds");
   }
-  throw new Error(ENHANCE_UNAVAILABLE);
+  throw new Error(options.timeoutMessage);
 }
 
 export function immediateStep(): DurableStep {

@@ -7,6 +7,11 @@ export {
 } from "./copy";
 export { CreditError } from "./errors";
 export {
+  isLiveFilmingTaskId,
+  reclaimRefundIfFilmingCharged,
+  shouldRefundAfterFilmingFailure,
+} from "./filming-charge";
+export {
   getCreditTransactionByKey,
   getWalletBalance,
   grantCredits,

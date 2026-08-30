@@ -20,7 +20,7 @@ export default function ExamplesPage() {
         <SalesPageHero
           eyebrow="THE LOOK"
           title="Cinematic. 30 seconds. Starring you."
-          description="A finished Production30 commercial is a 30-second Full-HD business advert with you on camera, talking through the offer. These clips are style references — not customer testimonials."
+          description="A finished Production30 commercial is a 30-second business advert with you on camera, talking through the offer. These clips are style references — not customer testimonials."
           actions={
             <>
               <PrimaryCta>Create my first video</PrimaryCta>

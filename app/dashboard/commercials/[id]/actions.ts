@@ -95,9 +95,10 @@ export async function deleteCommercialAction(projectId: string): Promise<Commerc
   try {
     const ctx = await requireCommercialEditor(projectId);
     await deleteProject(ctx.db, ctx.access, projectId);
+    revalidatePath("/dashboard/create");
     revalidatePath("/dashboard/commercials");
     revalidatePath("/dashboard");
-    return { redirectTo: "/dashboard/commercials" };
+    return { redirectTo: "/dashboard/create" };
   } catch (error) {
     return fail(error);
   }

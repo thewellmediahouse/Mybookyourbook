@@ -15,7 +15,7 @@ export default function TermsPage() {
     <LegalPage title="Terms of use" updated={UPDATED}>
       <p>
         Production30 is a studio for business advertising: you brief us about your business, show us
-        who you are, approve a Commercial Concept, and receive a finished 30-second Full-HD
+        who you are, approve a Commercial Concept, and receive a finished 30-second
         commercial starring you. These Terms of use (“Terms”) govern the website, studio, and related
         services (the “Service”). They form an agreement between you and Production30 (“we”, “us”).
       </p>

@@ -1,6 +1,8 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { resolveAdStrategy } from "./ad-strategies";
+import { systemPrompt } from "./creative-director/prompt";
+import { NO_GENERATED_TEXT_INSTRUCTION, PLAIN_SURFACES } from "@/lib/creative/on-screen-text";
 import {
   createCreativeDirector,
   createMockCreativeDirector,
@@ -42,6 +44,41 @@ test("mock concept passes Zod and covers a 30 second timeline", async () => {
   );
   assert.match(parsed.strategy, /credibility/i);
   assert.doesNotMatch(parsed.hook, /Seedance|OpenAI|FFmpeg/i);
+  assert.ok(parsed.generationPrompt.includes(NO_GENERATED_TEXT_INSTRUCTION));
+  assert.doesNotMatch(parsed.scenes.map((scene) => scene.visual).join(" "), /sign that says|on-screen|lower third/i);
+});
+
+test("concept parse strips filmed writing and keeps spoken words", () => {
+  const parsed = parseCreativeConcept({
+    title: "Harbour launch",
+    hook: "If bookings feel slow, this is for you.",
+    strategy: "Credibility first.",
+    spokenScript: "If bookings feel slow, this is for you. Call us today.",
+    callToAction: "Call",
+    generationPrompt: "Add a lower third with a small text call to action.",
+    scenes: [
+      {
+        startSecond: 0,
+        endSecond: 15,
+        visual: "On-screen CTA button that says Call now.",
+        presenterAction: "Look to camera.",
+        camera: "Steady shot.",
+        dialogue: "Call us today.",
+        audio: null,
+      },
+    ],
+  });
+  assert.equal(parsed.scenes[0]?.visual, PLAIN_SURFACES);
+  assert.equal(parsed.scenes[0]?.dialogue, "Call us today.");
+  assert.ok(parsed.generationPrompt.includes(NO_GENERATED_TEXT_INSTRUCTION));
+  assert.doesNotMatch(parsed.generationPrompt, /lower third with a small text/);
+});
+
+test("creative director never asks for on-screen writing", () => {
+  const prompt = systemPrompt();
+  assert.ok(prompt.includes("Never put writing in the filmed scenes"));
+  assert.ok(prompt.includes("Small written text and small call-to-action"));
+  assert.doesNotMatch(prompt, /Seedance|OpenAI|FFmpeg/i);
 });
 
 test("mock mode does not call paid HTTP", async () => {

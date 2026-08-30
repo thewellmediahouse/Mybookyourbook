@@ -82,7 +82,7 @@ export async function retryJobAction(_prev: AdminActionState, formData: FormData
       startWorkflow: async (params) => {
         const binding = productionEnv.COMMERCIAL_PRODUCTION_WORKFLOW;
         if (binding && typeof binding.create === "function") {
-          return binding.create({ id: `${params.jobId}-retry`, params });
+          return binding.create({ id: `${params.jobId}-retry-${crypto.randomUUID()}`, params });
         }
         execution.waitUntil(runCommercialProduction(deps, params, immediateStep()).catch(() => undefined));
         return { id: params.jobId };

@@ -2,7 +2,7 @@
 
 **Your business, starring you.**
 
-Production30 is an automated advertising-production platform. Customers brief their business, show who they are, approve a commercial concept, and receive a polished 1080p advert. They never configure AI models, prompts, or infrastructure.
+Production30 is an automated advertising-production platform. Customers brief their business, show who they are, approve a commercial concept, and receive a 30-second commercial starring them. They never configure AI models, prompts, or infrastructure.
 
 This repository previously held an Astro marketing template. It is now the Production30 SaaS codebase.
 

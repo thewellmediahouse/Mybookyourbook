@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { StudioBoard } from "@/components/create/studio-board";
 import { SimpleCreateWizard } from "@/components/create/simple-wizard";
 import { DisabledAction } from "@/components/dashboard/disabled-action";
-import { PageIntro } from "@/components/dashboard/page-intro";
+import { listCommercials } from "@/lib/dashboard/summary";
 import { requireProjectAccess } from "@/lib/authz";
-import { canManageBrands } from "@/lib/authz/roles";
+import { canManageBrands, canProduce } from "@/lib/authz/roles";
 import { getBrandWithLogo } from "@/lib/businesses/queries";
 import { getWalletBalance } from "@/lib/credits";
 import { getPublicConcept } from "@/lib/creative/queries";
@@ -20,7 +21,7 @@ import { getLatestDraft, getProjectBrief } from "@/lib/projects/queries";
 import { briefReadyForConcept } from "@/lib/projects/save";
 import { isCreateWizardStatus, isInProductionStatus } from "@/lib/projects/status";
 
-export const metadata: Metadata = { title: "Create Advert" };
+export const metadata: Metadata = { title: "Studio" };
 
 export default async function CreateAdvertPage({
   searchParams,
@@ -43,16 +44,14 @@ export default async function CreateAdvertPage({
     requestedId || params.new === "1"
       ? null
       : await getLatestDraft(studio.db, studio.active.workspaceId, studio.userId);
-  const draft = loaded ?? (latestDraft ? await getProjectBrief(studio.db, latestDraft.id) : null);
+  const candidate = loaded ?? (latestDraft ? await getProjectBrief(studio.db, latestDraft.id) : null);
+  const draft =
+    candidate && candidate.workspaceId === studio.active.workspaceId && isCreateWizardStatus(candidate.status)
+      ? candidate
+      : null;
 
-  if (draft && draft.workspaceId !== studio.active.workspaceId) {
+  if (loaded && loaded.workspaceId !== studio.active.workspaceId) {
     redirect("/dashboard/create?new=1");
-  }
-  if (draft && isInProductionStatus(draft.status)) {
-    redirect(`/dashboard/commercials/${draft.id}/production`);
-  }
-  if (draft && !isCreateWizardStatus(draft.status)) {
-    redirect(`/dashboard/commercials/${draft.id}`);
   }
 
   await getOrCreateIdentity(studio.db, studio.active.workspaceId, studio.userId);
@@ -93,52 +92,64 @@ export default async function CreateAdvertPage({
     briefReady,
   });
 
+  const commercials = (await listCommercials(studio.db, studio.active.workspaceId)).filter(
+    (item) => item.finalAssetId || isInProductionStatus(item.status) || item.status === "READY" || item.status === "FAILED",
+  );
+
+  const wizard = !produce.allowed ? (
+    <DisabledAction label="Create Advert" reason={produce.reason} />
+  ) : studio.active.businesses.length === 0 ? (
+    <p className="text-muted">Add a brand before creating an advert.</p>
+  ) : (
+    <SimpleCreateWizard
+      brands={studio.active.businesses}
+      library={library.filter((item) => item.role !== "logo")}
+      concept={concept}
+      briefLocked={draft?.status === "READY_TO_PRODUCE"}
+      credits={credits}
+      initialStep={step}
+      profileReady={profileReady}
+      consented={Boolean(identity?.consented)}
+      firstName={studio.firstName}
+      businessName={brand?.name ?? studio.active.name}
+      identityAssets={identity?.assets ?? {}}
+      brand={brand ? { id: brand.id, logoAssetId: brand.logoAssetId } : null}
+      canEditBrand={canManageBrands(studio.role)}
+      extrasWrite={extrasWrite}
+      initial={{
+        projectId: draft?.id ?? null,
+        businessId: brandId,
+        title: !draft || draft.title === "Untitled commercial" ? "" : draft.title,
+        objective: draft?.objective ?? "",
+        targetCustomer: draft?.targetCustomer ?? "",
+        problem: draft?.problem ?? "",
+        valueProposition: draft?.valueProposition ?? "",
+        offer: draft?.offer ?? "",
+        ctaType: draft?.ctaType ?? "",
+        ctaValue: draft?.ctaValue ?? "",
+        style: draft?.style ?? "",
+        tones: draft?.tones ?? [],
+        avoid: draft?.avoid ?? "",
+        platform: draft?.platform ?? "",
+        aspectRatio: draft?.aspectRatio ?? "",
+        duration: draft?.duration ?? DEFAULT_DURATION,
+        references: draft?.references ?? [],
+      }}
+    />
+  );
+
   return (
-    <main className="mx-auto w-full max-w-3xl px-6 py-10 lg:py-16">
-      <PageIntro kicker="CREATE" title={CREATE_HEADING} description={CREATE_BODY} />
-      {!produce.allowed ? (
-        <div className="mt-10">
-          <DisabledAction label="Create Advert" reason={produce.reason} />
-        </div>
-      ) : studio.active.businesses.length === 0 ? (
-        <p className="mt-10 text-muted">Add a brand before creating an advert.</p>
-      ) : (
-        <SimpleCreateWizard
-          brands={studio.active.businesses}
-          library={library.filter((item) => item.role !== "logo")}
-          concept={concept}
-          briefLocked={draft?.status === "READY_TO_PRODUCE"}
-          credits={credits}
-          initialStep={step}
-          profileReady={profileReady}
-          consented={Boolean(identity?.consented)}
-          firstName={studio.firstName}
-          businessName={brand?.name ?? studio.active.name}
-          identityAssets={identity?.assets ?? {}}
-          brand={brand ? { id: brand.id, logoAssetId: brand.logoAssetId } : null}
-          canEditBrand={canManageBrands(studio.role)}
-          extrasWrite={extrasWrite}
-          initial={{
-            projectId: draft?.id ?? null,
-            businessId: brandId,
-            title: !draft || draft.title === "Untitled commercial" ? "" : draft.title,
-            objective: draft?.objective ?? "",
-            targetCustomer: draft?.targetCustomer ?? "",
-            problem: draft?.problem ?? "",
-            valueProposition: draft?.valueProposition ?? "",
-            offer: draft?.offer ?? "",
-            ctaType: draft?.ctaType ?? "",
-            ctaValue: draft?.ctaValue ?? "",
-            style: draft?.style ?? "",
-            tones: draft?.tones ?? [],
-            avoid: draft?.avoid ?? "",
-            platform: draft?.platform ?? "",
-            aspectRatio: draft?.aspectRatio ?? "",
-            duration: draft?.duration ?? DEFAULT_DURATION,
-            references: draft?.references ?? [],
-          }}
-        />
-      )}
-    </main>
+    <StudioBoard
+      wizard={
+        <>
+          <p className="text-xs tracking-[0.18em] text-muted">CREATE</p>
+          <h1 className="mt-2 font-display text-3xl text-foreground">{CREATE_HEADING}</h1>
+          <p className="mt-2 text-sm text-muted">{CREATE_BODY}</p>
+          <div className="mt-6">{wizard}</div>
+        </>
+      }
+      items={commercials}
+      canDelete={canProduce(studio.role)}
+    />
   );
 }

@@ -7,6 +7,7 @@ import {
   creditWallets,
   notifications,
   presenterIdentities,
+  productionJobs,
   projects,
   user,
   workspaceMembers,
@@ -32,6 +33,8 @@ export type CommercialListItem = {
   updatedAt: Date;
   businessName: string;
   thumbnailAssetId: string | null;
+  jobStatus: string | null;
+  finalAssetId: string | null;
 };
 
 export async function getDashboardSummary(db: Db, workspaceId: string): Promise<DashboardSummary> {
@@ -95,14 +98,38 @@ export async function listCommercials(
     .where(and(eq(projects.workspaceId, workspaceId), isNull(projects.deletedAt)))
     .orderBy(desc(projects.updatedAt))
     .limit(limit);
-  const thumbs = await thumbnailIdsForProjects(
-    db,
-    rows.map((row) => row.id),
-  );
+  const projectIds = rows.map((row) => row.id);
+  const thumbs = await thumbnailIdsForProjects(db, projectIds);
+  const jobs = await latestJobsForProjects(db, projectIds);
   return rows.map((row) => ({
     ...row,
     thumbnailAssetId: thumbs.get(row.id) ?? null,
+    jobStatus: jobs.get(row.id)?.status ?? null,
+    finalAssetId: jobs.get(row.id)?.finalAssetId ?? null,
   }));
+}
+
+async function latestJobsForProjects(db: Db, projectIds: string[]) {
+  const map = new Map<string, { status: string; finalAssetId: string | null }>();
+  if (projectIds.length === 0) {
+    return map;
+  }
+  const rows = await db
+    .select({
+      projectId: productionJobs.projectId,
+      status: productionJobs.status,
+      finalAssetId: productionJobs.finalAssetId,
+      createdAt: productionJobs.createdAt,
+    })
+    .from(productionJobs)
+    .where(inArray(productionJobs.projectId, projectIds))
+    .orderBy(desc(productionJobs.createdAt));
+  for (const row of rows) {
+    if (!map.has(row.projectId)) {
+      map.set(row.projectId, { status: row.status, finalAssetId: row.finalAssetId });
+    }
+  }
+  return map;
 }
 
 async function thumbnailIdsForProjects(db: Db, projectIds: string[]) {

@@ -1,4 +1,11 @@
 import type { ConceptScene } from "@/lib/ai/creative-director";
+import {
+  BACKGROUND_SIGNAGE_INSTRUCTION,
+  NO_GENERATED_TEXT_INSTRUCTION,
+  NO_SMALL_CTA_INSTRUCTION,
+  SCENE_NO_WRITING_LINE,
+  sanitizeFilmedSceneFields,
+} from "@/lib/creative/on-screen-text";
 import { IDENTITY_REFERENCE_MAP } from "@/lib/identity/slots";
 import {
   CONTEXT_SLOTS,
@@ -6,14 +13,15 @@ import {
   type AspectRatio,
 } from "@/lib/projects/brief";
 
+export {
+  BACKGROUND_SIGNAGE_INSTRUCTION,
+  NO_GENERATED_TEXT_INSTRUCTION,
+  NO_SMALL_CTA_INSTRUCTION,
+  SCENE_NO_WRITING_LINE,
+};
+
 export const IDENTITY_INSTRUCTION =
   "The primary presenter must remain the same adult person represented by @Image1, @Image2, @Image3 and @Video1. Preserve recognisable facial structure, hairstyle, age, skin appearance and body proportions consistently throughout the commercial. Use @Video1 as the primary reference for natural speaking style, facial movement, voice/accent where supported, mannerisms and presentation.";
-
-export const NO_GENERATED_TEXT_INSTRUCTION =
-  "Do not generate subtitles, captions, logos, prices, phone numbers, websites, labels, signs, interface text, banners, watermarks or other important readable written text. Do not invent written words. Important branding and written information will be applied accurately in post-production.";
-
-export const BACKGROUND_SIGNAGE_INSTRUCTION =
-  "Keep background signage non-prominent and avoid readable invented text.";
 
 /** Internal mapping only. Never shown to customers. Identity uses @Image1–3 and @Video1. */
 export const CONTEXT_REFERENCE_MAP: Record<(typeof CONTEXT_SLOTS)[number], string> = {
@@ -52,10 +60,11 @@ function mappingBlock(contextSlots: string[]): string {
 }
 
 function sceneBlock(scene: ConceptScene, style: string, approvedScript: string): string {
-  const heading = `${scene.startSecond}–${scene.endSecond} seconds:`;
+  const filmed = sanitizeFilmedSceneFields(scene);
+  const heading = `${filmed.startSecond}–${filmed.endSecond} seconds:`;
   const locked =
-    scene.dialogue && scene.dialogue.trim()
-      ? scene.dialogue.trim()
+    filmed.dialogue && filmed.dialogue.trim()
+      ? filmed.dialogue.trim()
       : "No spoken words in this scene.";
   if (scene.dialogue?.trim() && !approvedScript.includes(scene.dialogue.trim())) {
     throw new Error("Scene spoken words must match the approved script.");
@@ -63,14 +72,15 @@ function sceneBlock(scene: ConceptScene, style: string, approvedScript: string):
   return [
     heading,
     "Presenter: the same adult person represented by @Image1, @Image2, @Image3 and @Video1.",
-    `Environment: ${scene.visual}`,
+    `Environment: ${filmed.visual}`,
     "Wardrobe: consistent with the presenter references.",
     `Lighting: even and natural, matching a ${style} commercial.`,
-    `Action: ${scene.presenterAction?.trim() || scene.visual}`,
-    `Camera movement: ${scene.camera}`,
+    `Action: ${filmed.presenterAction?.trim() || filmed.visual}`,
+    `Camera movement: ${filmed.camera}`,
     `Emotional tone: ${style}`,
     `Dialogue (locked, do not rewrite): ${locked}`,
-    `Sound: ${scene.audio?.trim() || "Clear spoken voice over natural room tone."}`,
+    `Sound: ${filmed.audio?.trim() || "Clear spoken voice over natural room tone."}`,
+    SCENE_NO_WRITING_LINE,
     "Continuity: keep the presenter, wardrobe, and setting consistent with the previous shot and the identity references.",
   ].join("\n");
 }
@@ -107,6 +117,7 @@ export function buildSeedancePrompt(input: SeedancePromptInput): string {
     ...scenes.flatMap((scene) => [sceneBlock(scene, style, approvedScript), ""]),
     NO_GENERATED_TEXT_INSTRUCTION,
     BACKGROUND_SIGNAGE_INSTRUCTION,
+    NO_SMALL_CTA_INSTRUCTION,
   ]
     .join("\n")
     .trim();
