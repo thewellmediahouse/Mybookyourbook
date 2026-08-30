@@ -61,6 +61,7 @@ test("mock mode never calls Topaz even when a key is present", async () => {
     assert.equal(polled.status, "complete");
     const result = await provider.retrieve(created.id);
     assert.equal(result.mimeType, FIXTURE_VIDEO_MIME);
+    assert.deepEqual(result.bytes, FIXTURE_MP4);
     assert.equal("url" in result, false);
     assert.equal(called, 0);
   } finally {

@@ -16,13 +16,26 @@ export {
 
 type VideoEnv = {
   AI_PROVIDER_MODE?: string;
+  FILMING_AI_MODE?: string;
   REAPI_API_KEY?: string;
 };
 
 const LIVE_NOT_CONNECTED = "Live filming is not connected yet.";
 
-export function isLiveVideoMode(env: VideoEnv): boolean {
+function isLivePipelineMode(env: Pick<VideoEnv, "AI_PROVIDER_MODE">): boolean {
   return String(env.AI_PROVIDER_MODE ?? "mock").trim().toLowerCase() === "live";
+}
+
+/** Filming only. Enhancement / branding still follow AI_PROVIDER_MODE. */
+export function isLiveVideoMode(env: VideoEnv): boolean {
+  const filming = String(env.FILMING_AI_MODE ?? "").trim().toLowerCase();
+  if (filming === "live") {
+    return true;
+  }
+  if (filming === "mock") {
+    return false;
+  }
+  return isLivePipelineMode(env);
 }
 
 function disconnectedVideoProvider(message: string): VideoGenerationProvider {

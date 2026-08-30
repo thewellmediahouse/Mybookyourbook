@@ -8,6 +8,7 @@ const ROOT = join(import.meta.dirname, "../..");
 test("Workers config keeps mock AI and test payments explicit", () => {
   const wrangler = readFileSync(join(ROOT, "wrangler.jsonc"), "utf8");
   assert.match(wrangler, /"AI_PROVIDER_MODE": "mock"/);
+  assert.match(wrangler, /"FILMING_AI_MODE": "live"/);
   assert.match(wrangler, /"CONCEPT_AI_MODE": "live"/);
   assert.match(wrangler, /"PAYMENTS_MODE": "test"/);
   assert.match(wrangler, /nodejs_compat/);

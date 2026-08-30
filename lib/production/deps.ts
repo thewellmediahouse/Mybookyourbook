@@ -15,6 +15,7 @@ export function pipelineDepsFromEnv(
 ): PipelineDeps {
   const providerEnv = env as {
     AI_PROVIDER_MODE?: string;
+    FILMING_AI_MODE?: string;
     REAPI_API_KEY?: string;
     TOPAZ_API_KEY?: string;
     TOPAZ_DEFAULT_MODEL?: string;

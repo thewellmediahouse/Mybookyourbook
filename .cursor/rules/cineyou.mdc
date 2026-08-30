@@ -32,6 +32,6 @@ Say: Produce Commercial, Commercial Concept, Filming Your Commercial, Enhancing 
 - 1 Ad Credit = 1 production; concept generation is free
 - Seedance source is 480p / 30s; branding text is applied in post, never generated
 - `AI_PROVIDER_MODE=mock` must not call paid filming / enhancement / branding APIs; real adapters still exist
-- Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` + `OPENAI_API_KEY`. That must not silently mock when the key is missing. Default `CONCEPT_AI_MODE` follows `AI_PROVIDER_MODE`.
+- Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` + `OPENAI_API_KEY`. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live` + `REAPI_API_KEY`. Missing those keys must not silently mock. When unset, both follow `AI_PROVIDER_MODE`. Enhancement and branding still follow `AI_PROVIDER_MODE`.
 - Consult latest official provider docs before implementing external APIs; log decisions in `CINEYOU_API_NOTES.md`
 - After each phase: typecheck, lint, relevant tests, build/preview, fix, update progress

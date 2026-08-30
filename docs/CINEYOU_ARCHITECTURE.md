@@ -126,7 +126,7 @@ open-next.config.ts
 
 Secrets (Wrangler secrets / `.dev.vars`, never `NEXT_PUBLIC_*`): `BETTER_AUTH_SECRET`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `REAPI_API_KEY`, `TOPAZ_API_KEY`, `OPENAI_API_KEY`, `RAPYD_ACCESS_KEY`, `RAPYD_SECRET_KEY`, `PAYONEER_TOKEN`, `PAYFAST_MERCHANT_KEY`, `PAYFAST_PASSPHRASE`, `PAYSTACK_SECRET_KEY`, `GOOGLE_CLIENT_SECRET`, `RESEND_API_KEY`, `INTERNAL_SERVICE_SECRET`.
 
-Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`, `RAPYD_WEBHOOK_URL=https://production30.thewellmedia.com/api/webhooks/rapyd`. Do not set `PAYMENTS_MODE=live`, `RAPYD_MODE=live`, or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
+Plain Wrangler `vars` (committed, not secrets): `AI_PROVIDER_MODE=mock`, `FILMING_AI_MODE=live`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`, `RAPYD_WEBHOOK_URL=https://production30.thewellmedia.com/api/webhooks/rapyd`. Do not set `PAYMENTS_MODE=live`, `RAPYD_MODE=live`, or `AI_PROVIDER_MODE=live` without an explicit decision. `wrangler secret put` publishes a Worker version — do not run it until deploy is approved.
 
 ## Tenancy
 
@@ -158,7 +158,9 @@ Uploads: auth → authorize workspace → short-lived signed PUT (10–20 min) w
 
 ## Provider mode
 
-`AI_PROVIDER_MODE=mock|live` controls filming, enhancement, and branding.
+`AI_PROVIDER_MODE=mock|live` controls enhancement and branding, and is the default for filming and concept when those flags are unset.
+
+`FILMING_AI_MODE=mock|live` controls Filming Your Commercial only. `live` calls reAPI Seedance 2.5. Missing `REAPI_API_KEY` must not silently mock. When unset, filming follows `AI_PROVIDER_MODE`. Mock enhancement keeps the filmed file (no fixture swap) when filming is live.
 
 `CONCEPT_AI_MODE=mock|live` controls Commercial Concept only. `live` calls OpenAI Responses. Missing `OPENAI_API_KEY` must not silently mock. When unset, concept mode follows `AI_PROVIDER_MODE`.
 

@@ -1,6 +1,6 @@
 import { newId } from "@/lib/id";
 import { FIXTURE_MP4, FIXTURE_VIDEO_MIME } from "@/lib/providers/video/fixture";
-import type { UpscaleJob, UpscaleProvider, UpscaleResult } from "./types";
+import type { UpscaleCreateInput, UpscaleJob, UpscaleProvider, UpscaleResult } from "./types";
 
 export type MockUpscaleFailure =
   | "create"
@@ -14,6 +14,7 @@ export type MockUpscaleFailure =
 
 export function createMockUpscaleProvider(options?: { failure?: MockUpscaleFailure }): UpscaleProvider {
   const jobs = new Map<string, UpscaleJob>();
+  const copies = new Map<string, { bytes: Uint8Array; mimeType: string }>();
   const failure = options?.failure ?? null;
 
   function requireJob(id: string): UpscaleJob {
@@ -31,10 +32,14 @@ export function createMockUpscaleProvider(options?: { failure?: MockUpscaleFailu
   }
 
   return {
-    async create(): Promise<UpscaleJob> {
+    async create(input: UpscaleCreateInput): Promise<UpscaleJob> {
       fail("create");
       const job: UpscaleJob = { id: `mock-upscale-${newId()}`, status: "created" };
       jobs.set(job.id, job);
+      copies.set(job.id, {
+        bytes: new Uint8Array(input.sourceBytes),
+        mimeType: input.mimeType || FIXTURE_VIDEO_MIME,
+      });
       return job;
     },
     async accept(id: string): Promise<UpscaleJob> {
@@ -43,10 +48,14 @@ export function createMockUpscaleProvider(options?: { failure?: MockUpscaleFailu
       job.status = "accepted";
       return job;
     },
-    async upload(id: string): Promise<UpscaleJob> {
+    async upload(id: string, bytes: Uint8Array): Promise<UpscaleJob> {
       fail("upload");
       const job = requireJob(id);
       job.status = "uploading";
+      copies.set(id, {
+        bytes: new Uint8Array(bytes),
+        mimeType: copies.get(id)?.mimeType ?? FIXTURE_VIDEO_MIME,
+      });
       return job;
     },
     async completeUpload(id: string): Promise<UpscaleJob> {
@@ -75,7 +84,12 @@ export function createMockUpscaleProvider(options?: { failure?: MockUpscaleFailu
       if (job.status !== "complete") {
         throw new Error("TOPAZ_RETRIEVE_FAILED");
       }
-      return { id, bytes: FIXTURE_MP4, mimeType: FIXTURE_VIDEO_MIME };
+      const copy = copies.get(id);
+      return {
+        id,
+        bytes: copy?.bytes ?? FIXTURE_MP4,
+        mimeType: copy?.mimeType ?? FIXTURE_VIDEO_MIME,
+      };
     },
   };
 }

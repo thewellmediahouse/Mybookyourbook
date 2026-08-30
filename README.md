@@ -55,11 +55,12 @@ Copy `.dev.vars` is already present for OpenNext local bindings (`NEXTJS_ENV=dev
 
 ```env
 AI_PROVIDER_MODE=mock
+FILMING_AI_MODE=live
 CONCEPT_AI_MODE=live
 PAYMENTS_MODE=test
 ```
 
-`AI_PROVIDER_MODE=mock` is pinned in `wrangler.jsonc` and must never call paid filming, enhancement, or branding APIs. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` and `OPENAI_API_KEY`. Missing that key must not silently mock. `PAYMENTS_MODE=test` stays on until live PayFast charges are explicitly approved.
+`AI_PROVIDER_MODE=mock` is pinned in `wrangler.jsonc` and must never call paid enhancement or branding APIs. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live` and `REAPI_API_KEY`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live` and `OPENAI_API_KEY`. Missing those keys must not silently mock. `PAYMENTS_MODE=test` stays on until live Rapyd charges are explicitly approved.
 
 ## Scripts
 
@@ -68,7 +69,7 @@ PAYMENTS_MODE=test
 | `npm run dev` | Next.js local dev (Node). Bindings via `initOpenNextCloudflareForDev`. |
 | `npm run check` | TypeScript (`tsc --noEmit`) |
 | `npm run lint` | ESLint |
-| `npm run build` | Next.js production build |
+| `npm run build` | OpenNext Worker bundle (also what Workers Builds should run) |
 | `npm run preview` | OpenNext build + Cloudflare Workers preview runtime (`http://127.0.0.1:8787`) |
 | `npm run preview:smoke` | Hit public pages, login redirect, and unauthenticated produce against a running preview |
 | `npm run deploy` | OpenNext build + deploy Worker `cineyou` (skips branding container rebuild) |
@@ -104,7 +105,7 @@ Worker name: `cineyou`. Live host: **https://production30.thewellmedia.com** (al
 **Git push does not update that host by itself.** `.open-next/` is gitignored. A push must run OpenNext, then deploy Worker `cineyou` — not a Cloudflare Pages project and not a bare `wrangler deploy`.
 
 - **GitHub Actions (in this repo):** [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on `main`. Add repository secret **`CLOUDFLARE_API_TOKEN`** (Cloudflare dashboard → Manage Account → API Tokens → Create Token → **Edit Cloudflare Workers**). Account ID is already in the workflow. Official: [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). A missing token is why **Deploy Worker** fails in about a minute.
-- **Workers Builds (dashboard):** Worker `cineyou` → Settings → Builds. Build command `npx opennextjs-cloudflare build`. Deploy command `npx opennextjs-cloudflare deploy -- --containers-rollout none`. Add build vars `NEXT_PUBLIC_APP_URL=https://production30.thewellmedia.com` and `NEXT_PUBLIC_APP_NAME=Production30`. Official: [OpenNext Workers Builds](https://opennext.js.org/cloudflare/howtos/dev-deploy). Use **either** Actions **or** Workers Builds, not both.
+- **Workers Builds (dashboard):** Worker `cineyou` → Settings → Builds. Build command `npm run build`. Deploy command `npm run cf:deploy`. Add build vars `NEXT_PUBLIC_APP_URL=https://production30.thewellmedia.com` and `NEXT_PUBLIC_APP_NAME=Production30`. Official: [OpenNext Workers Builds](https://opennext.js.org/cloudflare/howtos/dev-deploy). Use **either** Actions **or** Workers Builds, not both.
 - Do not Git-connect this repo as **Pages**. That is the old Astro preview path and will not deploy OpenNext.
 
 Bindings:
@@ -116,7 +117,7 @@ Bindings:
 - `COMMERCIAL_PRODUCTION_WORKFLOW` / `MediaProcessingService` exported from `worker.ts`
 - `AUTH_RATE_LIMIT`, `PRODUCTION_RATE_LIMIT`
 
-Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`.
+Plain vars in Wrangler (not secrets): `AI_PROVIDER_MODE=mock`, `FILMING_AI_MODE=live`, `CONCEPT_AI_MODE=live`, `OPENAI_MODEL`, `PAYMENTS_MODE=test`, `RAPYD_MODE=sandbox`.
 
 Secrets stay out of git. For a future deploy, set them with Wrangler **after** you explicitly decide to ship — `wrangler secret put` publishes a new Worker version:
 
@@ -162,7 +163,7 @@ npm run preview:smoke
 - [x] Wrangler secret `BETTER_AUTH_SECRET` set
 - [x] Real D1 `database_id` in `wrangler.jsonc`
 - [x] R2 bucket `cineyou-production` created and private (no public access / custom domain)
-- [x] `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test` explicit in Wrangler `vars`. Concept may be live via `CONCEPT_AI_MODE`.
+- [x] `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test` explicit in Wrangler `vars`. Filming may be live via `FILMING_AI_MODE`. Concept may be live via `CONCEPT_AI_MODE`.
 - [ ] Legal pages reviewed by counsel before launch
 - [ ] Do not enable live AI or live payments without an explicit decision
 - [x] Worker deployed (`https://cineyou.schalk-966.workers.dev`)

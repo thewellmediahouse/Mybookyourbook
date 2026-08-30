@@ -81,6 +81,52 @@ test("mock mode never calls reAPI even when a key is present", async () => {
   }
 });
 
+test("FILMING_AI_MODE=live uses reAPI while the rest of the pipeline stays mock", async () => {
+  const provider = createVideoGenerationProvider({
+    AI_PROVIDER_MODE: "mock",
+    FILMING_AI_MODE: "live",
+  });
+  await assert.rejects(
+    () =>
+      provider.submit({
+        prompt: "Presenter speaks to camera.",
+        aspectRatio: "9:16",
+        durationSeconds: 30,
+        imageUrls: [],
+        videoUrls: [],
+      }),
+    (error: unknown) => error instanceof Error && error.message === "Live filming is not connected yet.",
+  );
+});
+
+test("FILMING_AI_MODE=mock keeps filming mock even when AI_PROVIDER_MODE is live", async () => {
+  let called = 0;
+  const original = globalThis.fetch;
+  globalThis.fetch = (async () => {
+    called += 1;
+    throw new Error("paid HTTP must not run when filming is mock");
+  }) as typeof fetch;
+  try {
+    const provider = createVideoGenerationProvider({
+      AI_PROVIDER_MODE: "live",
+      FILMING_AI_MODE: "mock",
+      REAPI_API_KEY: "rk_live_secret",
+    });
+    const submitted = await provider.submit({
+      prompt: "Presenter speaks to camera.",
+      aspectRatio: "9:16",
+      durationSeconds: 30,
+      imageUrls: [],
+      videoUrls: [],
+    });
+    await provider.getStatus(submitted.id);
+    await provider.getResult(submitted.id);
+    assert.equal(called, 0);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
+
 test("live mode without a key does not silently mock", async () => {
   let called = 0;
   const original = globalThis.fetch;

@@ -570,6 +570,20 @@ Local sandbox keys authenticate (`GET /v1/data/countries` SUCCESS) but `POST /v1
 
 Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `5167beab-3ff1-4be0-a572-c81cfc757b04` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`. `AI_PROVIDER_MODE` stays `mock`. Pre-existing lint on `hero-phone-sequence.tsx` was not part of this change.
 
+### 2026-08-30 — reAPI key on Worker cineyou
+
+`REAPI_API_KEY` uploaded as a Worker secret from local `.dev.vars`. `AI_PROVIDER_MODE` stays `mock`, so Produce Commercial still does not call reAPI.
+
+### 2026-08-30 — Filming Your Commercial is live (reAPI)
+
+Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-seedance-2.5-face` when `REAPI_API_KEY` is set. `AI_PROVIDER_MODE` stays `mock`, so Enhancing Your Footage and Adding Your Brand do not call Topaz or the branding container. Mock enhancement now keeps the filmed file instead of swapping in the development fixture. Missing `REAPI_API_KEY` still fails with “Live filming is not connected yet.” and does not silently mock.
+
+Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — Workers Builds must OpenNext-build
+
+`npm run build` is now `opennextjs-cloudflare build` so a dashboard build that runs `npm run build` produces `.open-next/worker.js`. `npm run cf:deploy` is `wrangler deploy --containers-rollout none` so git deploys do not rebuild the branding container. GitHub Action uses those scripts.
+
 ### 2026-08-25 — Legal pages (working copy)
 
 Replaced placeholder `/terms`, `/privacy`, and `/acceptable-use` with original Production30 copy in the same sectioned style as typical creative platforms (accounts, credits, inputs/outputs, impersonation, processors, disclaimers). Specific to this product: 30-second commercial starring you, 1 Ad Credit = 1 production, identity photos + reference video, private storage, Ad Credit back vs money back via Help, no public face gallery. Banner still reads **Requires professional legal review before launch.** Not attorney-reviewed. Signup Terms checkbox now includes Acceptable use. Not deployed.

@@ -2,7 +2,7 @@
 
 Decision log for external APIs. **Do not invent request fields.** Before implementing a provider, read current official docs and record the date, URL, and any deviation from the master spec.
 
-Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live`. Live filming/payments only when those flags are explicitly enabled.
+Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial Concept may be independently live via `CONCEPT_AI_MODE=live`. Filming Your Commercial may be independently live via `FILMING_AI_MODE=live`. Live enhancement, branding, and Rapyd charges only when those flags are explicitly enabled.
 
 ## Rule
 
@@ -149,7 +149,7 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - Model: `doubao-seedance-2.5-face`. Auth: `Authorization: Bearer $REAPI_API_KEY` (server-only). No SDK; raw `fetch`.
 - Submit: `POST https://reapi.ai/api/v1/videos/generations`. Poll: `GET https://reapi.ai/api/v1/tasks/{id}` (same envelope). Official statuses: `processing` / `completed` / `failed`. Download `output.video_urls[0]` (HTTPS CDN; copy immediately). Task IDs must match `^[A-Za-z0-9._-]{8,128}$` before interpolation. HTTP 429 on poll is treated as still processing. Polling does not consume credits. Official `Idempotency-Key` is telemetry-only and is not sent.
 - Locked input (official default is 720p / `duration` 5 / `size` adaptive): `resolution: "480p"`, `duration: 30` (integer, not string), `size` from the brief (`9:16` / `16:9` / `1:1`; never `auto` or `adaptive`), `generate_audio: true`, `output_format: "mp4"`. Official optional fields used: `image_urls` (≤30), `video_urls` (≤10). Identity maps `@Image1–3` / `@Video1`; campaign stills `@Image4–9`. Empty arrays are omitted. Not sent: `audio_urls`, `image_with_roles`, `tools`, `return_last_frame`, `content_filter: false` (default safety stays on), `bitrate_mode`.
-- Workflow still polls with `step.sleep` 15s. `AI_PROVIDER_MODE=mock` never calls reAPI even if `REAPI_API_KEY` is set. Live without a key does not silently mock. Customer errors stay “Live filming is not connected yet.” / “We couldn't complete filming right now.” Reference files remain short-lived signed R2 GET URLs (1 hour) when S3 credentials are configured. Official: no `data:` URIs.
+- Workflow still polls with `step.sleep` 15s. `FILMING_AI_MODE=live` (or `AI_PROVIDER_MODE=live` when filming mode is unset) calls reAPI. `FILMING_AI_MODE=mock` never calls reAPI even if `REAPI_API_KEY` is set. Live without a key does not silently mock. Customer errors stay “Live filming is not connected yet.” / “We couldn't complete filming right now.” Reference files remain short-lived signed R2 GET URLs (1 hour) when S3 credentials are configured. Official: no `data:` URIs. Mock enhancement/branding keep the filmed file; they do not replace it with the development fixture.
 - Master spec still names fal.ai as the original Phase 16 target. Live filming now follows this reAPI contract.
 
 ### 2026-08-20 — Phase 17 Topaz Video API (Proteus `prob-4`)
@@ -248,7 +248,7 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 
 ### 2026-08-28 — Git push must OpenNext-deploy Worker cineyou
 
-- Official Workers Builds (fetched 2026-08-28): [Configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/), [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). Official OpenNext (fetched 2026-08-28): [Develop and deploy](https://opennext.js.org/cloudflare/howtos/dev-deploy) — build `npx opennextjs-cloudflare build`, deploy `npx opennextjs-cloudflare deploy`. `.open-next/` is gitignored; a bare `wrangler deploy` on push cannot ship the Next app. GitHub Action `.github/workflows/deploy.yml` deploys Worker `cineyou` (`production30.thewellmedia.com`) with `--containers-rollout none`. Dashboard Workers Builds, if used instead, must use those OpenNext commands and `NEXT_PUBLIC_*` build vars. Do not Git-connect this repo as Pages.
+- Official Workers Builds (fetched 2026-08-30): [Configuration](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/), [Build image](https://developers.cloudflare.com/workers/ci-cd/builds/build-image/), [GitHub Actions](https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/). Official OpenNext (fetched 2026-08-30): [Develop and deploy](https://opennext.js.org/cloudflare/howtos/dev-deploy) — build `npx @opennextjs/cloudflare build` (repo script `npm run build`), deploy `npx @opennextjs/cloudflare deploy` or `npm run cf:deploy` (`wrangler deploy --containers-rollout none`). `.open-next/` is gitignored; `next build` alone then `wrangler deploy` fails because `worker.ts` imports `.open-next/worker.js`. A deploy without `--containers-rollout none` tries to rebuild the branding container image and fails the Worker publish. GitHub Action `.github/workflows/deploy.yml` uses those scripts. Dashboard Workers Builds must use the same commands plus build vars `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_APP_NAME`. Do not Git-connect this repo as Pages.
 
 ### 2026-08-28 — Public origin is production30.thewellmedia.com
 
