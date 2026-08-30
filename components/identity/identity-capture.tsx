@@ -49,12 +49,87 @@ function PhotoCapture({
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
-  const cameraRef = useRef<HTMLInputElement>(null);
+  const liveRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const mountedRef = useRef(true);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
   const [pending, setPending] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [cameraLive, setCameraLive] = useState(false);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [requesting, setRequesting] = useState(false);
   const guide = PHOTO_GUIDES[role];
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!cameraLive) {
+      return;
+    }
+    const live = liveRef.current;
+    const stream = streamRef.current;
+    if (!live || !stream) {
+      return;
+    }
+    live.srcObject = stream;
+    void live.play().catch(() => undefined);
+  }, [cameraLive]);
+
+  function stopCamera() {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+    const live = liveRef.current;
+    if (live) {
+      live.srcObject = null;
+    }
+    setCameraLive(false);
+    setCameraReady(false);
+  }
+
+  async function startCamera() {
+    setError(null);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setError("The camera is not available in this browser. Upload a photo instead.");
+      return;
+    }
+    setRequesting(true);
+    try {
+      const stream = await openUserCamera();
+      if (!mountedRef.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      streamRef.current = stream;
+      setCameraLive(true);
+    } catch {
+      setError("Camera access was not given. You can upload a photo instead.");
+      stopCamera();
+    } finally {
+      setRequesting(false);
+    }
+  }
+
+  async function snapPhoto() {
+    const live = liveRef.current;
+    if (!live) {
+      return;
+    }
+    try {
+      const file = await captureJpegFromVideo(live);
+      stopCamera();
+      await onFile(file);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "We could not take that photo. Try again.");
+    }
+  }
 
   async function onFile(file: File | undefined) {
     setError(null);
@@ -74,7 +149,7 @@ function PhotoCapture({
         signUrl: `/api/identity/${slot}/uploads`,
         completeUrl: `/api/identity/${slot}/complete`,
         file,
-        mimeType: file.type,
+        mimeType: file.type || "image/jpeg",
         onProgress: setProgress,
       });
       if (uploaded.assetId) {
@@ -89,6 +164,7 @@ function PhotoCapture({
   }
 
   const shown = preview ?? (asset ? privateAssetSrc(asset.assetId) : null);
+  const showLive = cameraLive || requesting;
 
   return (
     <section className="rounded-lg border border-border bg-surface p-6">
@@ -98,7 +174,15 @@ function PhotoCapture({
         Face clear, good light, shoulders visible, one person, no heavy shadows, no filters, no
         sunglasses.
       </p>
-      {shown ? (
+      <video
+        ref={liveRef}
+        className={showLive ? "mt-4 w-full max-w-md rounded-md bg-black" : "hidden"}
+        muted
+        playsInline
+        autoPlay
+        onLoadedMetadata={() => setCameraReady(true)}
+      />
+      {!showLive && shown ? (
         <MediaPreview
           src={shown}
           mimeType={asset?.mimeType}
@@ -107,21 +191,32 @@ function PhotoCapture({
         />
       ) : null}
       <div className="mt-4 flex flex-wrap gap-3">
-        <Button type="button" variant="outline" disabled={pending} onClick={() => cameraRef.current?.click()}>
-          Take photo
-        </Button>
-        <Button type="button" variant="outline" disabled={pending} onClick={() => fileRef.current?.click()}>
-          Upload photo
-        </Button>
+        {cameraLive ? (
+          <>
+            <Button type="button" disabled={!cameraReady || pending} onClick={() => void snapPhoto()}>
+              Capture photo
+            </Button>
+            <Button type="button" variant="outline" disabled={pending} onClick={stopCamera}>
+              Cancel
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={pending}
+              busy={requesting}
+              onClick={() => void startCamera()}
+            >
+              Take photo
+            </Button>
+            <Button type="button" variant="outline" disabled={pending || requesting} onClick={() => fileRef.current?.click()}>
+              Upload photo
+            </Button>
+          </>
+        )}
       </div>
-      <input
-        ref={cameraRef}
-        type="file"
-        accept={identityPhotoAccept()}
-        capture="user"
-        className="hidden"
-        onChange={(event) => void onFile(event.target.files?.[0])}
-      />
       <input
         ref={fileRef}
         type="file"
@@ -333,6 +428,46 @@ function VideoCapture({
       {error ? <p className="mt-3 text-sm text-danger">{error}</p> : null}
     </section>
   );
+}
+
+async function openUserCamera(): Promise<MediaStream> {
+  try {
+    return await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" },
+      audio: false,
+    });
+  } catch {
+    return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+  }
+}
+
+function captureJpegFromVideo(video: HTMLVideoElement): Promise<File> {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  if (!width || !height) {
+    return Promise.reject(new Error("The camera is not ready yet. Try again."));
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return Promise.reject(new Error("We could not take that photo. Try again."));
+  }
+  context.drawImage(video, 0, 0, width, height);
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("We could not take that photo. Try again."));
+          return;
+        }
+        resolve(new File([blob], "photo.jpg", { type: "image/jpeg" }));
+      },
+      "image/jpeg",
+      0.92,
+    );
+  });
 }
 
 function pickRecorderMime(): string | undefined {

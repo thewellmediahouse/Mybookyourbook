@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (reference video upload keys)
+Last updated: 2026-08-30 (Take photo uses webcam)
 
 ## Foundation
 - [x] Next.js
@@ -591,6 +591,10 @@ GitHub Deploy Worker failed on `wrangler deploy` after OpenNext succeeded: lefto
 ### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
 
 `CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. Run 8 got swap on `/mnt/opennext.swap`, then OpenNext was cancelled after ~3 minutes (`The operation was canceled.`). A 6 GB Node heap on the 7 GB runner likely evicted the job. Heap is now 4 GB and Node is pinned to 24.
+
+### 2026-08-30 — Take photo opens the computer camera
+
+Take photo used a hidden file input with `capture="user"`, which desktop browsers treat as a file picker. It now asks for the webcam only after the click (same as Record Now), shows a live preview, and Capture photo saves a JPEG. Upload photo still picks a file. Camera is not requested until Take photo.
 
 ### 2026-08-30 — Reference video upload rejected generated user ids
 
