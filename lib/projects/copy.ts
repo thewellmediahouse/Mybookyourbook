@@ -50,14 +50,7 @@ export function resolveSimpleWizardStep(input: {
   if (requested >= 0) {
     return requested;
   }
-  if (input.freshStart) {
-    return 0;
-  }
-  if (input.conceptApproved) {
-    return 3;
-  }
-  if (input.hasConcept || input.briefReady) {
-    return 2;
-  }
+  // Always open on Profile unless the URL asks for a step. A saved brief or
+  // concept must not skip “Who should we film?” — we do not assume the profile.
   return 0;
 }

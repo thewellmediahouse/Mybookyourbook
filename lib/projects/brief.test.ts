@@ -36,7 +36,7 @@ test("prompt first line becomes the advert name", () => {
   assert.equal(titleFromPrompt(""), "");
 });
 
-test("simple create flow opens on the next unfinished step", () => {
+test("simple create flow opens on Profile unless a step is requested", () => {
   assert.equal(
     resolveSimpleWizardStep({
       profileReady: false,
@@ -49,9 +49,9 @@ test("simple create flow opens on the next unfinished step", () => {
   assert.equal(
     resolveSimpleWizardStep({
       profileReady: true,
-      conceptApproved: false,
-      hasConcept: false,
-      briefReady: false,
+      conceptApproved: true,
+      hasConcept: true,
+      briefReady: true,
     }),
     0,
   );

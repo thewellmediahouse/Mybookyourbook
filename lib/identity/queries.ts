@@ -21,11 +21,17 @@ export type IdentityBundle = {
   assets: Partial<Record<IdentityRole, IdentityAssetView>>;
 };
 
+export function identitySlotsFilled(
+  assets: Partial<Record<IdentityRole, { assetId: string } | null | undefined>> | null | undefined,
+): boolean {
+  return IDENTITY_SLOTS.every((slot) => Boolean(assets?.[slot]?.assetId));
+}
+
 export function isReferenceProfileReady(bundle: IdentityBundle | null): boolean {
   if (!bundle?.consented) {
     return false;
   }
-  return IDENTITY_SLOTS.every((slot) => Boolean(bundle.assets[slot]));
+  return identitySlotsFilled(bundle.assets);
 }
 
 export async function getIdentityBundle(

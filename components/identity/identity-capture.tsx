@@ -21,10 +21,12 @@ export function IdentityCapture({
   firstName,
   businessName,
   assets,
+  onSlotSaved,
 }: {
   firstName: string;
   businessName: string;
   assets: Partial<Record<IdentityRole, { assetId: string; mimeType: string }>>;
+  onSlotSaved?: (role: IdentityRole, asset: { assetId: string; mimeType: string }) => void;
 }) {
   return (
     <div className="mt-10 flex flex-col gap-10">
@@ -32,9 +34,15 @@ export function IdentityCapture({
         firstName={firstName}
         businessName={businessName}
         asset={assets.IDENTITY_VIDEO ?? null}
+        onSaved={(asset) => onSlotSaved?.("IDENTITY_VIDEO", asset)}
       />
       {(Object.keys(PHOTO_GUIDES) as Array<keyof typeof PHOTO_GUIDES>).map((role) => (
-        <PhotoCapture key={role} role={role} asset={assets[role] ?? null} />
+        <PhotoCapture
+          key={role}
+          role={role}
+          asset={assets[role] ?? null}
+          onSaved={(asset) => onSlotSaved?.(role, asset)}
+        />
       ))}
     </div>
   );
@@ -43,9 +51,11 @@ export function IdentityCapture({
 function PhotoCapture({
   role,
   asset,
+  onSaved,
 }: {
   role: keyof typeof PHOTO_GUIDES;
   asset: { assetId: string; mimeType: string } | null;
+  onSaved?: (asset: { assetId: string; mimeType: string }) => void;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -153,7 +163,9 @@ function PhotoCapture({
         onProgress: setProgress,
       });
       if (uploaded.assetId) {
+        const mimeType = file.type || "image/jpeg";
         setPreview(privateAssetSrc(uploaded.assetId));
+        onSaved?.({ assetId: uploaded.assetId, mimeType });
       }
       router.refresh();
     } catch (caught) {
@@ -234,10 +246,12 @@ function VideoCapture({
   firstName,
   businessName,
   asset,
+  onSaved,
 }: {
   firstName: string;
   businessName: string;
   asset: { assetId: string; mimeType: string } | null;
+  onSaved?: (asset: { assetId: string; mimeType: string }) => void;
 }) {
   const router = useRouter();
   const liveRef = useRef<HTMLVideoElement>(null);
@@ -354,7 +368,9 @@ function VideoCapture({
         onProgress: setProgress,
       });
       if (uploaded.assetId) {
+        const mimeType = file.type || "video/mp4";
         setPreviewUrl(privateAssetSrc(uploaded.assetId));
+        onSaved?.({ assetId: uploaded.assetId, mimeType });
       }
       router.refresh();
     } catch (caught) {

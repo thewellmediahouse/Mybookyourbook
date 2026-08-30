@@ -4,6 +4,8 @@ export const LEAVE_PAGE =
   "You can leave this page. We'll notify you when your commercial is ready.";
 export const IDENTITY_REQUIRED =
   "Add your selfie video and face photos to Reference Profile before we can film this commercial.";
+export const IDENTITY_UPLOAD_REQUIRED =
+  "Add a selfie video and front, left, and right face photos for this advert, then continue.";
 export const CONSENT_REQUIRED =
   "Confirm your identity consent before we can film this commercial.";
 export const CONCEPT_REQUIRED = "Approve a concept before we can film this commercial.";

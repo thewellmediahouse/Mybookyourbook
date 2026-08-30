@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (studio video previews)
+Last updated: 2026-08-30 (studio wizard)
 
 ## Foundation
 - [x] Next.js
@@ -645,6 +645,10 @@ Create Advert and My Adverts are one Studio page: wizard on the left, videos on 
 ### 2026-08-30 — Frontend said filming failed after reAPI finished
 
 Job `deeb29b3` submitted `task_01a053c9f4ae7049b057a41309c1e02c`. Polls 0–48 were `processing`. Poll 49 mapped to `failed` (`CUSTOMER_UNAVAILABLE`) and the Ad Credit was refunded. reAPI then showed `completed` with `output.video_urls`. Official statuses are only `processing` / `completed` / `failed`; anything else (or a non-200 / network blip) was treated as failed and aborted the job before `getResult`. Adapter now fails only on official failure or 401/403; unknown / 5xx / network stay processing. Poll budget is 180 × 15s. Retry reuses `video_provider_job_id` so a second generation is not POSTed. Import then hit Workflows’ 1 MiB `step.do` limit when `seedance-result` stored the MP4 as JSON. Download now writes private R2 inside the save step. Laptop promoted Worker `cineyou` `199d7aa8-922b-4db1-9d7e-c1181f4f3c16`. Job `deeb29b3` imported the existing task (15.3 MB source, no second POST) and is `COMPLETE`. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — Studio wizard stays on Who should we film
+
+The wizard no longer jumps to Approve or Generate just because a draft already has a script. Next after “Upload new” checks the files you just added, not a stale saved profile. Upload starts empty so the last Reference Profile is not reused by accident. “Start a new advert” clears the left-hand steps.
 
 ### 2026-08-30 — Studio previous videos play as looping previews
 

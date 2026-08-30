@@ -117,6 +117,7 @@ export default async function CreateAdvertPage({
       brand={brand ? { id: brand.id, logoAssetId: brand.logoAssetId } : null}
       canEditBrand={canManageBrands(studio.role)}
       extrasWrite={extrasWrite}
+      freshStart={params.new === "1"}
       initial={{
         projectId: draft?.id ?? null,
         businessId: brandId,

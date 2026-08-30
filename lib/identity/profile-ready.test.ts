@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isReferenceProfileReady, type IdentityBundle } from "./queries";
+import { identitySlotsFilled, isReferenceProfileReady, type IdentityBundle } from "./queries";
 
 function bundle(partial: Partial<IdentityBundle>): IdentityBundle {
   return {
@@ -29,6 +29,16 @@ test("reference profile needs consent, selfie video, and three face photos", () 
         },
       }),
     ),
+    true,
+  );
+  assert.equal(identitySlotsFilled({}), false);
+  assert.equal(
+    identitySlotsFilled({
+      IDENTITY_VIDEO: { assetId: "a" },
+      IDENTITY_FRONT: { assetId: "b" },
+      IDENTITY_LEFT: { assetId: "c" },
+      IDENTITY_RIGHT: { assetId: "d" },
+    }),
     true,
   );
 });

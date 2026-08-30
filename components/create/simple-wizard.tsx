@@ -31,10 +31,13 @@ import {
 } from "@/lib/projects/brief";
 import { CREATE_BODY, SIMPLE_WIZARD_STEPS } from "@/lib/projects/copy";
 import { briefReadyForConcept } from "@/lib/projects/save";
-import { IDENTITY_REQUIRED, PRODUCE_COMMERCIAL, PRODUCING } from "@/lib/production/copy";
+import { identitySlotsFilled } from "@/lib/identity/queries";
+import { IDENTITY_REQUIRED, IDENTITY_UPLOAD_REQUIRED, PRODUCE_COMMERCIAL, PRODUCING } from "@/lib/production/copy";
 import type { IdentityRole } from "@/lib/r2/keys";
 import { cn } from "@/lib/utils";
 import type { WizardBrief } from "@/components/create/wizard";
+
+type IdentityAssetMap = Partial<Record<IdentityRole, { assetId: string; mimeType: string }>>;
 
 export function SimpleCreateWizard({
   initial,
@@ -52,6 +55,7 @@ export function SimpleCreateWizard({
   brand,
   canEditBrand,
   extrasWrite,
+  freshStart = false,
 }: {
   initial: WizardBrief;
   brands: { id: string; name: string }[];
@@ -64,22 +68,26 @@ export function SimpleCreateWizard({
   consented: boolean;
   firstName: string;
   businessName: string;
-  identityAssets: Partial<Record<IdentityRole, { assetId: string; mimeType: string }>>;
+  identityAssets: IdentityAssetMap;
   brand: { id: string; logoAssetId: string | null } | null;
   canEditBrand: boolean;
   extrasWrite: { allowed: true } | { allowed: false; reason: string };
+  freshStart?: boolean;
 }) {
   const router = useRouter();
   const [step, setStep] = useState(initialStep);
   const [mode, setMode] = useState<"saved" | "upload" | null>(null);
+  const [uploadAssets, setUploadAssets] = useState<IdentityAssetMap>({});
   const [brief, setBrief] = useState(initial);
   const [locked, setLocked] = useState(briefLocked);
+  const [liveConcept, setLiveConcept] = useState(concept);
   const [approved, setApproved] = useState(Boolean(concept?.approved));
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [error, setError] = useState<string | null>(null);
   const [producing, setProducing] = useState(false);
   const timer = useRef<number | null>(null);
   const briefRef = useRef(brief);
+  const wasFresh = useRef(false);
   briefRef.current = brief;
 
   const prompt = brief.problem || brief.valueProposition;
@@ -93,6 +101,32 @@ export function SimpleCreateWizard({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (freshStart && !wasFresh.current) {
+      setStep(0);
+      setMode(null);
+      setUploadAssets({});
+      setBrief(initial);
+      setLocked(false);
+      setLiveConcept(null);
+      setApproved(false);
+      setProducing(false);
+      setError(null);
+    }
+    wasFresh.current = freshStart;
+  }, [freshStart, initial]);
+
+  useEffect(() => {
+    if (freshStart) {
+      return;
+    }
+    setBrief((currentBrief) =>
+      initial.projectId && initial.projectId !== currentBrief.projectId
+        ? { ...currentBrief, projectId: initial.projectId }
+        : currentBrief,
+    );
+  }, [freshStart, initial.projectId]);
 
   function patch(next: Partial<WizardBrief>, autosave = true) {
     setBrief((currentBrief) => {
@@ -171,8 +205,13 @@ export function SimpleCreateWizard({
         setError("Choose a saved Reference Profile, or upload new photos and video for this advert.");
         return;
       }
-      if (!profileReady) {
-        setError(IDENTITY_REQUIRED);
+      if (mode === "saved") {
+        if (!profileReady) {
+          setError(IDENTITY_REQUIRED);
+          return;
+        }
+      } else if (!identitySlotsFilled(uploadAssets)) {
+        setError(IDENTITY_UPLOAD_REQUIRED);
         return;
       }
       setStep(1);
@@ -280,7 +319,10 @@ export function SimpleCreateWizard({
               selected={mode === "upload"}
               title="Upload new photos or video"
               body="Add a new selfie video and face photos for this advert. You can still pick extra photos below."
-              onClick={() => setMode("upload")}
+              onClick={() => {
+                setMode("upload");
+                setUploadAssets({});
+              }}
             />
           </div>
           {mode === "saved" && profileReady ? (
@@ -294,7 +336,10 @@ export function SimpleCreateWizard({
                 <IdentityCapture
                   firstName={firstName}
                   businessName={businessName}
-                  assets={identityAssets}
+                  assets={uploadAssets}
+                  onSlotSaved={(role, asset) =>
+                    setUploadAssets((currentAssets) => ({ ...currentAssets, [role]: asset }))
+                  }
                 />
               </div>
             )
@@ -442,10 +487,11 @@ export function SimpleCreateWizard({
         <ConceptPanel
           projectId={brief.projectId}
           brief={brief}
-          initial={concept}
+          initial={liveConcept}
           onError={setError}
           persist={persist}
           onConcept={(next) => {
+            setLiveConcept(next);
             setLocked(next.approved);
             setApproved(next.approved);
           }}
