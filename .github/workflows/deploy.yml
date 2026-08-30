@@ -1,12 +1,17 @@
 name: Deploy Worker
 
-# OpenNext on Workers. Git push must OpenNext-build, then deploy Worker cineyou.
+# OpenNext on Workers. Git push must OpenNext-build, then promote Worker cineyou.
 # Official: https://opennext.js.org/cloudflare/howtos/dev-deploy
 # Official: https://developers.cloudflare.com/workers/ci-cd/external-cicd/github-actions/
+# Official: https://developers.cloudflare.com/workers/versions-and-deployments/deployment-management/
 #
 # Do not use `npm run build` here. That script is `next build`. OpenNext itself
 # calls `npm run build`. Pointing `build` at `opennextjs-cloudflare build`
 # recurses until the runner is killed.
+#
+# Do not use `wrangler deploy` here. It re-applies queue consumers and fails
+# with Authentication error [code: 10000] on the Edit Cloudflare Workers token.
+# `versions upload` + `versions deploy` go live without changing those triggers.
 
 on:
   push:
@@ -55,4 +60,4 @@ jobs:
       - name: Deploy cineyou
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-        run: npm run cf:deploy
+        run: npm run cf:deploy:ci

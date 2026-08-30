@@ -22,6 +22,7 @@
     "preview:smoke": "tsx scripts/preview-smoke.ts",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --containers-rollout none",
     "cf:deploy": "wrangler deploy --containers-rollout none",
+    "cf:deploy:ci": "bash scripts/deploy-ci.sh",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
