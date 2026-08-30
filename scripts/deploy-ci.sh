@@ -12,11 +12,18 @@ if [ -z "${GITHUB_SHA:-}" ] || [ -z "${GITHUB_RUN_ID:-}" ]; then
   exit 1
 fi
 
+if [ ! -f .open-next/worker.js ]; then
+  echo "OpenNext output is missing (.open-next/worker.js)." >&2
+  ls -la .open-next 2>/dev/null || true
+  exit 1
+fi
+
 tag="gha-${GITHUB_RUN_ID}"
 
 npx wrangler versions upload \
   --tag "$tag" \
   --message "GitHub ${GITHUB_SHA}" \
-  --keep-vars
+  --keep-vars \
+  --x-auto-create=false
 
 npx wrangler versions deploy --version-tag "${tag}@100%" --yes

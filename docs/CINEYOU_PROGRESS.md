@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (GitHub deploy skips queue trigger update)
+Last updated: 2026-08-30 (GitHub verify only; laptop ships Worker)
 
 ## Foundation
 - [x] Next.js
@@ -592,9 +592,9 @@ GitHub Deploy Worker failed on `wrangler deploy` after OpenNext succeeded: lefto
 
 `CLOUDFLARE_API_TOKEN` is now present. Attempt 2 of run `33320891101` passed the token check and `npm ci`, then `npm run build` was killed with exit 143 (SIGTERM) after ~3.5 minutes. That is the 7 GB GitHub runner running out of memory, not a compile error we could read from public logs. Run 8 got swap on `/mnt/opennext.swap`, then OpenNext was cancelled after ~3 minutes (`The operation was canceled.`). A 6 GB Node heap on the 7 GB runner likely evicted the job. Heap is now 4 GB and Node is pinned to 24.
 
-### 2026-08-30 — GitHub deploy failed after OpenNext on queue consumers
+### 2026-08-30 — GitHub cannot publish Worker cineyou
 
-OpenNext build on GitHub now succeeds. `wrangler deploy` then exits 1: the Worker is uploaded, then queue consumer updates return Authentication error [code: 10000]. The Edit Cloudflare Workers token cannot update Queues. The same leftover failure happened on a laptop deploy for `cineyou-cleanup`. GitHub now uses official `wrangler versions upload` + `wrangler versions deploy` so the new version goes live without re-applying queue consumers. Consumers already attached to Worker cineyou stay. Local `npm run cf:deploy` is unchanged.
+OpenNext on GitHub succeeds (~29s). Every `wrangler deploy` / `versions upload` then dies in ~3s and **no new Worker version is created**. The repository secret cannot publish scripts. GitHub Actions is typecheck only again (last green pattern). Recreate `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit on account `9664d6a341ee02a3dc21db99dc992c61` and Queues Edit. Until then: `npm run deploy` on this laptop. This laptop promoted Worker `cineyou` version `07c5e854-433e-4592-bd20-8330b645d08d` (reference-video keys + Take photo camera) with `versions upload` + `versions deploy`. Branding container not rebuilt. `scripts/deploy-ci.sh` stays for when the token can publish.
 
 ### 2026-08-30 — Take photo opens the computer camera
 
