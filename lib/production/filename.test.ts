@@ -43,6 +43,7 @@ test("download uses attachment Content-Disposition with the production30 filenam
   });
   assert.equal(headers["Content-Disposition"], `attachment; filename="${filename}"`);
   assert.equal(headers["Content-Length"], "2048");
+  assert.equal(headers["Accept-Ranges"], "bytes");
   assert.equal(headers["Cache-Control"], "private, max-age=60");
   const inline = assetStreamHeaders({
     mimeType: "video/mp4",

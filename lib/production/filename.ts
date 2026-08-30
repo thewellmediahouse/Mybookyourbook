@@ -35,6 +35,7 @@ export function assetStreamHeaders(input: {
   const headers: Record<string, string> = {
     "Content-Type": input.mimeType,
     "Cache-Control": "private, max-age=60",
+    "Accept-Ranges": "bytes",
     "Content-Disposition": contentDisposition(
       input.download ? "attachment" : "inline",
       input.download ? input.filename : undefined,

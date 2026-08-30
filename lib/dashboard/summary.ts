@@ -12,6 +12,7 @@ import {
   user,
   workspaceMembers,
 } from "@/lib/db/schema";
+import { pickPlayableVideoAssetId } from "@/lib/api/byte-range";
 import { IN_PRODUCTION_STATUSES } from "@/lib/projects/status";
 import { asCount } from "./format";
 
@@ -100,17 +101,20 @@ export async function listCommercials(
     .limit(limit);
   const projectIds = rows.map((row) => row.id);
   const thumbs = await thumbnailIdsForProjects(db, projectIds);
-  const jobs = await latestJobsForProjects(db, projectIds);
-  return rows.map((row) => ({
-    ...row,
-    thumbnailAssetId: thumbs.get(row.id) ?? null,
-    jobStatus: jobs.get(row.id)?.status ?? null,
-    finalAssetId: jobs.get(row.id)?.finalAssetId ?? null,
-  }));
+  const jobs = await jobsForProjects(db, projectIds);
+  return rows.map((row) => {
+    const projectJobs = jobs.get(row.id) ?? [];
+    return {
+      ...row,
+      thumbnailAssetId: thumbs.get(row.id) ?? null,
+      jobStatus: projectJobs[0]?.status ?? null,
+      finalAssetId: pickPlayableVideoAssetId(projectJobs),
+    };
+  });
 }
 
-async function latestJobsForProjects(db: Db, projectIds: string[]) {
-  const map = new Map<string, { status: string; finalAssetId: string | null }>();
+async function jobsForProjects(db: Db, projectIds: string[]) {
+  const map = new Map<string, Array<{ status: string; finalAssetId: string | null; sourceAssetId: string | null }>>();
   if (projectIds.length === 0) {
     return map;
   }
@@ -119,15 +123,20 @@ async function latestJobsForProjects(db: Db, projectIds: string[]) {
       projectId: productionJobs.projectId,
       status: productionJobs.status,
       finalAssetId: productionJobs.finalAssetId,
+      sourceAssetId: productionJobs.sourceAssetId,
       createdAt: productionJobs.createdAt,
     })
     .from(productionJobs)
     .where(inArray(productionJobs.projectId, projectIds))
     .orderBy(desc(productionJobs.createdAt));
   for (const row of rows) {
-    if (!map.has(row.projectId)) {
-      map.set(row.projectId, { status: row.status, finalAssetId: row.finalAssetId });
-    }
+    const list = map.get(row.projectId) ?? [];
+    list.push({
+      status: row.status,
+      finalAssetId: row.finalAssetId,
+      sourceAssetId: row.sourceAssetId,
+    });
+    map.set(row.projectId, list);
   }
   return map;
 }

@@ -31,7 +31,7 @@ export async function getLatestJob(db: Db, projectId: string) {
 
 export async function getPlayableFinalJob(db: Db, projectId: string) {
   const latest = await getLatestJob(db, projectId);
-  if (latest?.finalAssetId) {
+  if (latest?.finalAssetId || (latest?.status === "COMPLETE" && latest.sourceAssetId)) {
     return latest;
   }
   const [complete] = await db

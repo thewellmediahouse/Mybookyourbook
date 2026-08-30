@@ -16,9 +16,14 @@ export async function putWorkspaceObject(
   });
 }
 
-export async function getWorkspaceObject(bucket: R2Bucket, workspaceId: string, objectKey: string) {
+export async function getWorkspaceObject(
+  bucket: R2Bucket,
+  workspaceId: string,
+  objectKey: string,
+  options?: Pick<R2GetOptions, "range">,
+) {
   assertWorkspaceObjectKey(objectKey, workspaceId);
-  return bucket.get(objectKey);
+  return options ? bucket.get(objectKey, options) : bucket.get(objectKey);
 }
 
 export async function headWorkspaceObject(bucket: R2Bucket, workspaceId: string, objectKey: string) {

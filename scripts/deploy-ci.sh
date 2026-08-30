@@ -7,8 +7,22 @@
 
 set -euo pipefail
 
-if [ -z "${GITHUB_SHA:-}" ] || [ -z "${GITHUB_RUN_ID:-}" ]; then
-  echo "This script is for GitHub Actions. Locally use: npm run cf:deploy" >&2
+# Official Workers Builds injects WORKERS_CI, WORKERS_CI_COMMIT_SHA,
+# WORKERS_CI_BUILD_UUID: https://developers.cloudflare.com/workers/ci-cd/builds/configuration/#environment-variables
+sha="${GITHUB_SHA:-${WORKERS_CI_COMMIT_SHA:-}}"
+if [ -n "${WORKERS_CI:-}" ] && [ -n "${WORKERS_CI_BUILD_UUID:-}" ]; then
+  tag="cfb-${WORKERS_CI_BUILD_UUID}"
+  message="Workers Builds ${sha}"
+elif [ -n "${GITHUB_SHA:-}" ] && [ -n "${GITHUB_RUN_ID:-}" ]; then
+  tag="gha-${GITHUB_RUN_ID}"
+  message="GitHub ${GITHUB_SHA}"
+else
+  echo "This script is for GitHub Actions or Workers Builds. Locally use: npm run cf:deploy" >&2
+  exit 1
+fi
+
+if [ -z "$sha" ]; then
+  echo "Missing commit SHA (GITHUB_SHA or WORKERS_CI_COMMIT_SHA)." >&2
   exit 1
 fi
 
@@ -18,11 +32,9 @@ if [ ! -f .open-next/worker.js ]; then
   exit 1
 fi
 
-tag="gha-${GITHUB_RUN_ID}"
-
 npx wrangler versions upload \
   --tag "$tag" \
-  --message "GitHub ${GITHUB_SHA}" \
+  --message "$message" \
   --keep-vars \
   --x-auto-create=false
 

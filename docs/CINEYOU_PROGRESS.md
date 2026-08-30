@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (choose refs per advert)
+Last updated: 2026-08-30 (studio video previews)
 
 ## Foundation
 - [x] Next.js
@@ -645,6 +645,14 @@ Create Advert and My Adverts are one Studio page: wizard on the left, videos on 
 ### 2026-08-30 — Frontend said filming failed after reAPI finished
 
 Job `deeb29b3` submitted `task_01a053c9f4ae7049b057a41309c1e02c`. Polls 0–48 were `processing`. Poll 49 mapped to `failed` (`CUSTOMER_UNAVAILABLE`) and the Ad Credit was refunded. reAPI then showed `completed` with `output.video_urls`. Official statuses are only `processing` / `completed` / `failed`; anything else (or a non-200 / network blip) was treated as failed and aborted the job before `getResult`. Adapter now fails only on official failure or 401/403; unknown / 5xx / network stay processing. Poll budget is 180 × 15s. Retry reuses `video_provider_job_id` so a second generation is not POSTed. Import then hit Workflows’ 1 MiB `step.do` limit when `seedance-result` stored the MP4 as JSON. Download now writes private R2 inside the save step. Laptop promoted Worker `cineyou` `199d7aa8-922b-4db1-9d7e-c1181f4f3c16`. Job `deeb29b3` imported the existing task (15.3 MB source, no second POST) and is `COMPLETE`. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — Studio previous videos play as looping previews
+
+Finished cards were blank: `/api/assets` ignored `Range`, loaded the whole file, and the preview sat in-flow without `autoPlay`. Playback now returns **206** byte ranges from private R2, the card video is `absolute` + muted + `autoPlay` + `loop`, and the list uses a finished file or the filmed source. Still needs a Worker publish to show on the live site.
+
+### 2026-08-30 — GitHub 7e33322 is live; Git still does not auto-deploy
+
+`origin/main` `7e33322` is Worker `cineyou` version `7a54ecbd-c6d0-47b0-8ab2-21ae8d63874f` (tag `github-7e33322`) at 100% on https://production30.thewellmedia.com. Branding container not rebuilt. `PAYMENTS_MODE` stays `test`. GitHub Actions still typechecks only. Workers Builds has no GitHub connection (0 builds). Official connect is Worker `cineyou` → Settings → Builds → Connect → `thewellmediahouse/Mybookyourbook`, build `npm run cf:build`, deploy `npm run cf:deploy:ci`. Do not connect as Pages. `scripts/deploy-ci.sh` now accepts Workers Builds `WORKERS_CI_*` vars as well as GitHub Actions.
 
 ### 2026-08-25 — Legal pages (working copy)
 

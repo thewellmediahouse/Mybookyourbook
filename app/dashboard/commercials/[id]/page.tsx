@@ -35,7 +35,7 @@ export default async function CommercialDetailPage({
     .limit(1);
   const job = await getPlayableFinalJob(db, access.project.id);
   const thumbnailAssetId = await getProjectThumbnailAssetId(db, access.project.id);
-  const finalAssetId = job?.finalAssetId ?? null;
+  const finalAssetId = job?.finalAssetId ?? job?.sourceAssetId ?? null;
   const dated = job?.completedAt ?? access.project.updatedAt;
   const playerClass =
     access.project.aspectRatio === "9:16"

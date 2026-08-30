@@ -4,12 +4,12 @@ import { streamPrivateAsset } from "@/lib/api/assets";
 export const dynamic = "force-dynamic";
 
 export async function GET(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ assetId: string }> },
 ) {
   try {
     const { assetId } = await context.params;
-    return await streamPrivateAsset(assetId);
+    return await streamPrivateAsset(assetId, request);
   } catch (error) {
     return fromCaught(error);
   }

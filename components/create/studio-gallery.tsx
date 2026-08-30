@@ -100,11 +100,7 @@ function StudioVideoCard({
     <article className="group overflow-hidden rounded-2xl border border-border bg-surface">
       <div className={cn("relative w-full overflow-hidden bg-surface-secondary", shape)}>
         {ready ? (
-          <StudioPreview
-            title={item.title}
-            src={`/api/assets/${item.finalAssetId}`}
-            poster={item.thumbnailAssetId ? `/api/assets/${item.thumbnailAssetId}` : undefined}
-          />
+          <StudioPreview title={item.title} src={`/api/assets/${item.finalAssetId}`} />
         ) : producing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
             <span
@@ -203,15 +199,7 @@ function StudioVideoCard({
   );
 }
 
-function StudioPreview({
-  title,
-  src,
-  poster,
-}: {
-  title: string;
-  src: string;
-  poster?: string;
-}) {
+function StudioPreview({ title, src }: { title: string; src: string }) {
   const ref = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -219,33 +207,58 @@ function StudioPreview({
     if (!node) {
       return;
     }
+    const tryPlay = () => {
+      node.muted = true;
+      void node.play().catch(() => undefined);
+    };
+    const onEnded = () => {
+      node.currentTime = 0;
+      tryPlay();
+    };
+    tryPlay();
+    node.addEventListener("canplay", tryPlay);
+    node.addEventListener("loadeddata", tryPlay);
+    node.addEventListener("ended", onEnded);
+    let root: Element | null = node.parentElement;
+    while (root && root !== document.body) {
+      const overflowY = window.getComputedStyle(root).overflowY;
+      if (overflowY === "auto" || overflowY === "scroll") {
+        break;
+      }
+      root = root.parentElement;
+    }
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          void node.play().catch(() => undefined);
+          tryPlay();
         } else {
           node.pause();
         }
       },
-      { threshold: 0.35 },
+      { root: root === document.body ? null : root, threshold: 0.15, rootMargin: "64px" },
     );
     observer.observe(node);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      node.removeEventListener("canplay", tryPlay);
+      node.removeEventListener("loadeddata", tryPlay);
+      node.removeEventListener("ended", onEnded);
+    };
   }, [src]);
 
   return (
     <video
       ref={ref}
-      className="h-full w-full object-cover"
-      src={src}
-      poster={poster}
+      className="absolute inset-0 size-full object-cover"
+      autoPlay
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="auto"
       disablePictureInPicture
       aria-label={`${title} preview`}
     >
+      <source src={src} type="video/mp4" />
       Your commercial is ready.
     </video>
   );

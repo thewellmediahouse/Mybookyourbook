@@ -1,38 +1,66 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
+import { contentRangeHeader, parseBytesRange } from "@/lib/api/byte-range";
 import { requireOwnedAsset } from "@/lib/api/auth";
 import { jsonError } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
 import { businesses, projects } from "@/lib/db/schema";
 import { assetStreamHeaders, finalCommercialFilename } from "@/lib/production/filename";
-import { getMediaBucket, getWorkspaceObject } from "@/lib/r2/bucket";
+import { getMediaBucket, getWorkspaceObject, headWorkspaceObject } from "@/lib/r2/bucket";
 
 export async function streamPrivateAsset(assetId: string, request?: Request) {
   const access = await requireOwnedAsset(assetId);
   if (access.asset.deletedAt) {
     return jsonError("Not found.", 404);
   }
-  const object = await getWorkspaceObject(
-    await getMediaBucket(),
-    access.workspace.id,
-    access.asset.r2ObjectKey,
-  );
-  if (!object) {
-    return jsonError("Not found.", 404);
-  }
-  const bytes = await object.arrayBuffer();
-  if (bytes.byteLength === 0) {
+  const bucket = await getMediaBucket();
+  const head = await headWorkspaceObject(bucket, access.workspace.id, access.asset.r2ObjectKey);
+  if (!head || head.size === 0) {
     return jsonError("Not found.", 404);
   }
   const download = Boolean(request && new URL(request.url).searchParams.get("download") === "1");
-  const mimeType = object.httpMetadata?.contentType || access.asset.mimeType;
-  return new NextResponse(bytes, {
-    headers: assetStreamHeaders({
-      mimeType,
-      sizeBytes: bytes.byteLength,
-      download,
-      filename: download ? await downloadFilenameForAsset(access.asset) : undefined,
-    }),
+  const mimeType = head.httpMetadata?.contentType || access.asset.mimeType || "application/octet-stream";
+  const filename = download ? await downloadFilenameForAsset(access.asset) : undefined;
+  const range = !download && request ? parseBytesRange(request.headers.get("Range"), head.size) : { kind: "all" as const };
+  if (range.kind === "unsatisfiable") {
+    return new NextResponse(null, {
+      status: 416,
+      headers: {
+        "Accept-Ranges": "bytes",
+        "Content-Range": `bytes */${head.size}`,
+      },
+    });
+  }
+  if (request?.method === "HEAD" && range.kind === "all") {
+    return new NextResponse(null, {
+      status: 200,
+      headers: assetStreamHeaders({ mimeType, sizeBytes: head.size, download, filename }),
+    });
+  }
+  const object = await getWorkspaceObject(
+    bucket,
+    access.workspace.id,
+    access.asset.r2ObjectKey,
+    range.kind === "slice"
+      ? { range: { offset: range.start, length: range.end - range.start + 1 } }
+      : undefined,
+  );
+  if (!object || !("body" in object) || !object.body) {
+    return jsonError("Not found.", 404);
+  }
+  const slice = range.kind === "slice";
+  const headers = assetStreamHeaders({
+    mimeType,
+    sizeBytes: slice ? range.end - range.start + 1 : head.size,
+    download,
+    filename,
+  });
+  if (slice) {
+    headers["Content-Range"] = contentRangeHeader(range.start, range.end, head.size);
+  }
+  return new NextResponse(object.body, {
+    status: slice ? 206 : 200,
+    headers,
   });
 }
 
