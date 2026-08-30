@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (GitHub OpenNext build memory)
+Last updated: 2026-08-30 (GitHub cannot OpenNext-build cineyou)
 
 ## Foundation
 - [x] Next.js
@@ -579,6 +579,10 @@ Verification: `npm run check`, Rapyd/billing tests. Worker `cineyou` version `51
 Owner asked to switch filming on. `FILMING_AI_MODE=live` calls reAPI `doubao-seedance-2.5-face` when `REAPI_API_KEY` is set. `AI_PROVIDER_MODE` stays `mock`, so Enhancing Your Footage and Adding Your Brand do not call Topaz or the branding container. Mock enhancement now keeps the filmed file instead of swapping in the development fixture. Missing `REAPI_API_KEY` still fails with “Live filming is not connected yet.” and does not silently mock.
 
 Verification: `npm run check`, filming/upscale/production tests. Worker `cineyou` version `bd4dcd99-9385-4633-8248-aae3e1757107` with `--containers-rollout none`. `PAYMENTS_MODE` stays `test`.
+
+### 2026-08-30 — GitHub cannot finish the OpenNext build
+
+Runs 7–9 all died in OpenNext: missing token (fixed), swap on `/swapfile` (fixed), then the build was cancelled after ~3.5 minutes even with swap and a 4 GB heap (`The operation was canceled.` / exit 143). GitHub-hosted `ubuntu-latest` (~7 GB) cannot complete `opennextjs-cloudflare build` for this app. The Action now typechecks only. Production deploy is `npm run deploy` from a larger machine, or Cloudflare Workers Builds (Worker `cineyou` still has zero Builds). Do not run OpenNext on the free GitHub runner.
 
 ### 2026-08-30 — GitHub Deploy Worker died mid-OpenNext build
 
