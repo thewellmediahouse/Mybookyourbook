@@ -166,7 +166,11 @@ Default pipeline: `AI_PROVIDER_MODE=mock` and `PAYMENTS_MODE=test`. Commercial C
 - Official contract re-checked 2026-08-30: [Video Quickstart](https://developer.topazlabs.com/getting-started/video-quickstart), [Create Request](https://developer.topazlabs.com/reference/api-endpoints/video/create-request.md). Same create → accept → multipart PUT → complete-upload → poll `download.url` path. Default model still `prob-4` (official UpscaleFilter enum). Output still 1080p from the brief aspect, not 4K. Auth still `X-API-Key`.
 - `ENHANCEMENT_AI_MODE=live` (or `AI_PROVIDER_MODE=live` when enhancement mode is unset) calls Topaz after filming is saved to private R2 and before branding / Studio playback. `ENHANCEMENT_AI_MODE=mock` never calls Topaz even if `AI_PROVIDER_MODE=live` and `TOPAZ_API_KEY` is set. Live without a key does not silently mock; create fails with “Live enhancement is not connected yet.” Live HTTP errors use a customer-safe enhancement message. Customers still see Enhancing Your Footage. Branding stays on `AI_PROVIDER_MODE`.
 - Studio Play streams the authenticated `/api/assets/{id}` file (no `?download=1`). A request with no Range streams the object. A `Range` slice is capped at 1 MB so one isolate cannot pull a whole commercial in a single Worker read. Download (`?download=1`) still sends the whole file. Film again starts a new production on the same commercial (`READY` or `FAILED`) with the same approved script and references and spends 1 Ad Credit.
-- Studio card previews use the filmed source file (smaller than the enhanced finished file) with `?preview=1` and play only the first 3 seconds (`STUDIO_PREVIEW_SECONDS`). Play / Download still use the finished file. Only the on-screen card attaches a preview `<video>`.
+- Studio card previews use the filmed source file (smaller than the enhanced finished file) with `?preview=1` and play only the first 3 seconds (`STUDIO_PREVIEW_SECONDS`). Play / Download still use the finished file. Every card on screen plays that generated clip. Cards do not use a face photo as a stand-in.
+
+### 2026-08-31 — Studio cards preview the generated clip
+
+Studio Your videos must show the filmed commercial, not a saved face photo. Each card in view plays the first 3 seconds of the filmed file. A captured frame from that clip is kept when the card scrolls away. Tiny branding fixture JPEGs are not used as posters. Image GETs still buffer with `arrayBuffer`.
 
 ### 2026-08-31 — Studio card preview is a short filmed clip
 

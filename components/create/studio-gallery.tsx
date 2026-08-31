@@ -26,12 +26,6 @@ import { isInProductionStatus, projectStatusLabel } from "@/lib/projects/status"
 import type { CommercialListItem } from "@/lib/dashboard/summary";
 import { cn } from "@/lib/utils";
 
-function firstReadyPreviewId(items: CommercialListItem[]) {
-  return (
-    items.find((item) => item.previewAssetId && !isInProductionStatus(item.status))?.id ?? null
-  );
-}
-
 export function StudioGallery({
   items,
   canDelete,
@@ -47,15 +41,6 @@ export function StudioGallery({
 }) {
   const router = useRouter();
   const filming = items.some((item) => isInProductionStatus(item.status));
-  const [previewId, setPreviewId] = useState<string | null | undefined>(undefined);
-  const activePreviewId =
-    previewId === undefined
-      ? firstReadyPreviewId(items)
-      : previewId && items.some((item) => item.id === previewId)
-        ? previewId
-        : previewId === null
-          ? null
-          : firstReadyPreviewId(items);
 
   useEffect(() => {
     if (!filming) {
@@ -90,11 +75,6 @@ export function StudioGallery({
                 canProduce={canProduce}
                 credits={credits}
                 produceBlockedReason={produceBlockedReason}
-                previewActive={activePreviewId === item.id}
-                onPreviewVisible={() => setPreviewId(item.id)}
-                onPreviewHidden={() => {
-                  setPreviewId((current) => (current === item.id || current === undefined ? null : current));
-                }}
               />
             </li>
           ))}
@@ -110,18 +90,12 @@ function StudioVideoCard({
   canProduce,
   credits,
   produceBlockedReason,
-  previewActive,
-  onPreviewVisible,
-  onPreviewHidden,
 }: {
   item: CommercialListItem;
   canDelete: boolean;
   canProduce: boolean;
   credits: number;
   produceBlockedReason?: string;
-  previewActive: boolean;
-  onPreviewVisible: () => void;
-  onPreviewHidden: () => void;
 }) {
   const router = useRouter();
   const producing = isInProductionStatus(item.status);
@@ -190,14 +164,7 @@ function StudioVideoCard({
           watching ? (
             <StudioPlayer title={item.title} src={playSrc} onClose={() => setWatching(false)} />
           ) : (
-            <StudioPreview
-              title={item.title}
-              src={previewSrc ?? playSrc}
-              poster={item.thumbnailAssetId ? `/api/assets/${item.thumbnailAssetId}` : undefined}
-              active={previewActive}
-              onVisible={onPreviewVisible}
-              onHidden={onPreviewHidden}
-            />
+            <StudioPreview title={item.title} src={previewSrc ?? playSrc} />
           )
         ) : producing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
@@ -324,29 +291,36 @@ function StudioVideoCard({
   );
 }
 
-function StudioPreview({
-  title,
-  src,
-  poster,
-  active,
-  onVisible,
-  onHidden,
-}: {
-  title: string;
-  src: string;
-  poster?: string;
-  active: boolean;
-  onVisible: () => void;
-  onHidden: () => void;
-}) {
+function grabPreviewFrame(video: HTMLVideoElement): string | null {
+  const width = video.videoWidth;
+  const height = video.videoHeight;
+  if (!width || !height) {
+    return null;
+  }
+  const maxEdge = 480;
+  const scale = Math.min(1, maxEdge / Math.max(width, height));
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return null;
+  }
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+  try {
+    return canvas.toDataURL("image/jpeg", 0.72);
+  } catch {
+    return null;
+  }
+}
+
+function StudioPreview({ title, src }: { title: string; src: string }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const onVisibleRef = useRef(onVisible);
-  const onHiddenRef = useRef(onHidden);
-  useEffect(() => {
-    onVisibleRef.current = onVisible;
-    onHiddenRef.current = onHidden;
-  });
+  const [visible, setVisible] = useState(false);
+  const [frame, setFrame] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const videoFailed = failedSrc === src;
 
   useEffect(() => {
     const host = hostRef.current;
@@ -363,13 +337,9 @@ function StudioPreview({
     }
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry?.isIntersecting) {
-          onVisibleRef.current();
-        } else {
-          onHiddenRef.current();
-        }
+        setVisible(Boolean(entry?.isIntersecting));
       },
-      { root: root === document.body ? null : root, threshold: 0.35, rootMargin: "0px" },
+      { root: root === document.body ? null : root, threshold: 0.15, rootMargin: "80px 0px" },
     );
     observer.observe(host);
     return () => observer.disconnect();
@@ -377,7 +347,7 @@ function StudioPreview({
 
   useEffect(() => {
     const node = videoRef.current;
-    if (!node || !active) {
+    if (!node || !visible || videoFailed) {
       return;
     }
     node.muted = true;
@@ -386,33 +356,41 @@ function StudioPreview({
         node.currentTime = 0;
       }
     };
+    const capture = () => {
+      const next = grabPreviewFrame(node);
+      if (next) {
+        setFrame(next);
+      }
+    };
     node.addEventListener("timeupdate", keepClip);
+    node.addEventListener("loadeddata", capture, { once: true });
     void node.play().catch(() => undefined);
     return () => {
       node.removeEventListener("timeupdate", keepClip);
+      node.removeEventListener("loadeddata", capture);
       node.pause();
     };
-  }, [active, src]);
+  }, [visible, src, videoFailed]);
 
   return (
-    <div ref={hostRef} className="absolute inset-0">
-      {poster ? (
-        // Authenticated studio stream; not a public CDN image.
+    <div ref={hostRef} className="absolute inset-0 bg-surface-secondary">
+      {frame ? (
+        // Captured from the generated clip; not a public CDN image.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={poster} alt="" className="absolute inset-0 size-full object-cover" />
+        <img src={frame} alt="" className="absolute inset-0 size-full object-cover" />
       ) : null}
-      {active ? (
+      {visible && !videoFailed ? (
         <video
           ref={videoRef}
           className="absolute inset-0 size-full object-cover"
           src={`${src}#t=0,${STUDIO_PREVIEW_SECONDS}`}
-          poster={poster}
           autoPlay
           muted
           playsInline
           preload="auto"
           disablePictureInPicture
           aria-label={`${title} preview`}
+          onError={() => setFailedSrc(src)}
         />
       ) : null}
     </div>

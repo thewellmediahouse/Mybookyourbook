@@ -600,6 +600,14 @@ Live job `3a384874` stayed on Filming Your Commercial for five minutes. Workflow
 
 OpenNext on GitHub succeeds (~29s). Every `wrangler deploy` / `versions upload` then dies in ~3s and **no new Worker version is created**. The repository secret cannot publish scripts. GitHub Actions is typecheck only again (last green pattern). Recreate `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit on account `9664d6a341ee02a3dc21db99dc992c61` and Queues Edit. Until then: `npm run deploy` on this laptop. This laptop promoted Worker `cineyou` version `07c5e854-433e-4592-bd20-8330b645d08d` (reference-video keys + Take photo camera) with `versions upload` + `versions deploy`. Branding container not rebuilt. `scripts/deploy-ci.sh` stays for when the token can publish.
 
+### 2026-08-31 — Studio cards preview the generated commercial
+
+Cards must show the filmed commercial, not a face photo. Every card in view plays the first 3 seconds of the filmed file (lighter than the finished Play file). When it scrolls away it keeps a frame from that clip. Face photos and extra campaign photos are not used as stand-ins. Laptop promoted Worker `cineyou` `a0e41906-b716-4d8a-93e2-d601f5a56d2a` (tag `studio-video-previews`) at 100%. Branding container not rebuilt.
+
+### 2026-08-31 — Studio card stills were a 1×1 placeholder
+
+Your videos showed a broken-image mark on most cards. Saved thumbnails were the mock 1×1 JPEG, and streaming that image through OpenNext can arrive empty. Image playback now reads the file into bytes first. Cards use a real photo (campaign extra or the saved front face) until the short preview plays, then they keep that first frame. One card at a time still plays a 3-second filmed clip. Laptop promoted Worker `cineyou` `74daf6b9-a9d7-4186-bf55-5c9ae4629704` (tag `studio-stills-fix`) at 100%. Branding container not rebuilt.
+
 ### 2026-08-31 — Studio card previews are a short, light clip
 
 Finished cards showed a still but the muted preview did not start. The Worker had been serving the first megabyte as the whole file, which a browser cannot play when the index is at the end. Full-file requests stream again. Range slices stay capped at 1 MB. The card now plays the filmed source (smaller than the enhanced finished file) and only the first 3 seconds. Play and Download still use the finished commercial. Only the card on screen loads a preview. Laptop promoted Worker `cineyou` `2ac6349a-6a0f-4272-9698-ff7ea0b4db4e` (tag `studio-preview-clip`) at 100%. Branding container not rebuilt.

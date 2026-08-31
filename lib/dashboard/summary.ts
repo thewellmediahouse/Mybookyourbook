@@ -12,7 +12,7 @@ import {
   user,
   workspaceMembers,
 } from "@/lib/db/schema";
-import { pickPlayableVideoAssetId, pickPreviewVideoAssetId } from "@/lib/api/byte-range";
+import { MIN_STUDIO_STILL_BYTES, pickPlayableVideoAssetId, pickPreviewVideoAssetId } from "@/lib/api/byte-range";
 import { IN_PRODUCTION_STATUSES } from "@/lib/projects/status";
 import { asCount } from "./format";
 
@@ -106,7 +106,14 @@ export async function listCommercials(
   return rows.map((row) => {
     const projectJobs = jobs.get(row.id) ?? [];
     return {
-      ...row,
+      id: row.id,
+      title: row.title,
+      status: row.status,
+      duration: row.duration,
+      aspectRatio: row.aspectRatio,
+      platform: row.platform,
+      updatedAt: row.updatedAt,
+      businessName: row.businessName,
       thumbnailAssetId: thumbs.get(row.id) ?? null,
       jobStatus: projectJobs[0]?.status ?? null,
       finalAssetId: pickPlayableVideoAssetId(projectJobs),
@@ -162,6 +169,7 @@ async function thumbnailIdsForProjects(db: Db, projectIds: string[]) {
     .select({
       id: assets.id,
       projectId: assets.projectId,
+      sizeBytes: assets.sizeBytes,
     })
     .from(assets)
     .where(
@@ -173,7 +181,7 @@ async function thumbnailIdsForProjects(db: Db, projectIds: string[]) {
     )
     .orderBy(desc(assets.createdAt));
   for (const row of rows) {
-    if (row.projectId && !map.has(row.projectId)) {
+    if (row.projectId && !map.has(row.projectId) && row.sizeBytes >= MIN_STUDIO_STILL_BYTES) {
       map.set(row.projectId, row.id);
     }
   }

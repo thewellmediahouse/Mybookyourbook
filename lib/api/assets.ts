@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { capBytesRange, contentRangeHeader, MAX_PLAYBACK_RANGE_BYTES, parseBytesRange } from "@/lib/api/byte-range";
+import {
+  capBytesRange,
+  contentRangeHeader,
+  MAX_PLAYBACK_RANGE_BYTES,
+  parseBytesRange,
+  shouldBufferPrivateAsset,
+} from "@/lib/api/byte-range";
 import { requireOwnedAsset } from "@/lib/api/auth";
 import { jsonError } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
@@ -48,7 +54,7 @@ export async function streamPrivateAsset(assetId: string, request?: Request) {
       ? { range: { offset: range.start, length: range.end - range.start + 1 } }
       : undefined,
   );
-  if (!object || !("body" in object) || !object.body) {
+  if (!object) {
     return jsonError("Not found.", 404);
   }
   const slice = range.kind === "slice";
@@ -61,8 +67,21 @@ export async function streamPrivateAsset(assetId: string, request?: Request) {
   if (slice) {
     headers["Content-Range"] = contentRangeHeader(range.start, range.end, head.size);
   }
+  const status = slice ? 206 : 200;
+  // OpenNext can empty a streamed image body. Stills must be buffered.
+  if (shouldBufferPrivateAsset({ mimeType, download })) {
+    const bytes = await object.arrayBuffer();
+    if (bytes.byteLength === 0) {
+      return jsonError("Not found.", 404);
+    }
+    headers["Content-Length"] = String(bytes.byteLength);
+    return new NextResponse(bytes, { status, headers });
+  }
+  if (!("body" in object) || !object.body) {
+    return jsonError("Not found.", 404);
+  }
   return new NextResponse(object.body, {
-    status: slice ? 206 : 200,
+    status,
     headers,
   });
 }

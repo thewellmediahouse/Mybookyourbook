@@ -89,6 +89,25 @@ export function pickPlayableVideoAssetId(
   return null;
 }
 
+/** Mock branding writes a 1×1 JPEG (~334 bytes). That is not a usable card still. */
+export const MIN_STUDIO_STILL_BYTES = 2048;
+
+export function pickStudioStillAssetId(input: {
+  thumbnailId: string | null;
+  thumbnailBytes: number;
+  referenceImageId: string | null;
+  identityFrontId: string | null;
+}): string | null {
+  if (input.thumbnailId && input.thumbnailBytes >= MIN_STUDIO_STILL_BYTES) {
+    return input.thumbnailId;
+  }
+  return input.referenceImageId ?? input.identityFrontId;
+}
+
+export function shouldBufferPrivateAsset(input: { mimeType: string; download: boolean }): boolean {
+  return !input.download && input.mimeType.startsWith("image/");
+}
+
 /** Card preview uses the filmed file (smaller), not the enhanced finished file. */
 export function pickPreviewVideoAssetId(
   jobs: Array<{

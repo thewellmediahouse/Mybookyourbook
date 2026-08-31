@@ -7,6 +7,8 @@ import {
   parseBytesRange,
   pickPlayableVideoAssetId,
   pickPreviewVideoAssetId,
+  pickStudioStillAssetId,
+  shouldBufferPrivateAsset,
 } from "./byte-range";
 
 test("parseBytesRange understands open, closed, and suffix spans", () => {
@@ -85,4 +87,37 @@ test("pickPreviewVideoAssetId prefers the filmed source over the finished file",
     pickPreviewVideoAssetId([{ status: "SEEDANCE_PROCESSING", finalAssetId: null, sourceAssetId: null }]),
     null,
   );
+});
+
+test("pickStudioStillAssetId skips the tiny mock still and prefers a real photo", () => {
+  assert.equal(
+    pickStudioStillAssetId({
+      thumbnailId: "tiny",
+      thumbnailBytes: 334,
+      referenceImageId: "ref-1",
+      identityFrontId: "front-1",
+    }),
+    "ref-1",
+  );
+  assert.equal(
+    pickStudioStillAssetId({
+      thumbnailId: "tiny",
+      thumbnailBytes: 334,
+      referenceImageId: null,
+      identityFrontId: "front-1",
+    }),
+    "front-1",
+  );
+  assert.equal(
+    pickStudioStillAssetId({
+      thumbnailId: "real",
+      thumbnailBytes: 40_000,
+      referenceImageId: "ref-1",
+      identityFrontId: "front-1",
+    }),
+    "real",
+  );
+  assert.equal(shouldBufferPrivateAsset({ mimeType: "image/jpeg", download: false }), true);
+  assert.equal(shouldBufferPrivateAsset({ mimeType: "video/mp4", download: false }), false);
+  assert.equal(shouldBufferPrivateAsset({ mimeType: "image/png", download: true }), false);
 });
