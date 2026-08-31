@@ -2,7 +2,7 @@
 
 Authoritative checklist. A feature is complete only if frontend, backend, authorization, validation, persistence, errors, and required tests are implemented. Do not mark complete because UI exists.
 
-Last updated: 2026-08-30 (studio play, film again, live enhancement)
+Last updated: 2026-08-31 (fail-email deploy reset, studio collage)
 
 ## Foundation
 - [x] Next.js
@@ -599,6 +599,18 @@ Live job `3a384874` stayed on Filming Your Commercial for five minutes. Workflow
 ### 2026-08-30 — GitHub cannot publish Worker cineyou
 
 OpenNext on GitHub succeeds (~29s). Every `wrangler deploy` / `versions upload` then dies in ~3s and **no new Worker version is created**. The repository secret cannot publish scripts. GitHub Actions is typecheck only again (last green pattern). Recreate `CLOUDFLARE_API_TOKEN` with Workers Scripts Edit on account `9664d6a341ee02a3dc21db99dc992c61` and Queues Edit. Until then: `npm run deploy` on this laptop. This laptop promoted Worker `cineyou` version `07c5e854-433e-4592-bd20-8330b645d08d` (reference-video keys + Take photo camera) with `versions upload` + `versions deploy`. Branding container not rebuilt. `scripts/deploy-ci.sh` stays for when the token can publish.
+
+### 2026-08-31 — Studio card previews are a short, light clip
+
+Finished cards showed a still but the muted preview did not start. The Worker had been serving the first megabyte as the whole file, which a browser cannot play when the index is at the end. Full-file requests stream again. Range slices stay capped at 1 MB. The card now plays the filmed source (smaller than the enhanced finished file) and only the first 3 seconds. Play and Download still use the finished commercial. Only the card on screen loads a preview. Laptop promoted Worker `cineyou` `2ac6349a-6a0f-4272-9698-ff7ea0b4db4e` (tag `studio-preview-clip`) at 100%. Branding container not rebuilt.
+
+### 2026-08-31 — Do not email failure on a deploy reset; Studio packs mixed shapes
+
+Job `13b6359a` emailed failure then ready. Internal message was `Durable Object reset because its code was updated` (a Worker publish while the job was still running). Catch treated that as a customer failure, then the same job finished. Deploy/reset and isolate-limit errors no longer mark FAILED or send mail; the job continues. Studio Your videos is a collage (CSS columns): 16:9 and 9:16 pack with no empty grid holes. Laptop promoted Worker `cineyou` `12fe8263-b2db-4302-8d7c-767a97d87e77` (tag `studio-collage-mail`) at 100%. Branding container not rebuilt.
+
+### 2026-08-30 — Studio must not pull every video at once
+
+Error 1102 (Worker exceeded resource limits) after opening Studio: every finished card used `preload="auto"`, so the Worker streamed many full commercials at once. Playback now caps each Worker read at 1 MB (`capBytesRange`). Cards show the still first. Only the card on screen loads a muted preview. Filming refresh is 8 seconds, not 2.5. Download still sends the whole file. Laptop promoted Worker `cineyou` `8ae1c628-6272-4d02-9fbb-de251c335251` (tag `studio-stream-cap`) at 100%. Branding container not rebuilt.
 
 ### 2026-08-30 — Studio Play, Film again, and live enhancement
 

@@ -21,9 +21,16 @@ import {
   DELETE_PERMANENT_WARNING,
   KEEP_VIDEO,
 } from "@/lib/projects/delivery";
+import { STUDIO_PREVIEW_SECONDS } from "@/lib/api/byte-range";
 import { isInProductionStatus, projectStatusLabel } from "@/lib/projects/status";
 import type { CommercialListItem } from "@/lib/dashboard/summary";
 import { cn } from "@/lib/utils";
+
+function firstReadyPreviewId(items: CommercialListItem[]) {
+  return (
+    items.find((item) => item.previewAssetId && !isInProductionStatus(item.status))?.id ?? null
+  );
+}
 
 export function StudioGallery({
   items,
@@ -40,6 +47,15 @@ export function StudioGallery({
 }) {
   const router = useRouter();
   const filming = items.some((item) => isInProductionStatus(item.status));
+  const [previewId, setPreviewId] = useState<string | null | undefined>(undefined);
+  const activePreviewId =
+    previewId === undefined
+      ? firstReadyPreviewId(items)
+      : previewId && items.some((item) => item.id === previewId)
+        ? previewId
+        : previewId === null
+          ? null
+          : firstReadyPreviewId(items);
 
   useEffect(() => {
     if (!filming) {
@@ -47,7 +63,7 @@ export function StudioGallery({
     }
     const timer = window.setInterval(() => {
       router.refresh();
-    }, 2500);
+    }, 8000);
     return () => window.clearInterval(timer);
   }, [filming, router]);
 
@@ -65,15 +81,20 @@ export function StudioGallery({
           finished commercial then plays in that same card.
         </p>
       ) : (
-        <ul className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <ul className="mt-6 columns-1 gap-4 sm:columns-2 xl:columns-3">
           {items.map((item) => (
-            <li key={item.id}>
+            <li key={item.id} className="mb-4 inline-block w-full break-inside-avoid">
               <StudioVideoCard
                 item={item}
                 canDelete={canDelete}
                 canProduce={canProduce}
                 credits={credits}
                 produceBlockedReason={produceBlockedReason}
+                previewActive={activePreviewId === item.id}
+                onPreviewVisible={() => setPreviewId(item.id)}
+                onPreviewHidden={() => {
+                  setPreviewId((current) => (current === item.id || current === undefined ? null : current));
+                }}
               />
             </li>
           ))}
@@ -89,18 +110,27 @@ function StudioVideoCard({
   canProduce,
   credits,
   produceBlockedReason,
+  previewActive,
+  onPreviewVisible,
+  onPreviewHidden,
 }: {
   item: CommercialListItem;
   canDelete: boolean;
   canProduce: boolean;
   credits: number;
   produceBlockedReason?: string;
+  previewActive: boolean;
+  onPreviewVisible: () => void;
+  onPreviewHidden: () => void;
 }) {
   const router = useRouter();
   const producing = isInProductionStatus(item.status);
   const percent = productionProgressPercent(item.jobStatus);
   const label = productionProgressLabel(item.jobStatus);
   const playSrc = item.finalAssetId ? `/api/assets/${item.finalAssetId}` : null;
+  const previewSrc = item.previewAssetId
+    ? `/api/assets/${item.previewAssetId}?preview=1`
+    : playSrc;
   const ready = Boolean(playSrc) && !producing;
   const canFilmAgain = !producing && (item.status === "READY" || item.status === "FAILED");
   const filmAgainBlocked =
@@ -154,13 +184,20 @@ function StudioVideoCard({
   }
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-border bg-surface">
+    <article className="group w-full overflow-hidden rounded-2xl border border-border bg-surface">
       <div className={cn("relative w-full overflow-hidden bg-surface-secondary", shape)}>
         {ready && playSrc ? (
           watching ? (
             <StudioPlayer title={item.title} src={playSrc} onClose={() => setWatching(false)} />
           ) : (
-            <StudioPreview title={item.title} src={playSrc} />
+            <StudioPreview
+              title={item.title}
+              src={previewSrc ?? playSrc}
+              poster={item.thumbnailAssetId ? `/api/assets/${item.thumbnailAssetId}` : undefined}
+              active={previewActive}
+              onVisible={onPreviewVisible}
+              onHidden={onPreviewHidden}
+            />
           )
         ) : producing ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 px-4 text-center">
@@ -287,27 +324,36 @@ function StudioVideoCard({
   );
 }
 
-function StudioPreview({ title, src }: { title: string; src: string }) {
-  const ref = useRef<HTMLVideoElement>(null);
+function StudioPreview({
+  title,
+  src,
+  poster,
+  active,
+  onVisible,
+  onHidden,
+}: {
+  title: string;
+  src: string;
+  poster?: string;
+  active: boolean;
+  onVisible: () => void;
+  onHidden: () => void;
+}) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const onVisibleRef = useRef(onVisible);
+  const onHiddenRef = useRef(onHidden);
+  useEffect(() => {
+    onVisibleRef.current = onVisible;
+    onHiddenRef.current = onHidden;
+  });
 
   useEffect(() => {
-    const node = ref.current;
-    if (!node) {
+    const host = hostRef.current;
+    if (!host) {
       return;
     }
-    const tryPlay = () => {
-      node.muted = true;
-      void node.play().catch(() => undefined);
-    };
-    const onEnded = () => {
-      node.currentTime = 0;
-      tryPlay();
-    };
-    tryPlay();
-    node.addEventListener("canplay", tryPlay);
-    node.addEventListener("loadeddata", tryPlay);
-    node.addEventListener("ended", onEnded);
-    let root: Element | null = node.parentElement;
+    let root: Element | null = host.parentElement;
     while (root && root !== document.body) {
       const overflowY = window.getComputedStyle(root).overflowY;
       if (overflowY === "auto" || overflowY === "scroll") {
@@ -318,37 +364,58 @@ function StudioPreview({ title, src }: { title: string; src: string }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {
-          tryPlay();
+          onVisibleRef.current();
         } else {
-          node.pause();
+          onHiddenRef.current();
         }
       },
-      { root: root === document.body ? null : root, threshold: 0.15, rootMargin: "64px" },
+      { root: root === document.body ? null : root, threshold: 0.35, rootMargin: "0px" },
     );
-    observer.observe(node);
-    return () => {
-      observer.disconnect();
-      node.removeEventListener("canplay", tryPlay);
-      node.removeEventListener("loadeddata", tryPlay);
-      node.removeEventListener("ended", onEnded);
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const node = videoRef.current;
+    if (!node || !active) {
+      return;
+    }
+    node.muted = true;
+    const keepClip = () => {
+      if (node.currentTime >= STUDIO_PREVIEW_SECONDS) {
+        node.currentTime = 0;
+      }
     };
-  }, [src]);
+    node.addEventListener("timeupdate", keepClip);
+    void node.play().catch(() => undefined);
+    return () => {
+      node.removeEventListener("timeupdate", keepClip);
+      node.pause();
+    };
+  }, [active, src]);
 
   return (
-    <video
-      ref={ref}
-      className="absolute inset-0 size-full object-cover"
-      autoPlay
-      muted
-      loop
-      playsInline
-      preload="auto"
-      disablePictureInPicture
-      aria-label={`${title} preview`}
-    >
-      <source src={src} type="video/mp4" />
-      Your commercial is ready.
-    </video>
+    <div ref={hostRef} className="absolute inset-0">
+      {poster ? (
+        // Authenticated studio stream; not a public CDN image.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={poster} alt="" className="absolute inset-0 size-full object-cover" />
+      ) : null}
+      {active ? (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 size-full object-cover"
+          src={`${src}#t=0,${STUDIO_PREVIEW_SECONDS}`}
+          poster={poster}
+          autoPlay
+          muted
+          playsInline
+          preload="auto"
+          disablePictureInPicture
+          aria-label={`${title} preview`}
+        />
+      ) : null}
+    </div>
   );
 }
 
@@ -368,7 +435,7 @@ function StudioPlayer({
         controls
         autoPlay
         playsInline
-        preload="auto"
+        preload="metadata"
         controlsList="nodownload"
         aria-label={title}
       >

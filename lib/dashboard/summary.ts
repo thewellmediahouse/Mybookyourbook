@@ -12,7 +12,7 @@ import {
   user,
   workspaceMembers,
 } from "@/lib/db/schema";
-import { pickPlayableVideoAssetId } from "@/lib/api/byte-range";
+import { pickPlayableVideoAssetId, pickPreviewVideoAssetId } from "@/lib/api/byte-range";
 import { IN_PRODUCTION_STATUSES } from "@/lib/projects/status";
 import { asCount } from "./format";
 
@@ -36,6 +36,7 @@ export type CommercialListItem = {
   thumbnailAssetId: string | null;
   jobStatus: string | null;
   finalAssetId: string | null;
+  previewAssetId: string | null;
 };
 
 export async function getDashboardSummary(db: Db, workspaceId: string): Promise<DashboardSummary> {
@@ -109,6 +110,7 @@ export async function listCommercials(
       thumbnailAssetId: thumbs.get(row.id) ?? null,
       jobStatus: projectJobs[0]?.status ?? null,
       finalAssetId: pickPlayableVideoAssetId(projectJobs),
+      previewAssetId: pickPreviewVideoAssetId(projectJobs),
     };
   });
 }

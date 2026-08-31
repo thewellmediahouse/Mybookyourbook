@@ -6,6 +6,7 @@ import { generationIdempotencyKey } from "@/lib/credits/copy";
 import { reclaimRefundIfFilmingCharged, shouldRefundAfterFilmingFailure } from "@/lib/credits/filming-charge";
 import { getBrand, getBrandLogoAsset } from "@/lib/businesses/queries";
 import { CUSTOMER_FAILURE, CUSTOMER_FAILURE_CHARGED, REFERENCE_VIDEO_FORMAT } from "./copy";
+import { isRetryableInfrastructureError } from "./errors";
 import { appendProductionEvent, setJobStatus } from "./events";
 import { insertProductionAsset } from "./assets";
 import { getJobById } from "./queries";
@@ -451,6 +452,9 @@ export async function runCommercialProduction(
   } catch (error) {
     const current = await getJobById(deps.db, params.jobId);
     if (current?.status === "CANCELLED" || toErrorMessage(error) === "JOB_CANCELLED") {
+      throw error;
+    }
+    if (current?.status === "COMPLETE" || isRetryableInfrastructureError(error)) {
       throw error;
     }
     const refundCustomer = await shouldRefundAfterFilmingFailure(deps.video, current?.videoProviderJobId);

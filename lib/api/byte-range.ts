@@ -44,6 +44,25 @@ export function contentRangeHeader(start: number, end: number, size: number): st
   return `bytes ${start}-${end}/${size}`;
 }
 
+/** One Worker Range slice stays small. A request with no Range is streamed as-is. */
+export const MAX_PLAYBACK_RANGE_BYTES = 1024 * 1024;
+/** Card preview plays only this many seconds of the filmed (smaller) file. */
+export const STUDIO_PREVIEW_SECONDS = 3;
+
+export function capBytesRange(range: BytesRange, size: number, maxBytes: number): BytesRange {
+  if (range.kind === "unsatisfiable" || range.kind === "all") {
+    return range;
+  }
+  if (size <= 0 || maxBytes <= 0) {
+    return { kind: "unsatisfiable" };
+  }
+  const length = range.end - range.start + 1;
+  if (length <= maxBytes) {
+    return range;
+  }
+  return { kind: "slice", start: range.start, end: range.start + maxBytes - 1 };
+}
+
 export function pickPlayableVideoAssetId(
   jobs: Array<{
     finalAssetId: string | null;
@@ -68,4 +87,21 @@ export function pickPlayableVideoAssetId(
     }
   }
   return null;
+}
+
+/** Card preview uses the filmed file (smaller), not the enhanced finished file. */
+export function pickPreviewVideoAssetId(
+  jobs: Array<{
+    finalAssetId: string | null;
+    enhancedAssetId?: string | null;
+    sourceAssetId: string | null;
+    status: string;
+  }>,
+): string | null {
+  for (const job of jobs) {
+    if (job.status === "COMPLETE" && job.sourceAssetId) {
+      return job.sourceAssetId;
+    }
+  }
+  return pickPlayableVideoAssetId(jobs);
 }

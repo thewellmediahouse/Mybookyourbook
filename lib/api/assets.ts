@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { contentRangeHeader, parseBytesRange } from "@/lib/api/byte-range";
+import { capBytesRange, contentRangeHeader, MAX_PLAYBACK_RANGE_BYTES, parseBytesRange } from "@/lib/api/byte-range";
 import { requireOwnedAsset } from "@/lib/api/auth";
 import { jsonError } from "@/lib/api/http";
 import { getDb } from "@/lib/db/client";
@@ -21,7 +21,10 @@ export async function streamPrivateAsset(assetId: string, request?: Request) {
   const download = Boolean(request && new URL(request.url).searchParams.get("download") === "1");
   const mimeType = head.httpMetadata?.contentType || access.asset.mimeType || "application/octet-stream";
   const filename = download ? await downloadFilenameForAsset(access.asset) : undefined;
-  const range = !download && request ? parseBytesRange(request.headers.get("Range"), head.size) : { kind: "all" as const };
+  const requested = !download && request ? parseBytesRange(request.headers.get("Range"), head.size) : { kind: "all" as const };
+  // A request with no Range must stay a full stream. Capping it to 1 MB left
+  // cards with an incomplete file that the browser could not start.
+  const range = download ? requested : capBytesRange(requested, head.size, MAX_PLAYBACK_RANGE_BYTES);
   if (range.kind === "unsatisfiable") {
     return new NextResponse(null, {
       status: 416,
